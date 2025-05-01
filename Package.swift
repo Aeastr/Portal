@@ -12,7 +12,7 @@ let package = Package(
             targets: ["Portal"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/Aeastr/LogOutLoud", .upToNextMajor(from: "1.0.1")),
+        .package(url: "https://github.com/Aeastr/LogOutLoud", .upToNextMajor(from: "1.1.1")),
     ],
     targets: [
         .target(
