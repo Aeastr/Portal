@@ -9,5 +9,5 @@ import SwiftUI
 import LogOutLoud
 
 extension Tag {
-  static let transition   = Tag("Transition")
+  static let transition = Tag("Transition")
 }

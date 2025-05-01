@@ -161,7 +161,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
                             }
                             guard let idx = portalModel.info.firstIndex(where: { $0.infoID == key }) else { return }
                             
-                            portalModel.info[idx].initalized = true
+                            portalModel.info[idx].initalized  = true
                             portalModel.info[idx].animationDuration  = animationDuration
                             portalModel.info[idx].sourceProgress     = sourceProgress
                             portalModel.info[idx].destinationProgress = destinationProgress
@@ -327,6 +327,8 @@ internal struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifi
         self.completion = completion
     }
     
+    let logger = PortalLogging.logger
+    
     // Helper to get the correct index based on layer
     private func findPortalInfoIndex() -> Int? {
         switch layer {
@@ -343,12 +345,17 @@ internal struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifi
                 // Registration logic
                 if !portalModel.info.contains(where: { $0.infoID == id }) && layer == .above {
                     portalModel.info.append(PortalInfo(id: id))
+                    logger.log("Conditional Registered", level: .debug, tags: [.transition], metadata: ["id-channel" : id])
                 }
 //                if !portalModel.rootInfo.contains(where: { $0.infoID == id }) && layer == .root {
 //                    portalModel.rootInfo.append(PortalInfo(id: id))
 //                }
             }
             .onChangeCompat(of: isActive) { newValue in
+                logger.log("Conditional Change", level: .debug, tags: [.transition], metadata: [
+                    "id-channel" : id,
+                    "isActive" : newValue
+                ])
                 // Find index using helper
                 guard let idx = findPortalInfoIndex() else { return }
                 
@@ -368,13 +375,27 @@ internal struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifi
                     }
                 }
                 
-                // Update common properties
+                logger.log("Found Registered Conditional idx", level: .debug, tags: [.transition], metadata: [
+                    "id-channel" : id,
+                    "idx" : idx,
+                    "layer" : String(describing: layer)
+                ])
+                
                 portalInfoArray[idx].initalized = true
                 portalInfoArray[idx].animationDuration = animationDuration
                 portalInfoArray[idx].sourceProgress = sourceProgress
                 portalInfoArray[idx].destinationProgress = destinationProgress
                 portalInfoArray[idx].completion = completion
                 portalInfoArray[idx].layerView = AnyView(layerView())
+                
+                logger.log("Configured Registered Conditional", level: .debug, tags: [.transition], metadata: [
+                    "id-channel" : id,
+                    "initalized" : portalInfoArray[idx].initalized,
+                    "animationDuration" : portalInfoArray[idx].animationDuration,
+                    "sourceProgress" : portalInfoArray[idx].sourceProgress,
+                    "destinationProgress" : portalInfoArray[idx].destinationProgress,
+                    "layerView" : portalInfoArray[idx].layerView.debugDescription
+                ])
                 
                 if newValue {
                     DispatchQueue.main.asyncAfter(deadline: .now() + delay) {

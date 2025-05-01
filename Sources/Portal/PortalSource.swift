@@ -32,7 +32,7 @@ public struct PortalSource<Content: View>: View {
                 return result
             }
             .onPreferenceChange(AnchorKey.self) { prefs in
-                MainActor.assumeIsolated {
+                Task { @MainActor in 
                     if let idx = index, portalModel.info[idx].initalized, portalModel.info[idx].sourceAnchor == nil {
                         portalModel.info[idx].sourceAnchor = prefs[id]
                     }

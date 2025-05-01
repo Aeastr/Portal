@@ -3,7 +3,7 @@ import SwiftUI
 /// Internal overlay view that renders and animates portal layers
 internal struct PortalLayerView: View {
     @EnvironmentObject private var portalModel: CrossModel
-
+    
     var body: some View {
         GeometryReader { proxy in
             ForEach($portalModel.info) { $info in
@@ -19,7 +19,7 @@ internal struct PortalLayerView: View {
                         let height = animate ? dRect.size.height : sRect.size.height
                         let x = animate ? dRect.minX : sRect.minX
                         let y = animate ? dRect.minY : sRect.minY
-
+                        
                         layer
                             .frame(width: width, height: height)
                             .offset(x: x, y: y)
@@ -28,8 +28,9 @@ internal struct PortalLayerView: View {
                 }
                 .onChangeCompat(of: info.animateView) { newValue in
                     // Delay to allow animation to finish
-                    DispatchQueue.main.asyncAfter(deadline: .now() + info.animationDuration + 0.25) {
-                        if !newValue {
+                    if !newValue {
+                        // if NOT animateView
+                        DispatchQueue.main.asyncAfter(deadline: .now() + info.animationDuration + 0.2) {
                             info.initalized = false
                             info.layerView = nil
                             info.sourceAnchor = nil
@@ -37,7 +38,10 @@ internal struct PortalLayerView: View {
                             info.sourceProgress = 0
                             info.destinationProgress = 0
                             info.completion(false)
-                        } else {
+                        }
+                    } else {
+                        // if animateView
+                        DispatchQueue.main.asyncAfter(deadline: .now() + info.animationDuration  + 0.2) {
                             info.hideView = true
                             info.completion(true)
                         }

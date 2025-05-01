@@ -1,4 +1,10 @@
 #if DEBUG
+
+let animationDuration: TimeInterval = 0.4
+let animationExample: Animation = Animation.smooth(duration: animationDuration, extraBounce: 0.25)
+let animationExampleExtraBounce: Animation = Animation.smooth(duration: animationDuration, extraBounce: 0.4)
+
+
 import SwiftUI
 
 struct CardInfo: Identifiable {
@@ -183,7 +189,7 @@ public struct Portal_CardsExample: View {
                 .portalTransition(
                     item: $selectedCard, // Driven by the optional Identifiable item
                     animation: animationExample,
-                    animationDuration: animationDuration + 0.12
+                    animationDuration: animationDuration
                 ) { card in
                     AnimatedGradient(item: card) {
                         RoundedRectangle(cornerRadius: 16)
@@ -238,10 +244,10 @@ struct AnimatedGradient<Content: View>: View {
                         }
                     }
                 } else {
-                    // 1) bump up
-                    withAnimation(animationExample) {
-                        layerScale = 1.25
-                    }
+//                    // 1) bump up
+//                    withAnimation(animationExample) {
+//                        layerScale = 1.25
+//                    }
                     // 2) bounce back down
                     DispatchQueue.main.asyncAfter(deadline: .now() + (animationDuration / 2) - 0.1) {
                         withAnimation(animationExampleExtraBounce) {
