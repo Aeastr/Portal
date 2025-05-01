@@ -18,8 +18,9 @@ let package = Package(
         .target(
             name: "Portal",
             dependencies: [
-                .product(name: "LogOutLoud", package: "LogOutLoud")
-            ], path: "Sources/Portal"
+                "LogOutLoud"
+            ]
+            , path: "Sources/Portal"
         ),
         .testTarget(
             name: "PortalTests",
