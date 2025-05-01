@@ -11,10 +11,15 @@ let package = Package(
             name: "Portal",
             targets: ["Portal"]),
     ],
+    dependencies: [
+        .package(url: "https://github.com/Aeastr/LogOutLoud", .upToNextMajor(from: "1.0.0")),
+    ],
     targets: [
         .target(
             name: "Portal",
-            path: "Sources/Portal"
+            dependencies: [
+                .product(name: "LogOutLoud", package: "LogOutLoud.swift")
+            ], path: "Sources/Portal"
         ),
         .testTarget(
             name: "PortalTests",
