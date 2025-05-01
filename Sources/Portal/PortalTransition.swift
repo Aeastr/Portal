@@ -121,6 +121,8 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
     }
     /// Keep the last‐used string key so deactivation can find the exact entry.
     @State private var lastKey: String?
+    
+    let logger = PortalLogging.logger
 
     public init(
         item: Binding<Item?>,
@@ -147,41 +149,64 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
             // React only when `item` changes from nil→non‑nil or vice versa
             .onChangeCompat(of: item != nil) { hasValue in
                         if hasValue {
-                            print("item active")
+                            logger.log("Item Active", level: .debug, tags: [.transition], metadata: ["id" : String(describing: item?.id)])
                             // item just became non‑nil → activate
                             guard let key = self.key, let unwrapped = item else { return }
                             // remember exact key for later
                             lastKey = key
                             // register once
                             if portalModel.info.firstIndex(where: { $0.infoID == key }) == nil {
-                                print("reigsterd")
                                 portalModel.info.append(PortalInfo(id: key))
+                                logger.log("Item Registered", level: .debug, tags: [.transition], metadata: ["key" : key])
                             }
                             guard let idx = portalModel.info.firstIndex(where: { $0.infoID == key }) else { return }
-                            print("configuring..")
-                            // configure
-                            portalModel.info[idx].initalized = true
+                            
+                            portalModel.info[idx].initalized  = true
                             portalModel.info[idx].animationDuration  = animationDuration
                             portalModel.info[idx].sourceProgress     = sourceProgress
                             portalModel.info[idx].destinationProgress = destinationProgress
                             portalModel.info[idx].completion         = completion
                             portalModel.info[idx].layerView          = AnyView(layerView(unwrapped))
-                            // fire the animation
-                            print("animating..")
+                            logger.log("\nConfigured Registered Item", level: .debug, tags: [.transition], metadata: [
+                                "key" : key,
+                                "initalized" : portalModel.info[idx].initalized,
+                                "animationDuration" : portalModel.info[idx].animationDuration,
+                                "sourceProgress" : portalModel.info[idx].sourceProgress,
+                                "destinationProgress" : portalModel.info[idx].destinationProgress,
+                                "layerView" : portalModel.info[idx].layerView.debugDescription
+                            ])
+                            
+                            logger.log("Firing Animation for Item", level: .debug, tags: [.transition], metadata: ["key" : key, "animation" : animation, "delay" : delay])
                             DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                                 withAnimation(animation) {
                                     portalModel.info[idx].animateView = true
                                 }
                             }
                         } else {
+                            logger.log("Item Inactive", level: .debug, tags: [.transition], metadata: ["lastKey" : (String(describing: lastKey))])
                             guard let key = lastKey,
                             let idx = portalModel.info.firstIndex(where: { $0.infoID == key })
                             else { return }
+                            
+                            logger.log("Item idx Found, animating out", level: .debug, tags: [.transition], metadata: [
+                                "key" : key,
+                                "idx" : idx,
+                                "animation" : animation,
+                                "hideView" : portalModel.info[idx].hideView,
+                                "animateView" : portalModel.info[idx].animateView
+                            ])
+                            
                             portalModel.info[idx].hideView = false
                             withAnimation(animation) {
                                 portalModel.info[idx].animateView = false
                             }
                             lastKey = nil
+                            
+                            logger.log("Item Animated Out", level: .debug, tags: [.transition], metadata: [
+                                "lastKey" : String(describing: lastKey),
+                                "hideView" : portalModel.info[idx].hideView,
+                                "animateView" : portalModel.info[idx].animateView
+                            ])
                         }
                     }
     }
@@ -302,6 +327,8 @@ internal struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifi
         self.completion = completion
     }
     
+    let logger = PortalLogging.logger
+    
     // Helper to get the correct index based on layer
     private func findPortalInfoIndex() -> Int? {
         switch layer {
@@ -318,12 +345,17 @@ internal struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifi
                 // Registration logic
                 if !portalModel.info.contains(where: { $0.infoID == id }) && layer == .above {
                     portalModel.info.append(PortalInfo(id: id))
+                    logger.log("Conditional Registered", level: .debug, tags: [.transition], metadata: ["id-channel" : id])
                 }
 //                if !portalModel.rootInfo.contains(where: { $0.infoID == id }) && layer == .root {
 //                    portalModel.rootInfo.append(PortalInfo(id: id))
 //                }
             }
             .onChangeCompat(of: isActive) { newValue in
+                logger.log("Conditional Change", level: .debug, tags: [.transition], metadata: [
+                    "id-channel" : id,
+                    "isActive" : newValue
+                ])
                 // Find index using helper
                 guard let idx = findPortalInfoIndex() else { return }
                 
@@ -343,13 +375,27 @@ internal struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifi
                     }
                 }
                 
-                // Update common properties
+                logger.log("Found Registered Conditional idx", level: .debug, tags: [.transition], metadata: [
+                    "id-channel" : id,
+                    "idx" : idx,
+                    "layer" : String(describing: layer)
+                ])
+                
                 portalInfoArray[idx].initalized = true
                 portalInfoArray[idx].animationDuration = animationDuration
                 portalInfoArray[idx].sourceProgress = sourceProgress
                 portalInfoArray[idx].destinationProgress = destinationProgress
                 portalInfoArray[idx].completion = completion
                 portalInfoArray[idx].layerView = AnyView(layerView())
+                
+                logger.log("Configured Registered Conditional", level: .debug, tags: [.transition], metadata: [
+                    "id-channel" : id,
+                    "initalized" : portalInfoArray[idx].initalized,
+                    "animationDuration" : portalInfoArray[idx].animationDuration,
+                    "sourceProgress" : portalInfoArray[idx].sourceProgress,
+                    "destinationProgress" : portalInfoArray[idx].destinationProgress,
+                    "layerView" : portalInfoArray[idx].layerView.debugDescription
+                ])
                 
                 if newValue {
                     DispatchQueue.main.asyncAfter(deadline: .now() + delay) {

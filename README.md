@@ -66,9 +66,14 @@
 - **No custom presentation modifiers required** \
   Works directly with standard SwiftUI presentation methods (`.sheet`, `.navigationDestination`, etc.).
 
+- **Detailed Configurable Logs** \
+  Uses [LogOutLoud](https://github.com/Aeastr/LogOutLoud), check documentation for details
+
 - **iOS 15+ support**
 
-### 📚 Documentation
+---
+
+## 📚 Documentation
 
 For full installation steps, usage guides, examples, and animation deep-dives, visit the [Portal Wiki](https://github.com/Aeastr/Portal/wiki):  
 

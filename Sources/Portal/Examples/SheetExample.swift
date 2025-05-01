@@ -1,9 +1,6 @@
 #if DEBUG
 import SwiftUI
 
-let animationDuration: TimeInterval = 0.4
-let animationExample: Animation = Animation.smooth(duration: animationDuration, extraBounce: 0.25)
-let animationExampleExtraBounce: Animation = Animation.smooth(duration: animationDuration + 0.12, extraBounce: 0.55)
 
 /// A demo view to showcase Sheet Portal transitions
 public struct Portal_SheetExample: View {

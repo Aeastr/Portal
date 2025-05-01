@@ -2,6 +2,7 @@ import SwiftUI
 #if canImport(UIKit)
 import UIKit
 #endif
+import LogOutLoud
 
 /// A SwiftUI container that overlays a transparent window above your app's UI,
 /// optionally hiding the status bar in the overlay.
