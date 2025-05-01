@@ -1,13 +1,13 @@
 {
-  "originHash" : "b7aee6e5093cc7cceba6a40caeb70276cb6db2981eec3412a59c46aecffc68a6",
+  "originHash" : "4f90bbee95208a08b2e820997f0306610f85281d2fef61cb50e569dc3f673dd4",
   "pins" : [
     {
       "identity" : "logoutloud",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Aeastr/LogOutLoud",
       "state" : {
-        "revision" : "06f80333803b3d0301086754563d154ecfe9fd0b",
-        "version" : "1.0.0"
+        "revision" : "c6b087a415a43ca1585b2a56b838667ee85780ee",
+        "version" : "1.0.1"
       }
     }
   ],
