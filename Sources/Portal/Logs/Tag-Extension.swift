@@ -10,4 +10,5 @@ import LogOutLoud
 
 extension Tag {
   static let transition = Tag("Transition")
+    static let transitionLayer = Tag("Transition Layer")
 }

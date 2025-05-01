@@ -4,6 +4,8 @@ import SwiftUI
 internal struct PortalLayerView: View {
     @EnvironmentObject private var portalModel: CrossModel
     
+    let logger = PortalLogging.logger
+    
     var body: some View {
         GeometryReader { proxy in
             ForEach($portalModel.info) { $info in
@@ -27,6 +29,9 @@ internal struct PortalLayerView: View {
                     }
                 }
                 .onChangeCompat(of: info.animateView) { newValue in
+                    logger.log("info.animateView changed", level: .debug, tags: [.transitionLayer], metadata: [
+                        "animateView" : newValue
+                    ])
                     // Delay to allow animation to finish
                     if !newValue {
                         // if NOT animateView
@@ -38,12 +43,16 @@ internal struct PortalLayerView: View {
                             info.sourceProgress = 0
                             info.destinationProgress = 0
                             info.completion(false)
+                            
+                            logger.log("PortalLayerView hide animation completed", level: .debug, tags: [.transitionLayer])
                         }
                     } else {
                         // if animateView
                         DispatchQueue.main.asyncAfter(deadline: .now() + info.animationDuration  + 0.2) {
                             info.hideView = true
                             info.completion(true)
+                            
+                            logger.log("PortalLayerView show animation completed", level: .debug, tags: [.transitionLayer])
                         }
                     }
                 }
