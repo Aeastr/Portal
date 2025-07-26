@@ -100,13 +100,31 @@ public struct PortalInfo: Identifiable {
     /// Default implementation is a no-op that ignores the completion status.
     public var completion: (Bool) -> Void = { _ in }
     
+    /// Optional group identifier for coordinated multi-portal animations.
+    ///
+    /// When multiple portals share the same `groupID`, they are animated together
+    /// as a coordinated group. This enables scenarios like multiple photos transitioning
+    /// simultaneously to the same destination.
+    ///
+    /// When `nil`, the portal operates independently as a single transition.
+    public var groupID: String? = nil
+    
+    /// Flag indicating whether this portal is the group coordinator.
+    ///
+    /// In a group of portals, one portal acts as the coordinator and manages
+    /// the timing for the entire group. Only the coordinator triggers animations
+    /// and completion callbacks for the group.
+    public var isGroupCoordinator = false
+    
     /// Initializes a new PortalInfo instance with the specified identifier.
     ///
     /// Creates a new portal data record with default values for all properties
     /// except the required user-defined identifier.
     ///
     /// - Parameter id: The unique string identifier for this portal animation
-    public init(id: String) {
+    /// - Parameter groupID: Optional group identifier for coordinated animations
+    public init(id: String, groupID: String? = nil) {
         self.infoID = id
+        self.groupID = groupID
     }
 }
