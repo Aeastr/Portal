@@ -238,6 +238,41 @@ public extension View {
             return PortalLegacy(id: key, source: isSource) { self }
         }
     }
+    
+    /// Marks this view as a portal with the specified role using an `Identifiable` item's ID and group.
+    ///
+    /// This modifier extends the basic portal functionality to support coordinated group animations.
+    /// Multiple portals with the same `groupID` will animate together as a coordinated group.
+    ///
+    /// - Parameters:
+    ///   - item: An `Identifiable` item whose ID will be used as the portal identifier.
+    ///   - role: The role of this portal (`.source` or `.destination`).
+    ///   - groupID: A group identifier for coordinated animations. Portals with the same groupID animate together.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// // Multiple photos that should animate together
+    /// ForEach(photos) { photo in
+    ///     PhotoView(photo: photo)
+    ///         .portal(item: photo, .source, groupID: "photoStack")
+    /// }
+    /// 
+    /// // Destination views with the same groupID
+    /// ForEach(photos) { photo in
+    ///     PhotoView(photo: photo)
+    ///         .portal(item: photo, .destination, groupID: "photoStack")
+    /// }
+    /// ```
+    @available(iOS 15.0, *)
+    func portal<Item: Identifiable>(item: Item, _ role: PortalRole, groupID: String) -> some View {
+        let key = "\(item.id)"
+        let isSource = role == .source
+        if #available(iOS 17.0, *) {
+            return PortalWithGroup(id: key, source: isSource, groupID: groupID) { self }
+        } else {
+            return PortalLegacyWithGroup(id: key, source: isSource, groupID: groupID) { self }
+        }
+    }
     /// Marks this view as a portal source (leaving view).
     ///
     /// Attach this modifier to the view that should act as the source for a portal transition.
