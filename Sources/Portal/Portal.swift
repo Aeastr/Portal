@@ -158,6 +158,139 @@ public struct PortalLegacy<Content: View>: View {
     }
 }
 
+// MARK: - Group-Aware Portal Implementations
+
+/// iOS 17+ Portal implementation with group support for coordinated animations.
+@available(iOS 17.0, *)
+public struct PortalWithGroup<Content: View>: View {
+    private let id: String
+    private let source: Bool
+    private let groupID: String
+    @ViewBuilder private let content: Content
+    @Environment(CrossModel.self) private var portalModel
+    
+    public init(id: String, source: Bool = true, groupID: String, @ViewBuilder content: () -> Content) {
+        self.id = id
+        self.source = source
+        self.groupID = groupID
+        self.content = content()
+    }
+    
+    private func anchorPreferenceTransform(anchor: Anchor<CGRect>) -> [String: Anchor<CGRect>] {
+        if let idx = index, portalModel.info[idx].initalized {
+            return [key: anchor]
+        }
+        return [:]
+    }
+    
+    public var body: some View {
+        let currentKey = key
+        let currentIndex = index
+        let isSource = source
+        let model = portalModel
+        let currentGroupID = groupID
+        
+        return content
+            .opacity(opacity)
+            .anchorPreference(key: AnchorKey.self, value: .bounds, transform: anchorPreferenceTransform)
+            .onPreferenceChange(AnchorKey.self) { prefs in
+                Task { @MainActor in
+                    if let idx = currentIndex, model.info[idx].initalized {
+                        // Set the group ID when anchors are updated
+                        model.info[idx].groupID = currentGroupID
+                        
+                        if !isSource {
+                            model.info[idx].destinationAnchor = prefs[currentKey]
+                        } else if model.info[idx].sourceAnchor == nil {
+                            model.info[idx].sourceAnchor = prefs[currentKey]
+                        }
+                    }
+                }
+            }
+    }
+    
+    private var key: String { source ? id : "\(id)DEST" }
+    
+    private var opacity: CGFloat {
+        guard let idx = index else { return 1 }
+        if source {
+            return portalModel.info[idx].destinationAnchor == nil ? 1 : 0
+        } else {
+            return portalModel.info[idx].initalized ? (portalModel.info[idx].hideView ? 1 : 0) : 1
+        }
+    }
+    
+    private var index: Int? {
+        portalModel.info.firstIndex { $0.infoID == id }
+    }
+}
+
+/// iOS 15 compatible Portal implementation with group support.
+@available(iOS, introduced: 15.0, deprecated: 17.0, message: "Use the iOS 17+ version when possible")
+public struct PortalLegacyWithGroup<Content: View>: View {
+    private let id: String
+    private let source: Bool
+    private let groupID: String
+    @ViewBuilder private let content: Content
+    @EnvironmentObject private var portalModel: CrossModelLegacy
+    
+    public init(id: String, source: Bool = true, groupID: String, @ViewBuilder content: () -> Content) {
+        self.id = id
+        self.source = source
+        self.groupID = groupID
+        self.content = content()
+    }
+    
+    private func anchorPreferenceTransform(anchor: Anchor<CGRect>) -> [String: Anchor<CGRect>] {
+        var result: [String: Anchor<CGRect>] = [:]
+        if let idx = index, portalModel.info[idx].initalized {
+            result = [key: anchor]
+        }
+        return result
+    }
+    
+    public var body: some View {
+        let currentKey = key
+        let currentIndex = index
+        let isSource = source
+        let model = portalModel
+        let currentGroupID = groupID
+        
+        return content
+            .opacity(opacity)
+            .anchorPreference(key: AnchorKey.self, value: .bounds, transform: anchorPreferenceTransform)
+            .onPreferenceChange(AnchorKey.self) { prefs in
+                Task { @MainActor in
+                    if let idx = currentIndex, model.info[idx].initalized {
+                        // Set the group ID when anchors are updated
+                        model.info[idx].groupID = currentGroupID
+                        
+                        if !isSource {
+                            model.info[idx].destinationAnchor = prefs[currentKey]
+                        } else if model.info[idx].sourceAnchor == nil {
+                            model.info[idx].sourceAnchor = prefs[currentKey]
+                        }
+                    }
+                }
+            }
+    }
+    
+    private var key: String { source ? id : "\(id)DEST" }
+    
+    private var opacity: CGFloat {
+        guard let idx = index else { return 1 }
+        if source {
+            return portalModel.info[idx].destinationAnchor == nil ? 1 : 0
+        } else {
+            return portalModel.info[idx].initalized ? (portalModel.info[idx].hideView ? 1 : 0) : 1
+        }
+    }
+    
+    private var index: Int? {
+        portalModel.info.firstIndex { $0.infoID == id }
+    }
+}
+
 // MARK: - Portal Role Enum
 
 /// Defines the role of a portal in a transition.

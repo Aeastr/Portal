@@ -1,0 +1,193 @@
+#if DEBUG
+import SwiftUI
+
+/// Portal multi-item example showing coordinated transitions for multiple elements
+@available(iOS 15.0, *)
+public struct PortalExample_MultiItem: View {
+    @State private var selectedPhotos: [MultiItemPhoto] = []
+    @State private var allPhotos: [MultiItemPhoto] = MultiItemPhoto.samplePhotos
+    
+    public init() {}
+    
+    public var body: some View {
+        NavigationView {
+            VStack(spacing: 20) {
+                // Explanation section
+                VStack(alignment: .center, spacing: 12) {
+                    Text("Tap 'Select Photos' to see multiple elements transition together to the detail view. This demonstrates coordinated portal animations where multiple items move simultaneously with a staggered delay effect.")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                }
+                
+                // Photo grid - Sources
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3), spacing: 8) {
+                    ForEach(allPhotos) { photo in
+                        AnimatedLayer(id: photo.id.uuidString, scale: 1.1) {
+                            PhotoThumbnailView(photo: photo)
+                        }
+                            .portal(item: photo, .source, groupID: "photoStack")
+                    }
+                }
+                .padding(.horizontal)
+                
+                // Select button
+                Button("Select Photos") {
+                    selectedPhotos = Array(allPhotos.prefix(4)) // Select first 4 photos
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(!selectedPhotos.isEmpty)
+                
+                Spacer()
+            }
+            .navigationTitle("Multi-Item Portal Transitions")
+            .navigationBarTitleDisplayMode(.inline)
+        }
+        .sheet(isPresented: .constant(!selectedPhotos.isEmpty)) {
+            MultiItemDetailView(photos: selectedPhotos) {
+                selectedPhotos.removeAll()
+            }
+        }
+        .portalTransition(
+            items: $selectedPhotos,
+            groupID: "photoStack",
+            config: .init(
+                animation: PortalAnimation(portal_animationExample)
+            ),
+            staggerDelay: 0.05  // 0.1 second delay between each item
+        ) { photo in
+            AnimatedLayer(id: photo.id.uuidString, scale: 1.2) {
+                PhotoView(photo: photo)
+            }
+        }
+        .portalContainer()
+    }
+}
+
+/// Detail view showing the coordinated destination views
+@available(iOS 15.0, *)
+struct MultiItemDetailView: View {
+    let photos: [MultiItemPhoto]
+    let onDismiss: () -> Void
+    
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 2), spacing: 12) {
+                    ForEach(photos) { photo in
+                        AnimatedLayer(id: photo.id.uuidString, scale: 1.1) {
+                            PhotoDetailView(photo: photo)
+                                .portal(item: photo, .destination, groupID: "photoStack")
+                        }
+                    }
+                }
+                .padding()
+            }
+            .navigationTitle("Selected Photos")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        onDismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
+/// Individual photo view - MUST be identical for source and destination
+struct PhotoView: View {
+    let photo: MultiItemPhoto
+    
+    var body: some View {
+        RoundedRectangle(cornerRadius: 12)
+            .fill(photo.color)
+            .overlay(
+                VStack(spacing: 4) {
+                    Image(systemName: photo.systemImage)
+                        .font(.title2)
+                        .foregroundColor(.white)
+                    
+                    Text(photo.title)
+                        .font(.caption)
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.center)
+                }
+            )
+    }
+}
+
+/// Wrapper for thumbnail (source) - adds frame constraints
+struct PhotoThumbnailView: View {
+    let photo: MultiItemPhoto
+    
+    var body: some View {
+        PhotoView(photo: photo)
+            .aspectRatio(1, contentMode: .fit)
+    }
+}
+
+/// Wrapper for detail (destination) - adds different frame constraints
+struct PhotoDetailView: View {
+    let photo: MultiItemPhoto
+    
+    var body: some View {
+        PhotoView(photo: photo)
+            .aspectRatio(3/4, contentMode: .fit)
+    }
+}
+
+/// Sample data model for multi-item photo examples
+struct MultiItemPhoto: Identifiable {
+    let id = UUID()
+    let title: String
+    let description: String
+    let color: Color
+    let systemImage: String
+    
+    static let samplePhotos: [MultiItemPhoto] = [
+        MultiItemPhoto(
+            title: "Mountain Peak",
+            description: "Breathtaking summit views",
+            color: .blue,
+            systemImage: "mountain.2.fill"
+        ),
+        MultiItemPhoto(
+            title: "Ocean Waves",
+            description: "Peaceful coastal scenes",
+            color: .cyan,
+            systemImage: "water.waves"
+        ),
+        MultiItemPhoto(
+            title: "Forest Trail",
+            description: "Winding woodland paths",
+            color: .green,
+            systemImage: "tree.fill"
+        ),
+        MultiItemPhoto(
+            title: "Desert Sunset",
+            description: "Golden hour wilderness",
+            color: .orange,
+            systemImage: "sun.max.fill"
+        ),
+        MultiItemPhoto(
+            title: "City Lights",
+            description: "Urban nighttime landscape",
+            color: .purple,
+            systemImage: "building.2.fill"
+        ),
+        MultiItemPhoto(
+            title: "Starry Sky",
+            description: "Infinite celestial beauty",
+            color: .indigo,
+            systemImage: "sparkles"
+        )
+    ]
+}
+
+#Preview{
+    PortalExample_MultiItem()
+}
+#endif
