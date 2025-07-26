@@ -32,17 +32,11 @@ public struct PortalExample_MultiItem: View {
                 }
                 .padding(.horizontal)
                 
-                // Select button
-                Button("Select Photos") {
-                    selectedPhotos = Array(allPhotos.prefix(4)) // Select first 4 photos
-                }
-                .buttonStyle(.borderedProminent)
-                .disabled(!selectedPhotos.isEmpty)
-                
                 Spacer()
             }
             .navigationTitle("Multi-Item Portal Transitions")
             .navigationBarTitleDisplayMode(.inline)
+            .background(Color(.systemGroupedBackground).ignoresSafeArea())
         }
         .sheet(isPresented: .constant(!selectedPhotos.isEmpty)) {
             MultiItemDetailView(photos: selectedPhotos) {
@@ -55,13 +49,23 @@ public struct PortalExample_MultiItem: View {
             config: .init(
                 animation: PortalAnimation(portal_animationExample)
             ),
-            staggerDelay: 0.05  // 0.1 second delay between each item
+            staggerDelay: 0.04  // 0.1 second delay between each item
         ) { photo in
             AnimatedLayer(id: photo.id.uuidString, scale: 1.15) {
                 PhotoView(photo: photo)
             }
         }
         .portalContainer()
+        .toolbar {
+            ToolbarItem(placement: .bottomBar) {
+                // Select button
+                Button("Select Photos") {
+                    selectedPhotos = Array(allPhotos.prefix(4)) // Select first 4 photos
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(!selectedPhotos.isEmpty)
+            }
+        }
     }
 }
 
@@ -86,6 +90,7 @@ struct MultiItemDetailView: View {
             }
             .navigationTitle("Selected Photos")
             .navigationBarTitleDisplayMode(.inline)
+            .background(Color(.systemGroupedBackground).ignoresSafeArea())
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
