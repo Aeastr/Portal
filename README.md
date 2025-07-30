@@ -35,43 +35,44 @@
 
 ---
 
+## Documentation
+
+For full installation steps, usage guides, examples, and animation deep-dives, visit the [Portal Wiki](https://github.com/Aeastr/Portal/wiki): 
+
+---
+
 ## Features
 
-- **DocC Documentation**
+- **Seamless Transitions**  
+  Effortlessly animate floating overlays between source and destination views using simple view modifiers.
 
-- **`PortalContainer { ... }`** \
-  Manages the overlay window logic required for floating portal animations across hierarchies.
+- **Works with Standard Presentations**  
+  Fully compatible with SwiftUI’s built-in presentation methods like `.sheet` and `.navigationDestination`.
 
-- **`.portalContainer()`** \
-  View extension for easily wrapping any view hierarchy in a `PortalContainer`.
+- **Flexible Anchoring**  
+  Mark any view as a portal source or destination, keyed by static IDs or `Identifiable` items.
 
-- **`.portal(id:, .source/.destination)`** \
-  Marks a view as source or destination anchor for a portal transition using a static string identifier.
+- **Easy Integration**  
+  Add portal support to any view hierarchy with a single modifier or wrapper, no custom presentation code required.
 
-- **`.portal(item:, .source/.destination)`** \
-  Marks a view as source or destination anchor for a portal transition, keyed by an `Identifiable` item's ID.
+- **Customizable Animations**  
+  Fine-tune transitions with `PortalTransitionConfig` for control over timing, easing, and corner styling.
 
-- **`.portalTransition(id: isActive: ...)`** \
-  Drives the floating overlay animation based on a `Binding<Bool>` (`isActive`) and a static string `id` matching the source/destination.
+- **Modern SwiftUI Support**  
+  Optimized for iOS 17+ with backward compatibility for iOS 15 and 16. 
 
-- **`.portalTransition(item: ...)`** \
-  Drives the floating overlay animation based on a `Binding<Optional<Item>>` (`item`), where `Item` is `Identifiable`. Automatically keys the transition to the item's ID.
+---
 
-- **Customizable Transitions** \
-  Configure animations with `PortalTransitionConfig` for fine-grained control over timing, easing, and corner styling.
+## Examples
 
-- **iOS 17 Optimized** \
-  Takes advantage of modern SwiftUI features like Environment values and completion criteria on iOS 17+.
+Portal includes several sample projects to help you get started:
 
-- **iOS 15+ Compatible** \
-  Maintains backward compatibility with iOS 15-16 using fallback implementations.
+- [Static ID](Sources/Portal/Examples/PortalExample_StaticID.swift)
+- [Card Grid](Sources/Portal/Examples/PortalExample_CardGrid.swift)
+- [List](Sources/Portal/Examples/PortalExample_List.swift)
+- [Comparison](Sources/Portal/Examples/PortalExample_Comparison.swift)
 
-- **No custom presentation modifiers required** \
-  Works directly with standard SwiftUI presentation methods (`.sheet`, `.navigationDestination`, etc.).
-
-### 📚 Documentation
-
-For full installation steps, usage guides, examples, and animation deep-dives, visit the [Portal Wiki](https://github.com/Aeastr/Portal/wiki):  
+You can find these in the [`Sources/Portal/Examples`](Sources/Portal/Examples) directory, or visit the [Examples documentation](https://github.com/Aeastr/Portal/wiki/Examples) for more details.
 
 ---
 
