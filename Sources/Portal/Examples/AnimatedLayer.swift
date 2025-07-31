@@ -10,15 +10,16 @@ let portal_animationExampleExtraBounce: Animation = Animation.smooth(duration: p
 @available(iOS 15.0, *)
 struct AnimatedLayer<Content: View>: View {
     let id: String
+    var scale: CGFloat = 1.25
     @ViewBuilder let content: () -> Content
     
     @State private var layerScale: CGFloat = 1
     
     var body: some View {
         if #available(iOS 17.0, *) {
-            AnimatedLayerModern(id: id, content: content, layerScale: $layerScale)
+            AnimatedLayerModern(id: id, scale: scale, content: content, layerScale: $layerScale)
         } else {
-            AnimatedLayerLegacy(id: id, content: content, layerScale: $layerScale)
+            AnimatedLayerLegacy(id: id, scale: scale, content: content, layerScale: $layerScale)
         }
     }
 }
@@ -29,6 +30,7 @@ struct AnimatedLayer<Content: View>: View {
 private struct AnimatedLayerModern<Content: View>: View {
     @Environment(CrossModel.self) private var portalModel
     let id: String
+    var scale: CGFloat = 1.25
     @ViewBuilder let content: () -> Content
     @Binding var layerScale: CGFloat
     
@@ -44,7 +46,7 @@ private struct AnimatedLayerModern<Content: View>: View {
             .onChange(of: isActive) { oldValue, newValue in
                 if newValue {
                     withAnimation(portal_animationExample) {
-                        layerScale = 1.25
+                        layerScale = scale
                     }
                     DispatchQueue.main.asyncAfter(deadline: .now() + (portal_animationDuration / 2) - 0.1) {
                         withAnimation(portal_animationExampleExtraBounce) {
@@ -64,6 +66,7 @@ private struct AnimatedLayerModern<Content: View>: View {
 private struct AnimatedLayerLegacy<Content: View>: View {
     @EnvironmentObject private var portalModel: CrossModelLegacy
     let id: String
+    var scale: CGFloat = 1.25
     @ViewBuilder let content: () -> Content
     @Binding var layerScale: CGFloat
     
@@ -79,7 +82,7 @@ private struct AnimatedLayerLegacy<Content: View>: View {
             .onChange(of: isActive) { newValue in
                 if newValue {
                     withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-                        layerScale = 1.1
+                        layerScale = scale
                     }
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                         withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
