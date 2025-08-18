@@ -166,7 +166,7 @@ public struct PortalAnimation: PortalAnimationProtocol {
         completion: @escaping @MainActor () -> Void
     ) {
         if #available(iOS 17.0, *) {
-            withAnimation(value, completionCriteria: .removed) {
+            withAnimation(value, completionCriteria: .logicallyComplete) {
                 _ = animation()
             } completion: {
                 Task { @MainActor in
@@ -231,7 +231,7 @@ public struct PortalAnimationWithCompletion: PortalAnimationProtocol {
     public init(
         _ animation: Animation,
         delay: TimeInterval = 0.06,
-        completionCriteria: AnimationCompletionCriteria = .removed
+        completionCriteria: AnimationCompletionCriteria = .logicallyComplete
     ) {
         self.value = animation
         self.delay = delay

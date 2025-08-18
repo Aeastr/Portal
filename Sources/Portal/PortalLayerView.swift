@@ -90,18 +90,20 @@ fileprivate struct PortalLayerContentView: View {
            let layer = info.layerView,
            !info.hideView {
             
-            // Convert anchor bounds to concrete rectangles in global coordinate space
-            let sRect = proxy[source]
-            let dRect = proxy[destination]
+            // Resolve anchors to rects, prefer cached values to avoid following
+            // layout changes (e.g., List scroll) during the animation.
+            let resolvedSource = info.sourceRect ?? proxy[source]
+            let resolvedDestination = info.destinationRect ?? proxy[destination]
+            
             let animate = info.animateView
             
             // Interpolate size between source and destination based on animation state
-            let width = animate ? dRect.size.width : sRect.size.width
-            let height = animate ? dRect.size.height : sRect.size.height
+            let width = animate ? resolvedDestination.size.width : resolvedSource.size.width
+            let height = animate ? resolvedDestination.size.height : resolvedSource.size.height
             
             // Interpolate position between source and destination based on animation state
-            let x = animate ? dRect.minX : sRect.minX
-            let y = animate ? dRect.minY : sRect.minY
+            let x = animate ? resolvedDestination.minX : resolvedSource.minX
+            let y = animate ? resolvedDestination.minY : resolvedSource.minY
             
             // Only apply clipShape if corners are configured
             Group {
@@ -116,6 +118,11 @@ fileprivate struct PortalLayerContentView: View {
             .frame(width: width, height: height)
             .offset(x: x, y: y)
             .transition(.identity)  // Prevents additional SwiftUI transitions
+            .onAppear {
+                // Freeze geometry at first render of the floating layer.
+                if info.sourceRect == nil { info.sourceRect = proxy[source] }
+                if info.destinationRect == nil { info.destinationRect = proxy[destination] }
+            }
         }
     }
 }
@@ -184,18 +191,20 @@ fileprivate struct PortalLayerContentViewLegacy: View {
            let layer = info.layerView,
            !info.hideView {
             
-            // Convert anchor bounds to concrete rectangles in global coordinate space
-            let sRect = proxy[source]
-            let dRect = proxy[destination]
+            // Resolve anchors to rects, prefer cached values to avoid following
+            // layout changes (e.g., List scroll) during the animation.
+            let resolvedSource = info.sourceRect ?? proxy[source]
+            let resolvedDestination = info.destinationRect ?? proxy[destination]
+            
             let animate = info.animateView
             
             // Interpolate size between source and destination based on animation state
-            let width = animate ? dRect.size.width : sRect.size.width
-            let height = animate ? dRect.size.height : sRect.size.height
+            let width = animate ? resolvedDestination.size.width : resolvedSource.size.width
+            let height = animate ? resolvedDestination.size.height : resolvedSource.size.height
             
             // Interpolate position between source and destination based on animation state
-            let x = animate ? dRect.minX : sRect.minX
-            let y = animate ? dRect.minY : sRect.minY
+            let x = animate ? resolvedDestination.minX : resolvedSource.minX
+            let y = animate ? resolvedDestination.minY : resolvedSource.minY
             
             // Only apply clipShape if corners are configured
             Group {
@@ -210,6 +219,13 @@ fileprivate struct PortalLayerContentViewLegacy: View {
             .frame(width: width, height: height)
             .offset(x: x, y: y)
             .transition(.identity)  // Prevents additional SwiftUI transitions
+            .onAppear {
+                // Freeze geometry at first render of the floating layer.
+                var mutable = info
+                if mutable.sourceRect == nil { mutable.sourceRect = proxy[source] }
+                if mutable.destinationRect == nil { mutable.destinationRect = proxy[destination] }
+                updateInfo(mutable)
+            }
         }
     }
 }

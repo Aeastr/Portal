@@ -159,17 +159,27 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
             
             // Prepare for reverse animation
             portalModel.info[idx].hideView = false
+            // Reset cached rects to capture fresh geometry at the start of reverse
+            portalModel.info[idx].sourceRect = nil
+            portalModel.info[idx].destinationRect = nil
             
             // Start reverse animation
             config.animation.performAnimation({
                 portalModel.info[idx].animateView = false
             }) {
-                // Complete cleanup after reverse animation
-                portalModel.info[idx].initalized = false
-                portalModel.info[idx].layerView = nil
-                portalModel.info[idx].sourceAnchor = nil
-                portalModel.info[idx].destinationAnchor = nil
-                portalModel.info[idx].completion(false)
+                // Phase 1: show destination immediately to avoid any flicker
+                portalModel.info[idx].hideView = true
+                
+                // Phase 2: on the next tick, remove floating layer and finalize cleanup
+                DispatchQueue.main.async {
+                    portalModel.info[idx].layerView = nil
+                    portalModel.info[idx].initalized = false
+                    portalModel.info[idx].sourceAnchor = nil
+                    portalModel.info[idx].destinationAnchor = nil
+                    portalModel.info[idx].sourceRect = nil
+                    portalModel.info[idx].destinationRect = nil
+                    portalModel.info[idx].completion(false)
+                }
             }
             
             // Clear stored key
@@ -287,6 +297,8 @@ public struct OptionalPortalTransitionModifierLegacy<Item: Identifiable, LayerVi
                 portalModel.info[idx].layerView = nil
                 portalModel.info[idx].sourceAnchor = nil
                 portalModel.info[idx].destinationAnchor = nil
+                portalModel.info[idx].sourceRect = nil
+                portalModel.info[idx].destinationRect = nil
                 portalModel.info[idx].completion(false)
             }
             
@@ -458,16 +470,24 @@ internal struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifi
         } else {
             // Reverse transition: isActive became false
             portalInfoArray[idx].hideView = false
+            // Reset cached rects to capture fresh geometry at the start of reverse
+            portalInfoArray[idx].sourceRect = nil
+            portalInfoArray[idx].destinationRect = nil
             
             config.animation.performAnimation({
                 portalInfoArray[idx].animateView = false
             }) {
-                // Complete cleanup after reverse animation
-                portalInfoArray[idx].initalized = false
-                portalInfoArray[idx].layerView = nil
-                portalInfoArray[idx].sourceAnchor = nil
-                portalInfoArray[idx].destinationAnchor = nil
-                portalInfoArray[idx].completion(false)
+                // Phase 1: show destination immediately to avoid any flicker
+                portalInfoArray[idx].hideView = true
+                
+                // Phase 2: on the next tick, remove floating layer and finalize cleanup
+                DispatchQueue.main.async {
+                    portalInfoArray[idx].layerView = nil
+                    portalInfoArray[idx].initalized = false
+                    portalInfoArray[idx].sourceAnchor = nil
+                    portalInfoArray[idx].destinationAnchor = nil
+                    portalInfoArray[idx].completion(false)
+                }
             }
         }
     }
@@ -565,12 +585,19 @@ internal struct ConditionalPortalTransitionModifierLegacy<LayerView: View>: View
             config.animation.performAnimation({
                 portalModel.info[idx].animateView = false
             }) {
-                // Complete cleanup after reverse animation
-                portalModel.info[idx].initalized = false
-                portalModel.info[idx].layerView = nil
-                portalModel.info[idx].sourceAnchor = nil
-                portalModel.info[idx].destinationAnchor = nil
-                portalModel.info[idx].completion(false)
+                // Phase 1: show destination immediately to avoid any flicker
+                portalModel.info[idx].hideView = true
+                
+                // Phase 2: on the next tick, remove floating layer and finalize cleanup
+                DispatchQueue.main.async {
+                    portalModel.info[idx].layerView = nil
+                    portalModel.info[idx].initalized = false
+                    portalModel.info[idx].sourceAnchor = nil
+                    portalModel.info[idx].destinationAnchor = nil
+                    portalModel.info[idx].sourceRect = nil
+                    portalModel.info[idx].destinationRect = nil
+                    portalModel.info[idx].completion(false)
+                }
             }
         }
     }
