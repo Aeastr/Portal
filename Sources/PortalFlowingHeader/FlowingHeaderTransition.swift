@@ -19,6 +19,7 @@ import SwiftUI
 internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
     let title: String
     let systemImage: String?
+    let image: Image?
     let customView: CustomView?
     let transitionStartOffset: CGFloat
     let transitionRange: CGFloat
@@ -31,12 +32,14 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
     /// - Parameters:
     ///   - title: The title string to track for transitions
     ///   - systemImage: Optional system image to animate alongside the title
+    ///   - image: Optional image to animate alongside the title
     ///   - customView: Optional custom view to animate alongside the title
     ///   - transitionStartOffset: Scroll offset where transition begins (default: -20)
     ///   - transitionRange: Distance over which transition occurs (default: 40)
-    init(title: String, systemImage: String?, customView: CustomView?, transitionStartOffset: CGFloat = -20, transitionRange: CGFloat = 40) {
+    init(title: String, systemImage: String?, image: Image?, customView: CustomView?, transitionStartOffset: CGFloat = -20, transitionRange: CGFloat = 40) {
         self.title = title
         self.systemImage = systemImage
+        self.image = image
         self.customView = customView
         self.transitionStartOffset = transitionStartOffset
         self.transitionRange = transitionRange
@@ -88,6 +91,12 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
                     let iconDstKey = AnchorKeyID(kind: "destination", id: title, type: "systemImage")
                     let iconSrcAnchor = anchors[iconSrcKey]
                     let iconDstAnchor = anchors[iconDstKey]
+                    
+                    // Try to find both image anchors
+                    let imageSrcKey = AnchorKeyID(kind: "source", id: title, type: "image")
+                    let imageDstKey = AnchorKeyID(kind: "destination", id: title, type: "image")
+                    let imageSrcAnchor = anchors[imageSrcKey]
+                    let imageDstAnchor = anchors[imageDstKey]
 
                     // Clamp progress t ∈ [0,1]
                     let clamped = min(max(abs(titleProgress), 0), 1)
@@ -178,10 +187,41 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
                             .position(x: x, y: y)
                     }
 
+                    // Handle image animation if anchors exist and image is provided
+                    if let image = image, imageSrcAnchor != nil || imageDstAnchor != nil {
+                        let srcRect =
+                            imageSrcAnchor != nil
+                            ? geometry[imageSrcAnchor!] : (imageDstAnchor != nil ? geometry[imageDstAnchor!] : .zero)
+                        let dstRect =
+                            imageDstAnchor != nil
+                            ? geometry[imageDstAnchor!] : (imageSrcAnchor != nil ? geometry[imageSrcAnchor!] : .zero)
+
+                        // Lerp centers for image
+                        let x = srcRect.midX + (dstRect.midX - srcRect.midX) * t
+                        let y = srcRect.midY + (dstRect.midY - srcRect.midY) * t
+
+                        // Scale the image (from source size to destination size)
+                        let sourceSize = srcRect.size
+                        let destSize = dstRect.size
+
+                        // Calculate scale factor to go from source size to destination size
+                        let targetWidth = sourceSize.width + (destSize.width - sourceSize.width) * t
+                        let targetHeight = sourceSize.height + (destSize.height - sourceSize.height) * t
+
+                        // Render the actual image with transformations
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: sourceSize.width, height: sourceSize.height)
+                            .scaleEffect(x: targetWidth / sourceSize.width, y: targetHeight / sourceSize.height)
+                            .position(x: x, y: y)
+                    }
+
                     // Debug message if no anchors found
                     if titleSrcAnchor == nil && titleDstAnchor == nil && 
                        customSrcAnchor == nil && customDstAnchor == nil &&
-                       iconSrcAnchor == nil && iconDstAnchor == nil
+                       iconSrcAnchor == nil && iconDstAnchor == nil &&
+                       imageSrcAnchor == nil && imageDstAnchor == nil
                     {
                         Text("none found – keys: \\(anchors.keys), looking for \\(title)")
                             .foregroundStyle(.red)
@@ -251,6 +291,7 @@ public extension View {
             FlowingHeaderTransition<EmptyView>(
                 title: title,
                 systemImage: nil,
+                image: nil,
                 customView: nil,
                 transitionStartOffset: transitionStartOffset,
                 transitionRange: transitionRange
@@ -293,6 +334,58 @@ public extension View {
             FlowingHeaderTransition<EmptyView>(
                 title: title,
                 systemImage: systemImage,
+                image: nil,
+                customView: nil,
+                transitionStartOffset: transitionStartOffset,
+                transitionRange: transitionRange
+            ))
+    }
+    
+    /// Adds a flowing header transition with optional system image.
+    ///
+    /// - Parameters:
+    ///   - title: The title string that matches your FlowingHeaderView
+    ///   - systemImage: Optional SF Symbol that should flow to the navigation bar
+    ///   - transitionStartOffset: Scroll offset where transition begins (default: -20)
+    ///   - transitionRange: Distance over which transition occurs (default: 40)
+    /// - Returns: A view with the flowing header transition applied
+    func flowingHeader(
+        _ title: String,
+        systemImage: String?,
+        transitionStartOffset: CGFloat = -20,
+        transitionRange: CGFloat = 40
+    ) -> some View {
+        let actualSystemImage = (systemImage?.isEmpty == false) ? systemImage : nil
+        return modifier(
+            FlowingHeaderTransition<EmptyView>(
+                title: title,
+                systemImage: actualSystemImage,
+                image: nil,
+                customView: nil,
+                transitionStartOffset: transitionStartOffset,
+                transitionRange: transitionRange
+            ))
+    }
+
+    /// Adds a flowing header transition with optional image.
+    ///
+    /// - Parameters:
+    ///   - title: The title string that matches your FlowingHeaderView
+    ///   - image: Optional Image that should flow to the navigation bar
+    ///   - transitionStartOffset: Scroll offset where transition begins (default: -20)
+    ///   - transitionRange: Distance over which transition occurs (default: 40)
+    /// - Returns: A view with the flowing header transition applied
+    func flowingHeader(
+        _ title: String,
+        image: Image?,
+        transitionStartOffset: CGFloat = -20,
+        transitionRange: CGFloat = 40
+    ) -> some View {
+        modifier(
+            FlowingHeaderTransition<EmptyView>(
+                title: title,
+                systemImage: nil,
+                image: image,
                 customView: nil,
                 transitionStartOffset: transitionStartOffset,
                 transitionRange: transitionRange
@@ -333,6 +426,7 @@ public extension View {
             FlowingHeaderTransition(
                 title: title,
                 systemImage: nil,
+                image: nil,
                 customView: customView,
                 transitionStartOffset: transitionStartOffset,
                 transitionRange: transitionRange

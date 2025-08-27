@@ -13,6 +13,7 @@ import SwiftUI
 public struct FlowingHeaderExample: View {
     @State private var photos = MockPhoto.samplePhotos
     @State private var selectedTag = "All"
+    @State private var iconFlows = false
     
     private let tags = ["All", "Nature", "Architecture", "Street", "Portrait"]
     
@@ -32,6 +33,10 @@ public struct FlowingHeaderExample: View {
                     .padding(.horizontal, 24)
                     .padding(.vertical, 24)
                     
+                    // Flow toggle
+                    Toggle("Icon flows to nav bar", isOn: $iconFlows)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
                     
                     // Filter tags
                     ScrollView(.horizontal, showsIndicators: false) {
@@ -58,9 +63,9 @@ public struct FlowingHeaderExample: View {
                 }
                 .padding(.bottom, 100)
             }
-            .flowingHeaderDestination("Photos")
+            .flowingHeaderDestination("Photos", systemImage: iconFlows ? "camera.fill" : nil)
         }
-        .flowingHeader("Photos")
+        .flowingHeader("Photos", systemImage: iconFlows ? "camera.fill" : nil)
     }
     
     private var filteredPhotos: [MockPhoto] {
@@ -72,6 +77,7 @@ public struct FlowingHeaderExample: View {
 public struct FlowingHeaderCustomViewExample: View {
     @State private var user = MockUser.sampleUser
     @State private var stats = MockStats.sampleStats
+    @State private var avatarFlows = false
     
     public init() {}
     
@@ -85,6 +91,11 @@ public struct FlowingHeaderCustomViewExample: View {
                     }
                     .padding(.horizontal, 24)
                     .padding(.vertical, 24)
+                    
+                    // Flow toggle
+                    Toggle("Avatar flows to nav bar", isOn: $avatarFlows)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
                     
                     // Stats section
                     StatsSection(stats: stats)
@@ -149,10 +160,12 @@ public struct FlowingHeaderCustomViewExample: View {
                 .padding(.bottom, 100)
             }
             .flowingHeaderDestination(user.name) {
-                UserAvatar(user: user, size: 32)
+                if avatarFlows {
+                    UserAvatar(user: user, size: 32)
+                }
             }
         }
-        .flowingHeader(user.name, customView: UserAvatar(user: user, size: 32))
+        .flowingHeader(user.name, customView: avatarFlows ? UserAvatar(user: user, size: 32) : nil)
     }
 }
 
@@ -430,6 +443,7 @@ public struct FlowingHeaderTextOnlyExample: View {
 @available(iOS 18.0, *)
 public struct FlowingHeaderBundleImageExample: View {
     @State private var artworks = MockArtwork.sampleArtworks
+    @State private var imageFlows = false
     
     public init() {}
     
@@ -437,11 +451,15 @@ public struct FlowingHeaderBundleImageExample: View {
         NavigationStack {
             ScrollView {
                 LazyVStack(spacing: 0) {
-                    // Header with bundle image
-                    FlowingHeaderView("Gallery", image: "gallery-hero", subtitle: "Your art collection")
-                        .tint(.indigo)
+                    // Header using rendered image
+                    FlowingHeaderView("Gallery", image: GalleryImages.heroImage, subtitle: "Your art collection")
                         .padding(.horizontal, 24)
                         .padding(.vertical, 24)
+                    
+                    // Flow toggle
+                    Toggle("Image flows to nav bar", isOn: $imageFlows)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
                     
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 2), spacing: 8) {
                         ForEach(artworks) { artwork in
@@ -453,9 +471,9 @@ public struct FlowingHeaderBundleImageExample: View {
                 }
                 .padding(.bottom, 100)
             }
-            .flowingHeaderDestination("Gallery")
+            .flowingHeaderDestination("Gallery", image: imageFlows ? GalleryImages.heroImage : nil)
         }
-        .flowingHeader("Gallery")
+        .flowingHeader("Gallery", image: imageFlows ? GalleryImages.heroImage : nil)
     }
 }
 
@@ -520,6 +538,7 @@ public struct FlowingHeaderMultiStyleExample: View {
 }
 
 // MARK: - Additional Supporting Types
+
 
 @available(iOS 18.0, *)
 enum HeaderStyle: CaseIterable {
@@ -595,6 +614,65 @@ private struct GradientCircle: View {
 }
 
 @available(iOS 18.0, *)
+private struct GalleryHeroImageView: View {
+    var body: some View {
+        RoundedRectangle(cornerRadius: 12)
+            .fill(
+                LinearGradient(
+                    colors: [.purple, .indigo, .blue],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .frame(width: 80, height: 80)
+            .overlay {
+                ZStack {
+                    // Abstract geometric shapes to look like a landscape photo
+                    Circle()
+                        .fill(.yellow)
+                        .frame(width: 16, height: 16)
+                        .offset(x: -20, y: -20)
+                    
+                    Path { path in
+                        path.move(to: CGPoint(x: 0, y: 60))
+                        path.addLine(to: CGPoint(x: 25, y: 40))
+                        path.addLine(to: CGPoint(x: 50, y: 45))
+                        path.addLine(to: CGPoint(x: 80, y: 35))
+                        path.addLine(to: CGPoint(x: 80, y: 80))
+                        path.addLine(to: CGPoint(x: 0, y: 80))
+                        path.closeSubpath()
+                    }
+                    .fill(.green.opacity(0.7))
+                    
+                    Path { path in
+                        path.move(to: CGPoint(x: 0, y: 70))
+                        path.addLine(to: CGPoint(x: 30, y: 50))
+                        path.addLine(to: CGPoint(x: 60, y: 55))
+                        path.addLine(to: CGPoint(x: 80, y: 45))
+                        path.addLine(to: CGPoint(x: 80, y: 80))
+                        path.addLine(to: CGPoint(x: 0, y: 80))
+                        path.closeSubpath()
+                    }
+                    .fill(.green.opacity(0.9))
+                }
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+}
+
+@available(iOS 18.0, *)
+private enum GalleryImages {
+    @MainActor
+    static let heroImage: Image = {
+        let renderer = ImageRenderer(
+            content: GalleryHeroImageView()
+        )
+        renderer.scale = 3.0 // For high resolution
+        return Image(uiImage: renderer.uiImage!)
+    }()
+}
+
+@available(iOS 18.0, *)
 private struct SampleContentRow: View {
     let index: Int
     
@@ -628,13 +706,13 @@ private struct SampleContentRow: View {
 // MARK: - Preview
 
 @available(iOS 18.0, *)
-#Preview("Photo Gallery") {
+#Preview("Icon") {
     FlowingHeaderExample()
         .preferredColorScheme(.dark)
 }
 
 @available(iOS 18.0, *)
-#Preview("User Profile") {
+#Preview("Custom") {
     FlowingHeaderCustomViewExample()
         .preferredColorScheme(.light)
 }
@@ -646,16 +724,11 @@ private struct SampleContentRow: View {
 }
 
 @available(iOS 18.0, *)
-#Preview("Bundle Image") {
+#Preview("Image") {
     FlowingHeaderBundleImageExample()
         .preferredColorScheme(.dark)
 }
 
-@available(iOS 18.0, *)
-#Preview("Multi Style") {
-    FlowingHeaderMultiStyleExample()
-        .preferredColorScheme(.light)
-}
 
 @available(iOS 18.0, *)
 public struct FlowingHeaderFlowingIconExample: View {
@@ -756,10 +829,5 @@ private struct MessageRow: View {
     }
 }
 
-@available(iOS 18.0, *)
-#Preview("Flowing Icon") {
-    FlowingHeaderFlowingIconExample()
-        .preferredColorScheme(.light)
-}
 
 

@@ -59,7 +59,7 @@ public struct FlowingHeaderView<Content: View>: View {
     private let title: String
     private let subtitle: String
     private let icon: String?
-    private let image: String?
+    private let image: Image?
     private let content: Content?
 
     /// Creates a flowing header with just title and subtitle.
@@ -89,13 +89,13 @@ public struct FlowingHeaderView<Content: View>: View {
         self.content = nil
     }
 
-    /// Creates a flowing header with an image from your app bundle.
+    /// Creates a flowing header with an Image.
     ///
     /// - Parameters:
     ///   - title: The main title text that will flow to the navigation bar
-    ///   - image: The name of an image in your app bundle
+    ///   - image: The Image to display in the header
     ///   - subtitle: Secondary text that appears below the title
-    public init(_ title: String, image: String, subtitle: String) where Content == EmptyView {
+    public init(_ title: String, image: Image, subtitle: String) where Content == EmptyView {
         self.title = title
         self.subtitle = subtitle
         self.icon = nil
@@ -139,13 +139,16 @@ public struct FlowingHeaderView<Content: View>: View {
                         return [AnchorKeyID(kind: "source", id: title, type: "systemImage"): anchor]
                     }
             } else if let image = image {
-                Image(image)
+                image
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 64, height: 64)
                     .opacity(max(0.6, (1 - progress)))
                     .scaleEffect((max(0.6, (1 - progress))), anchor: .top)
                     .animation(.smooth(duration: 0.3), value: progress)
+                    .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
+                        return [AnchorKeyID(kind: "source", id: title, type: "image"): anchor]
+                    }
             }
             
             VStack(spacing: 4) {

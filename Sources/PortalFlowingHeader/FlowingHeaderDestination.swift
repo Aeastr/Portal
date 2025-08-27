@@ -96,6 +96,39 @@ internal struct FlowingHeaderDestinationWithCustomView<DestinationView: View>: V
     }
 }
 
+@available(iOS 18.0, *)
+internal struct FlowingHeaderDestinationWithImage: ViewModifier {
+    let title: String
+    let image: Image
+
+    func body(content: Content) -> some View {
+        content
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    HStack {
+                        // Image (invisible but present for anchor extraction)
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 32, height: 32)
+                            .opacity(0)
+                            .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
+                                [AnchorKeyID(kind: "destination", id: title, type: "image"): anchor]
+                            }
+
+                        // Title (invisible but present for anchor extraction)
+                        Text(title)
+                            .font(.headline.weight(.semibold))
+                            .opacity(0)
+                            .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
+                                [AnchorKeyID(kind: "destination", id: title, type: "title"): anchor]
+                            }
+                    }
+                }
+            }
+    }
+}
+
 // MARK: - Public API
 
 @available(iOS 18.0, *)
@@ -147,6 +180,34 @@ public extension View {
     /// - Returns: A view with destination anchors for both system image and title
     func flowingHeaderDestination(_ title: String, systemImage: String) -> some View {
         modifier(FlowingHeaderDestinationWithSystemImage(title: title, systemImage: systemImage))
+    }
+    
+    /// Creates destination anchors with optional system image.
+    ///
+    /// - Parameters:
+    ///   - title: The title string that matches your FlowingHeaderView
+    ///   - systemImage: Optional SF Symbol that should serve as the destination
+    /// - Returns: A view with destination anchors
+    func flowingHeaderDestination(_ title: String, systemImage: String?) -> some View {
+        if let systemImage = systemImage, !systemImage.isEmpty {
+            return AnyView(modifier(FlowingHeaderDestinationWithSystemImage(title: title, systemImage: systemImage)))
+        } else {
+            return AnyView(modifier(FlowingHeaderDestination(title: title)))
+        }
+    }
+
+    /// Creates destination anchors with optional image.
+    ///
+    /// - Parameters:
+    ///   - title: The title string that matches your FlowingHeaderView
+    ///   - image: Optional Image that should serve as the destination
+    /// - Returns: A view with destination anchors
+    func flowingHeaderDestination(_ title: String, image: Image?) -> some View {
+        if let image = image {
+            return AnyView(modifier(FlowingHeaderDestinationWithImage(title: title, image: image)))
+        } else {
+            return AnyView(modifier(FlowingHeaderDestination(title: title)))
+        }
     }
     
     /// Creates destination anchors for a flowing header with a custom view.
