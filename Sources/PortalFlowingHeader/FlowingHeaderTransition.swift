@@ -26,11 +26,6 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
     @State private var titleProgress: Double = 0.0
     @State private var isScrolling = false
     @State private var scrollOffset: CGFloat = 0
-    
-    /// Determines if custom view should flow based on whether we actually have a custom view to animate
-    private var isCustomViewFlowing: Bool {
-        customView != nil
-    }
 
     /// Creates a new flowing header transition modifier.
     ///
@@ -55,7 +50,10 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
             .environment(\.titleProgress, titleProgress)
             .environment(\.systemImageFlowing, systemImage != nil && !systemImage!.isEmpty)
             .environment(\.imageFlowing, image != nil)
-            .environment(\.customViewFlowing, isCustomViewFlowing)
+            .environment(\.customViewFlowing, customView != nil)
+            .onAppear {
+                print("DEBUG: customView != nil = \(customView != nil)")
+            }
             .onScrollPhaseChange { oldPhase, newPhase in
                 isScrolling = [ScrollPhase.interacting, ScrollPhase.decelerating].contains(newPhase)
                 
