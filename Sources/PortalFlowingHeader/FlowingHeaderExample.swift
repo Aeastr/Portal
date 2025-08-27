@@ -733,17 +733,16 @@ private struct SampleContentRow: View {
     FlowingHeaderCustomViewExample()
         .preferredColorScheme(.light)
 }
+@available(iOS 18.0, *)
+#Preview("Image") {
+    FlowingHeaderBundleImageExample()
+        .preferredColorScheme(.dark)
+}
 
 @available(iOS 18.0, *)
 #Preview("Text Only") {
     FlowingHeaderTextOnlyExample()
         .preferredColorScheme(.light)
-}
-
-@available(iOS 18.0, *)
-#Preview("Image") {
-    FlowingHeaderBundleImageExample()
-        .preferredColorScheme(.dark)
 }
 
 
