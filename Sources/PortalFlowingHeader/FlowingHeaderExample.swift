@@ -161,7 +161,21 @@ public struct FlowingHeaderCustomViewExample: View {
                 }
             }
         }
-        .flowingHeader(user.name, customView: avatarFlows ? UserAvatar(user: user, size: 32) : nil)
+        .flowingHeader(user.name, customView: avatarFlows ? AnyView(
+            Circle()
+                .fill(
+                    LinearGradient(
+                        colors: [user.avatarColor, user.avatarColor.opacity(0.7)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .overlay {
+                    Text(user.initials)
+                        .font(.system(.title, weight: .semibold))
+                        .foregroundStyle(.white)
+                }
+        ) : nil)
     }
 }
 
@@ -561,7 +575,7 @@ public struct FlowingHeaderMultiStyleExample: View {
         .flowingHeader("Dynamic Header", 
             systemImage: selectedStyle == .withIcon ? "sparkles" : nil,
             image: selectedStyle == .withImage ? GalleryImages.heroImage : nil,
-            customView: selectedStyle == .withCustom ? GradientCircle(colors: [.purple, .pink]) : nil
+            customView: selectedStyle == .withCustom ? AnyView(GradientCircle(colors: [.purple, .pink])) : nil
         )
     }
 }

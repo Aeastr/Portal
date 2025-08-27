@@ -51,9 +51,6 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
             .environment(\.systemImageFlowing, systemImage != nil && !systemImage!.isEmpty)
             .environment(\.imageFlowing, image != nil)
             .environment(\.customViewFlowing, customView != nil)
-            .onAppear {
-                print("DEBUG: customView != nil = \(customView != nil)")
-            }
             .onScrollPhaseChange { oldPhase, newPhase in
                 isScrolling = [ScrollPhase.interacting, ScrollPhase.decelerating].contains(newPhase)
                 
@@ -471,22 +468,68 @@ public extension View {
     ///
     /// - Note: Only the first non-nil content parameter will be used. Priority order is:
     ///   customView > image > systemImage
-    func flowingHeader<CustomView: View>(
+
+    /// Adds a flowing header transition with multiple optional content types.
+    ///
+    /// This variant uses AnyView for the custom view parameter to avoid Swift's generic
+    /// type inference issues with conditional expressions.
+    ///
+    /// - Parameters:
+    ///   - title: The title string that matches the FlowingHeaderView title
+    ///   - systemImage: Optional system image that flows to navigation bar
+    ///   - image: Optional image that flows to navigation bar  
+    ///   - customView: Optional type-erased custom view that flows to navigation bar
+    ///   - transitionStartOffset: Scroll offset where transition begins (default: -20)
+    ///   - transitionRange: Distance over which transition occurs (default: 40)
+    /// - Returns: A view with the flowing header transition applied
+    func flowingHeader(
         _ title: String,
         systemImage: String? = nil,
         image: Image? = nil,
-        customView: CustomView? = nil,
+        customView: AnyView? = nil,
         transitionStartOffset: CGFloat = -20,
         transitionRange: CGFloat = 40
     ) -> some View {
-        modifier(
-            FlowingHeaderTransition(
-                title: title,
-                systemImage: systemImage,
-                image: image,
-                customView: customView,
-                transitionStartOffset: transitionStartOffset,
-                transitionRange: transitionRange
-            ))
+        if let customView = customView {
+            return AnyView(modifier(
+                FlowingHeaderTransition(
+                    title: title,
+                    systemImage: nil,
+                    image: nil,
+                    customView: customView,
+                    transitionStartOffset: transitionStartOffset,
+                    transitionRange: transitionRange
+                )))
+        } else if let image = image {
+            return AnyView(modifier(
+                FlowingHeaderTransition<EmptyView>(
+                    title: title,
+                    systemImage: nil,
+                    image: image,
+                    customView: nil,
+                    transitionStartOffset: transitionStartOffset,
+                    transitionRange: transitionRange
+                )))
+        } else if let systemImage = systemImage {
+            return AnyView(modifier(
+                FlowingHeaderTransition<EmptyView>(
+                    title: title,
+                    systemImage: systemImage,
+                    image: nil,
+                    customView: nil,
+                    transitionStartOffset: transitionStartOffset,
+                    transitionRange: transitionRange
+                )))
+        } else {
+            return AnyView(modifier(
+                FlowingHeaderTransition<EmptyView>(
+                    title: title,
+                    systemImage: nil,
+                    image: nil,
+                    customView: nil,
+                    transitionStartOffset: transitionStartOffset,
+                    transitionRange: transitionRange
+                )))
+        }
     }
 }
