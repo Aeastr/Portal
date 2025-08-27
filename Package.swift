@@ -10,11 +10,18 @@ let package = Package(
         .library(
             name: "Portal",
             targets: ["Portal"]),
+        .library(
+            name: "PortalFlowingHeader",
+            targets: ["PortalFlowingHeader"]),
     ],
     targets: [
         .target(
             name: "Portal",
             path: "Sources/Portal"
+        ),
+        .target(
+            name: "PortalFlowingHeader",
+            path: "Sources/PortalFlowingHeader"
         ),
         .testTarget(
             name: "PortalTests",
