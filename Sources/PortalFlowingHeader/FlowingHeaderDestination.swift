@@ -31,11 +31,41 @@ internal struct FlowingHeaderDestination: ViewModifier {
     }
 }
 
-/// A view modifier that provides destination anchors for both custom views and titles.
+/// A view modifier that provides destination anchors for both system image and title.
 ///
-/// Use this variant when your flowing header includes a custom view that should also
-/// transition to the navigation bar. Both the custom view and title will have invisible
-/// destination anchors created.
+/// Use this variant when your flowing header includes a system image that should
+/// transition to the navigation bar along with the title.
+@available(iOS 18.0, *)
+internal struct FlowingHeaderDestinationWithSystemImage: ViewModifier {
+    let title: String
+    let systemImage: String
+
+    func body(content: Content) -> some View {
+        content
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    HStack {
+                        // System image (invisible but present for anchor extraction)
+                        Image(systemName: systemImage)
+                            .font(.headline)
+                            .opacity(0)
+                            .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
+                                [AnchorKeyID(kind: "destination", id: title, type: "systemImage"): anchor]
+                            }
+
+                        // Title (invisible but present for anchor extraction)
+                        Text(title)
+                            .font(.headline.weight(.semibold))
+                            .opacity(0)
+                            .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
+                                [AnchorKeyID(kind: "destination", id: title, type: "title"): anchor]
+                            }
+                    }
+                }
+            }
+    }
+}
+
 @available(iOS 18.0, *)
 internal struct FlowingHeaderDestinationWithCustomView<DestinationView: View>: ViewModifier {
     let title: String
@@ -80,7 +110,7 @@ public extension View {
     ///
     /// ```swift
     /// ScrollView {
-    ///     FlowingHeaderView(icon: "star", title: "Favorites", subtitle: "Your items")
+    ///     FlowingHeaderView("Favorites", subtitle: "Your items")
     ///     // Content...
     /// }
     /// .flowingHeaderDestination("Favorites")
@@ -93,6 +123,30 @@ public extension View {
     ///   to the ScrollView or List containing your header content.
     func flowingHeaderDestination(_ title: String) -> some View {
         modifier(FlowingHeaderDestination(title: title))
+    }
+
+    /// Creates destination anchors for a flowing header with a system image.
+    ///
+    /// Use this variant when your header includes a system image that should flow
+    /// to the navigation bar. The system image will be rendered invisibly in the
+    /// navigation bar as the destination anchor.
+    ///
+    /// ## Usage with Flowing System Image
+    ///
+    /// ```swift
+    /// ScrollView {
+    ///     FlowingHeaderView("Profile", systemImage: "person.circle", subtitle: "Settings")
+    ///     // Content...
+    /// }
+    /// .flowingHeaderDestination("Profile", systemImage: "person.circle")
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - title: The title string that matches your FlowingHeaderView
+    ///   - systemImage: The SF Symbol that should serve as the destination
+    /// - Returns: A view with destination anchors for both system image and title
+    func flowingHeaderDestination(_ title: String, systemImage: String) -> some View {
+        modifier(FlowingHeaderDestinationWithSystemImage(title: title, systemImage: systemImage))
     }
     
     /// Creates destination anchors for a flowing header with a custom view.

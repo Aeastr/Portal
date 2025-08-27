@@ -52,113 +52,97 @@ import SwiftUI
 /// - Important: This view is only available on iOS 18.0 and later due to its use of
 ///   advanced scroll tracking APIs.
 @available(iOS 18.0, *)
-public struct FlowingHeaderView: View {
+public struct FlowingHeaderView<Content: View>: View {
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.titleProgress) var titleProgress
 
-    private let icon: String?
-    private let customView: AnyView?
     private let title: String
     private let subtitle: String
-    private let iconSize: CGFloat
-    private let brightness: Double
-    private let saturation: Double
-    private let blur: Double
-    private let verticalPadding: CGFloat
-    private let gradientColor1: Color
-    private let gradientColor2: Color
+    private let icon: String?
+    private let image: String?
+    private let content: Content?
+
+    /// Creates a flowing header with just title and subtitle.
+    ///
+    /// - Parameters:
+    ///   - title: The main title text that will flow to the navigation bar
+    ///   - subtitle: Secondary text that appears below the title
+    public init(_ title: String, subtitle: String) where Content == EmptyView {
+        self.title = title
+        self.subtitle = subtitle
+        self.icon = nil
+        self.image = nil
+        self.content = nil
+    }
 
     /// Creates a flowing header with an SF Symbols icon.
     ///
     /// - Parameters:
-    ///   - icon: The SF Symbols name for the header icon
     ///   - title: The main title text that will flow to the navigation bar
+    ///   - systemImage: The SF Symbols name for the header icon
     ///   - subtitle: Secondary text that appears below the title
-    ///   - iconSize: The size of the icon in points (default: 58)
-    ///   - brightness: Brightness adjustment for the icon (default: 0.8)
-    ///   - saturation: Saturation boost for the icon (default: 5)
-    ///   - blur: Blur radius for icon effects (default: 6)
-    ///   - verticalPadding: Vertical spacing around the header (default: 5)
-    ///   - gradientColor1: Start color for the icon gradient (default: primary)
-    ///   - gradientColor2: End color for the icon gradient (default: primary)
-    public init(
-        icon: String,
-        title: String,
-        subtitle: String,
-        iconSize: CGFloat = 58,
-        brightness: Double = 0.8,
-        saturation: Double = 5,
-        blur: Double = 6,
-        verticalPadding: CGFloat = 5,
-        gradientColor1: Color = Color.primary,
-        gradientColor2: Color = Color.primary
-    ) {
-        self.icon = icon
-        self.customView = nil
+    public init(_ title: String, systemImage: String, subtitle: String) where Content == EmptyView {
         self.title = title
         self.subtitle = subtitle
-        self.iconSize = iconSize
-        self.brightness = brightness
-        self.saturation = saturation
-        self.blur = blur
-        self.verticalPadding = verticalPadding
-        self.gradientColor1 = gradientColor1
-        self.gradientColor2 = gradientColor2
+        self.icon = systemImage
+        self.image = nil
+        self.content = nil
+    }
+
+    /// Creates a flowing header with an image from your app bundle.
+    ///
+    /// - Parameters:
+    ///   - title: The main title text that will flow to the navigation bar
+    ///   - image: The name of an image in your app bundle
+    ///   - subtitle: Secondary text that appears below the title
+    public init(_ title: String, image: String, subtitle: String) where Content == EmptyView {
+        self.title = title
+        self.subtitle = subtitle
+        self.icon = nil
+        self.image = image
+        self.content = nil
     }
 
     /// Creates a flowing header with a custom view.
     ///
     /// - Parameters:
-    ///   - customView: A custom SwiftUI view to display instead of an icon
     ///   - title: The main title text that will flow to the navigation bar
     ///   - subtitle: Secondary text that appears below the title
-    ///   - iconSize: The size constraint for the custom view (default: 60)
-    ///   - verticalPadding: Vertical spacing around the header (default: 6)
-    ///   - gradientColor1: Primary gradient color for styling (default: blue)
-    ///   - gradientColor2: Secondary gradient color for styling (default: purple)
-    public init<Content: View>(
-        customView: Content,
-        title: String,
-        subtitle: String,
-        iconSize: CGFloat = 60,
-        verticalPadding: CGFloat = 6,
-        gradientColor1: Color = .blue,
-        gradientColor2: Color = .purple
-    ) {
-        self.icon = nil
-        self.customView = AnyView(customView)
+    ///   - content: A view builder that creates the custom header content
+    public init(_ title: String, subtitle: String, @ViewBuilder content: () -> Content) {
         self.title = title
         self.subtitle = subtitle
-        self.iconSize = iconSize
-        self.brightness = 0  // Not used for customView
-        self.saturation = 0  // Not used for customView
-        self.blur = 0  // Not used for customView
-        self.verticalPadding = verticalPadding
-        self.gradientColor1 = gradientColor1
-        self.gradientColor2 = gradientColor2
+        self.icon = nil
+        self.image = nil
+        self.content = content()
     }
 
     public var body: some View {
-        VStack(spacing: customView == nil ? 8 : 12) {
+        VStack(spacing: hasVisualContent ? 12 : 8) {
             let progress = (titleProgress * 4)
             
-            // Show either icon or customView
-            if let customView = customView {
-                customView
+            // Show icon, image, or custom content
+            if let content = content {
+                content
                     .opacity(0)  // Always invisible to maintain layout, just like the title
                     .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
                         return [AnchorKeyID(kind: "source", id: title, type: "customView"): anchor]
                     }
             } else if let icon = icon {
                 Image(systemName: icon)
-                    .font(.system(size: iconSize))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [gradientColor1, gradientColor2],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .font(.system(size: 64))
+                    .foregroundStyle(.tint)
+                    .opacity(max(0.6, (1 - progress)))
+                    .scaleEffect((max(0.6, (1 - progress))), anchor: .top)
+                    .animation(.smooth(duration: 0.3), value: progress)
+                    .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
+                        return [AnchorKeyID(kind: "source", id: title, type: "systemImage"): anchor]
+                    }
+            } else if let image = image {
+                Image(image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 64, height: 64)
                     .opacity(max(0.6, (1 - progress)))
                     .scaleEffect((max(0.6, (1 - progress))), anchor: .top)
                     .animation(.smooth(duration: 0.3), value: progress)
@@ -183,7 +167,9 @@ public struct FlowingHeaderView: View {
         #if canImport(UIKit)
         .navigationBarTitleDisplayMode(.inline)
         #endif
-        .padding(.vertical, verticalPadding)
-        .animation(.smooth(duration: 0.3), value: icon)
+    }
+    
+    private var hasVisualContent: Bool {
+        content != nil || icon != nil || image != nil
     }
 }
