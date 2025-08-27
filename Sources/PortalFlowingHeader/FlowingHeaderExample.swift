@@ -49,7 +49,7 @@ public struct FlowingHeaderExample: View {
                     .padding(.vertical, 20)
                     
                     // Photo grid
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 3), spacing: 2) {
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3), spacing: 8) {
                         ForEach(filteredPhotos) { photo in
                             PhotoGridItem(photo: photo)
                         }
@@ -78,17 +78,18 @@ public struct FlowingHeaderCustomViewExample: View {
     public var body: some View {
         NavigationStack {
             ScrollView {
-                LazyVStack(spacing: 24) {
+                LazyVStack(spacing: 0) {
                     // Header with custom view
                     FlowingHeaderView(user.name, subtitle: user.bio) {
                         UserAvatar(user: user, size: 100)
                     }
                     .padding(.horizontal, 24)
-                    .padding(.vertical, 20)
+                    .padding(.vertical, 24)
                     
                     // Stats section
                     StatsSection(stats: stats)
                         .padding(.horizontal, 24)
+                        .padding(.vertical, 20)
                     
                     // Settings sections
                     VStack(spacing: 16) {
@@ -177,6 +178,24 @@ struct MockPhoto: Identifiable {
         MockPhoto(name: "Glass Tower", category: "Architecture", color: .mint),
         MockPhoto(name: "Night Walk", category: "Street", color: .purple),
         MockPhoto(name: "Ocean Waves", category: "Nature", color: .teal),
+        MockPhoto(name: "Desert Dunes", category: "Nature", color: .brown),
+        MockPhoto(name: "Cafe Interior", category: "Street", color: .orange),
+        MockPhoto(name: "Skyscraper", category: "Architecture", color: .gray),
+        MockPhoto(name: "Family Portrait", category: "Portrait", color: .blue),
+        MockPhoto(name: "Cherry Blossoms", category: "Nature", color: .pink),
+        MockPhoto(name: "Cathedral", category: "Architecture", color: .purple),
+        MockPhoto(name: "Street Musician", category: "Street", color: .green),
+        MockPhoto(name: "Business Portrait", category: "Portrait", color: .blue),
+        MockPhoto(name: "Waterfall", category: "Nature", color: .cyan),
+        MockPhoto(name: "Modern Art Museum", category: "Architecture", color: .red),
+        MockPhoto(name: "Food Market", category: "Street", color: .yellow),
+        MockPhoto(name: "Wedding Portrait", category: "Portrait", color: .white),
+        MockPhoto(name: "Snow Mountains", category: "Nature", color: .white),
+        MockPhoto(name: "Historic Library", category: "Architecture", color: .brown),
+        MockPhoto(name: "Rush Hour", category: "Street", color: .gray),
+        MockPhoto(name: "Senior Portrait", category: "Portrait", color: .mint),
+        MockPhoto(name: "Tropical Beach", category: "Nature", color: .teal),
+        MockPhoto(name: "Train Station", category: "Architecture", color: .black),
     ]
 }
 
@@ -374,18 +393,31 @@ public struct FlowingHeaderTextOnlyExample: View {
     public var body: some View {
         NavigationStack {
             ScrollView {
-                LazyVStack(spacing: 24) {
+                LazyVStack(spacing: 0) {
                     // Simple text-only header
                     FlowingHeaderView("Settings", subtitle: "Manage your preferences")
                         .padding(.horizontal, 24)
-                        .padding(.vertical, 20)
+                        .padding(.vertical, 24)
                     
-                    SettingsSection(title: "General") {
-                        SettingsRow(title: "Notifications", subtitle: "Manage alerts", icon: "bell", color: .orange)
-                        SettingsRow(title: "Privacy", subtitle: "Security settings", icon: "lock", color: .blue)
-                        SettingsRow(title: "Account", subtitle: "Profile settings", icon: "person", color: .green)
+                    VStack(spacing: 20) {
+                        SettingsSection(title: "General") {
+                            SettingsRow(title: "Notifications", subtitle: "Manage alerts", icon: "bell", color: .orange)
+                            SettingsRow(title: "Privacy", subtitle: "Security settings", icon: "lock", color: .blue)
+                            SettingsRow(title: "Account", subtitle: "Profile settings", icon: "person", color: .green)
+                        }
+                        
+                        SettingsSection(title: "Preferences") {
+                            SettingsRow(title: "Theme", subtitle: "Light or dark mode", icon: "paintbrush", color: .purple)
+                            SettingsRow(title: "Language", subtitle: "Choose your language", icon: "globe", color: .mint)
+                        }
+                        
+                        SettingsSection(title: "About") {
+                            SettingsRow(title: "Help", subtitle: "Get support", icon: "questionmark.circle", color: .cyan)
+                            SettingsRow(title: "Version", subtitle: "1.0.0", icon: "info.circle", color: .gray)
+                        }
                     }
                     .padding(.horizontal, 24)
+                    .padding(.vertical, 20)
                 }
                 .padding(.bottom, 100)
             }
@@ -404,19 +436,20 @@ public struct FlowingHeaderBundleImageExample: View {
     public var body: some View {
         NavigationStack {
             ScrollView {
-                LazyVStack(spacing: 20) {
-                    // Header with bundle image (simulated with system image for demo)
-                    FlowingHeaderView("Gallery", systemImage: "photo.on.rectangle.angled", subtitle: "Your art collection")
+                LazyVStack(spacing: 0) {
+                    // Header with bundle image
+                    FlowingHeaderView("Gallery", image: "gallery-hero", subtitle: "Your art collection")
                         .tint(.indigo)
                         .padding(.horizontal, 24)
-                        .padding(.vertical, 20)
+                        .padding(.vertical, 24)
                     
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 2), spacing: 12) {
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 2), spacing: 8) {
                         ForEach(artworks) { artwork in
                             ArtworkCard(artwork: artwork)
                         }
                     }
                     .padding(.horizontal, 24)
+                    .padding(.vertical, 20)
                 }
                 .padding(.bottom, 100)
             }
@@ -435,7 +468,7 @@ public struct FlowingHeaderMultiStyleExample: View {
     public var body: some View {
         NavigationStack {
             ScrollView {
-                LazyVStack(spacing: 24) {
+                LazyVStack(spacing: 0) {
                     // Dynamic header that changes based on selection
                     Group {
                         switch selectedStyle {
@@ -451,23 +484,27 @@ public struct FlowingHeaderMultiStyleExample: View {
                         }
                     }
                     .padding(.horizontal, 24)
-                    .padding(.vertical, 20)
+                    .padding(.vertical, 24)
                     .animation(.smooth(duration: 0.3), value: selectedStyle)
                     
                     // Style picker
-                    Picker("Header Style", selection: $selectedStyle) {
-                        Text("Text Only").tag(HeaderStyle.textOnly)
-                        Text("With Icon").tag(HeaderStyle.withIcon)
-                        Text("Custom View").tag(HeaderStyle.withCustom)
+                    VStack(spacing: 16) {
+                        Picker("Header Style", selection: $selectedStyle) {
+                            Text("Text Only").tag(HeaderStyle.textOnly)
+                            Text("With Icon").tag(HeaderStyle.withIcon)
+                            Text("Custom View").tag(HeaderStyle.withCustom)
+                        }
+                        .pickerStyle(.segmented)
+                        
+                        // Sample content
+                        VStack(spacing: 12) {
+                            ForEach(0..<8) { index in
+                                SampleContentRow(index: index)
+                            }
+                        }
                     }
-                    .pickerStyle(.segmented)
                     .padding(.horizontal, 24)
-                    
-                    // Sample content
-                    ForEach(0..<10) { index in
-                        SampleContentRow(index: index)
-                    }
-                    .padding(.horizontal, 24)
+                    .padding(.vertical, 20)
                 }
                 .padding(.bottom, 100)
             }
@@ -629,7 +666,7 @@ public struct FlowingHeaderFlowingIconExample: View {
     public var body: some View {
         NavigationStack {
             ScrollView {
-                LazyVStack(spacing: 16) {
+                LazyVStack(spacing: 0) {
                     // Header with flowing system image
                     FlowingHeaderView(
                         "Messages",
@@ -638,12 +675,15 @@ public struct FlowingHeaderFlowingIconExample: View {
                     )
                     .tint(.green)
                     .padding(.horizontal, 24)
-                    .padding(.vertical, 20)
+                    .padding(.vertical, 24)
                     
-                    ForEach(messages) { message in
-                        MessageRow(message: message)
+                    VStack(spacing: 12) {
+                        ForEach(messages) { message in
+                            MessageRow(message: message)
+                        }
                     }
                     .padding(.horizontal, 24)
+                    .padding(.vertical, 20)
                 }
                 .padding(.bottom, 100)
             }
