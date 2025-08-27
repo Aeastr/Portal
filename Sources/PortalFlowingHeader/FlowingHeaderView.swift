@@ -9,13 +9,13 @@ import SwiftUI
 
 /// A header view that smoothly transitions to the navigation bar during scroll.
 ///
-/// `FlowingHeaderView` creates a header that contains an icon or custom view, title, and subtitle.
+/// `FlowingHeaderView` creates a header that contains an accessory (icon, image, or custom view), title, and subtitle.
 /// As the user scrolls, these elements animate toward their corresponding positions in the
 /// navigation bar, creating a fluid transition effect.
 ///
 /// ## Basic Usage
 ///
-/// Create a simple icon-based header:
+/// Create a simple accessory-based header:
 ///
 /// ```swift
 /// FlowingHeaderView(
@@ -27,7 +27,7 @@ import SwiftUI
 ///
 /// ## Custom View Header
 ///
-/// Use a custom view instead of an icon:
+/// Use a custom view accessory:
 ///
 /// ```swift
 /// FlowingHeaderView(
@@ -78,11 +78,11 @@ public struct FlowingHeaderView<Content: View>: View {
         self.content = nil
     }
 
-    /// Creates a flowing header with an SF Symbols icon.
+    /// Creates a flowing header with an SF Symbols accessory.
     ///
     /// - Parameters:
     ///   - title: The main title text that will flow to the navigation bar
-    ///   - systemImage: The SF Symbols name for the header icon
+    ///   - systemImage: The SF Symbols name for the header accessory
     ///   - subtitle: Secondary text that appears below the title
     public init(_ title: String, systemImage: String, subtitle: String) where Content == EmptyView {
         self.title = title
@@ -92,11 +92,11 @@ public struct FlowingHeaderView<Content: View>: View {
         self.content = nil
     }
 
-    /// Creates a flowing header with an Image.
+    /// Creates a flowing header with an Image accessory.
     ///
     /// - Parameters:
     ///   - title: The main title text that will flow to the navigation bar
-    ///   - image: The Image to display in the header
+    ///   - image: The Image accessory to display in the header
     ///   - subtitle: Secondary text that appears below the title
     public init(_ title: String, image: Image, subtitle: String) where Content == EmptyView {
         self.title = title
@@ -106,12 +106,12 @@ public struct FlowingHeaderView<Content: View>: View {
         self.content = nil
     }
 
-    /// Creates a flowing header with a custom view.
+    /// Creates a flowing header with a custom view accessory.
     ///
     /// - Parameters:
     ///   - title: The main title text that will flow to the navigation bar
     ///   - subtitle: Secondary text that appears below the title
-    ///   - content: A view builder that creates the custom header content
+    ///   - content: A view builder that creates the custom accessory content
     public init(_ title: String, subtitle: String, @ViewBuilder content: () -> Content) {
         self.title = title
         self.subtitle = subtitle

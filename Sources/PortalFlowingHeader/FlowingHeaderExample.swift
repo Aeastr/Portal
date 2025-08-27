@@ -23,7 +23,7 @@ public struct FlowingHeaderExample: View {
         NavigationStack {
             ScrollView {
                 LazyVStack(spacing: 0) {
-                    // Flowing header with system image
+                    // Flowing header with system image accessory
                     FlowingHeaderView(
                         "Photos",
                         systemImage: "camera.fill", 
@@ -83,7 +83,7 @@ public struct FlowingHeaderCustomViewExample: View {
         NavigationStack {
             ScrollView {
                 LazyVStack(spacing: 0) {
-                    // Header with custom view
+                    // Header with custom view accessory
                     FlowingHeaderView(user.name, subtitle: user.bio) {
                         UserAvatar(user: user, size: 100)
                     }
@@ -484,7 +484,7 @@ public struct FlowingHeaderBundleImageExample: View {
         NavigationStack {
             ScrollView {
                 LazyVStack(spacing: 0) {
-                    // Header using rendered image
+                    // Header using rendered image accessory
                     FlowingHeaderView("Gallery", image: GalleryImages.heroImage, subtitle: "Your art collection")
                         .padding(.horizontal, 24)
                         .padding(.vertical, 24)
