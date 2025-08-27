@@ -55,6 +55,9 @@ import SwiftUI
 public struct FlowingHeaderView<Content: View>: View {
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.titleProgress) var titleProgress
+    @Environment(\.systemImageFlowing) var systemImageFlowing
+    @Environment(\.imageFlowing) var imageFlowing
+    @Environment(\.customViewFlowing) var customViewFlowing
 
     private let title: String
     private let subtitle: String
@@ -124,7 +127,7 @@ public struct FlowingHeaderView<Content: View>: View {
             // Show icon, image, or custom content
             if let content = content {
                 content
-                    .opacity(0)  // Always invisible to maintain layout, just like the title
+                    .opacity(customViewFlowing ? 0 : 1)  // Hide completely if flowing, otherwise visible
                     .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
                         return [AnchorKeyID(kind: "source", id: title, type: "customView"): anchor]
                     }
@@ -132,8 +135,8 @@ public struct FlowingHeaderView<Content: View>: View {
                 Image(systemName: icon)
                     .font(.system(size: 64))
                     .foregroundStyle(.tint)
-                    .opacity(max(0.6, (1 - progress)))
-                    .scaleEffect((max(0.6, (1 - progress))), anchor: .top)
+                    .opacity(systemImageFlowing ? 0 : max(0.6, (1 - progress)))
+                    .scaleEffect(systemImageFlowing ? 1 : (max(0.6, (1 - progress))), anchor: .top)
                     .animation(.smooth(duration: 0.3), value: progress)
                     .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
                         return [AnchorKeyID(kind: "source", id: title, type: "systemImage"): anchor]
@@ -143,8 +146,8 @@ public struct FlowingHeaderView<Content: View>: View {
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 64, height: 64)
-                    .opacity(max(0.6, (1 - progress)))
-                    .scaleEffect((max(0.6, (1 - progress))), anchor: .top)
+                    .opacity(imageFlowing ? 0 : max(0.6, (1 - progress)))
+                    .scaleEffect(imageFlowing ? 1 : (max(0.6, (1 - progress))), anchor: .top)
                     .animation(.smooth(duration: 0.3), value: progress)
                     .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
                         return [AnchorKeyID(kind: "source", id: title, type: "image"): anchor]

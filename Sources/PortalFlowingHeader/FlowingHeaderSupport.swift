@@ -48,6 +48,21 @@ private struct TitleProgressKey: EnvironmentKey {
     static let defaultValue: Double = 0.0
 }
 
+/// Environment key for tracking whether the system image is flowing.
+private struct SystemImageFlowingKey: EnvironmentKey {
+    static let defaultValue: Bool = false
+}
+
+/// Environment key for tracking whether the image is flowing.
+private struct ImageFlowingKey: EnvironmentKey {
+    static let defaultValue: Bool = false
+}
+
+/// Environment key for tracking whether a custom view is flowing.
+private struct CustomViewFlowingKey: EnvironmentKey {
+    static let defaultValue: Bool = false
+}
+
 extension EnvironmentValues {
     /// The current progress of the flowing header transition.
     ///
@@ -57,5 +72,23 @@ extension EnvironmentValues {
     internal var titleProgress: Double {
         get { self[TitleProgressKey.self] }
         set { self[TitleProgressKey.self] = newValue }
+    }
+    
+    /// Whether the system image is configured to flow to the navigation bar.
+    internal var systemImageFlowing: Bool {
+        get { self[SystemImageFlowingKey.self] }
+        set { self[SystemImageFlowingKey.self] = newValue }
+    }
+    
+    /// Whether the image is configured to flow to the navigation bar.
+    internal var imageFlowing: Bool {
+        get { self[ImageFlowingKey.self] }
+        set { self[ImageFlowingKey.self] = newValue }
+    }
+    
+    /// Whether the custom view is configured to flow to the navigation bar.
+    internal var customViewFlowing: Bool {
+        get { self[CustomViewFlowingKey.self] }
+        set { self[CustomViewFlowingKey.self] = newValue }
     }
 }

@@ -33,11 +33,6 @@ public struct FlowingHeaderExample: View {
                     .padding(.horizontal, 24)
                     .padding(.vertical, 24)
                     
-                    // Flow toggle
-                    Toggle("Icon flows to nav bar", isOn: $iconFlows)
-                        .padding(.horizontal, 24)
-                        .padding(.vertical, 12)
-                    
                     // Filter tags
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 12) {
@@ -63,6 +58,9 @@ public struct FlowingHeaderExample: View {
                 }
                 .padding(.bottom, 100)
             }
+            .safeAreaInset(edge: .bottom, content: {
+                FlowToggle(title: "Icon flows to nav bar", isOn: $iconFlows)
+            })
             .flowingHeaderDestination("Photos", systemImage: iconFlows ? "camera.fill" : nil)
         }
         .flowingHeader("Photos", systemImage: iconFlows ? "camera.fill" : nil)
@@ -91,11 +89,6 @@ public struct FlowingHeaderCustomViewExample: View {
                     }
                     .padding(.horizontal, 24)
                     .padding(.vertical, 24)
-                    
-                    // Flow toggle
-                    Toggle("Avatar flows to nav bar", isOn: $avatarFlows)
-                        .padding(.horizontal, 24)
-                        .padding(.vertical, 12)
                     
                     // Stats section
                     StatsSection(stats: stats)
@@ -159,6 +152,9 @@ public struct FlowingHeaderCustomViewExample: View {
                 }
                 .padding(.bottom, 100)
             }
+            .safeAreaInset(edge: .bottom, content: {
+                FlowToggle(title: "Avatar flows to nav bar", isOn: $avatarFlows)
+            })
             .flowingHeaderDestination(user.name) {
                 if avatarFlows {
                     UserAvatar(user: user, size: 32)
@@ -237,6 +233,29 @@ struct MockStats {
 }
 
 // MARK: - Supporting Views
+
+@available(iOS 18.0, *)
+private struct FlowToggle: View {
+    let title: String
+    @Binding var isOn: Bool
+    
+    var body: some View {
+        if #available(iOS 26.0, *) {
+            Toggle(title, isOn: $isOn)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
+                .glassEffect()
+                .padding(.horizontal, 40)
+        } else {
+            Toggle(title, isOn: $isOn)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
+                .background(.thinMaterial)
+                .clipShape(.capsule)
+                .padding(.horizontal, 40)
+        }
+    }
+}
 
 @available(iOS 18.0, *)
 private struct TagButton: View {
@@ -457,8 +476,7 @@ public struct FlowingHeaderBundleImageExample: View {
                         .padding(.vertical, 24)
                     
                     // Flow toggle
-                    Toggle("Image flows to nav bar", isOn: $imageFlows)
-                        .padding(.horizontal, 24)
+                    FlowToggle(title: "Image flows to nav bar", isOn: $imageFlows)
                         .padding(.vertical, 12)
                     
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 2), spacing: 8) {
@@ -480,7 +498,7 @@ public struct FlowingHeaderBundleImageExample: View {
 @available(iOS 18.0, *)
 public struct FlowingHeaderMultiStyleExample: View {
     @State private var selectedStyle: HeaderStyle = .textOnly
-    
+
     public init() {}
     
     public var body: some View {

@@ -48,6 +48,9 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
     func body(content: Content) -> some View {
         content
             .environment(\.titleProgress, titleProgress)
+            .environment(\.systemImageFlowing, systemImage != nil)
+            .environment(\.imageFlowing, image != nil)
+            .environment(\.customViewFlowing, customView != nil)
             .onScrollPhaseChange { oldPhase, newPhase in
                 isScrolling = [ScrollPhase.interacting, ScrollPhase.decelerating].contains(newPhase)
                 
