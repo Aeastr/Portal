@@ -512,6 +512,8 @@ public struct FlowingHeaderMultiStyleExample: View {
                         case .withIcon:
                             FlowingHeaderView("Dynamic Header", systemImage: "sparkles", subtitle: "With system icon")
                                 .tint(.pink)
+                        case .withImage:
+                            FlowingHeaderView("Dynamic Header", image: GalleryImages.heroImage, subtitle: "With rendered image")
                         case .withCustom:
                             FlowingHeaderView("Dynamic Header", subtitle: "With custom view") {
                                 GradientCircle(colors: [.purple, .pink])
@@ -527,6 +529,7 @@ public struct FlowingHeaderMultiStyleExample: View {
                         Picker("Header Style", selection: $selectedStyle) {
                             Text("Text Only").tag(HeaderStyle.textOnly)
                             Text("With Icon").tag(HeaderStyle.withIcon)
+                            Text("With Image").tag(HeaderStyle.withImage)
                             Text("Custom View").tag(HeaderStyle.withCustom)
                         }
                         .pickerStyle(.segmented)
@@ -543,14 +546,23 @@ public struct FlowingHeaderMultiStyleExample: View {
                 }
                 .padding(.bottom, 100)
             }
-            .flowingHeaderDestination("Dynamic Header") {
+            .flowingHeaderDestination("Dynamic Header",
+                systemImage: selectedStyle == .withIcon ? "sparkles" : nil,
+                image: selectedStyle == .withImage ? GalleryImages.heroImage : nil
+            ) {
                 if selectedStyle == .withCustom {
                     GradientCircle(colors: [.purple, .pink])
                         .frame(width: 32, height: 32)
+                } else {
+                    EmptyView()
                 }
             }
         }
-        .flowingHeader("Dynamic Header", customView: selectedStyle == .withCustom ? AnyView(GradientCircle(colors: [.purple, .pink]).frame(width: 32, height: 32)) : AnyView(EmptyView()))
+        .flowingHeader("Dynamic Header", 
+            systemImage: selectedStyle == .withIcon ? "sparkles" : nil,
+            image: selectedStyle == .withImage ? GalleryImages.heroImage : nil,
+            customView: selectedStyle == .withCustom ? GradientCircle(colors: [.purple, .pink]) : nil
+        )
     }
 }
 
@@ -559,7 +571,7 @@ public struct FlowingHeaderMultiStyleExample: View {
 
 @available(iOS 18.0, *)
 enum HeaderStyle: CaseIterable {
-    case textOnly, withIcon, withCustom
+    case textOnly, withIcon, withImage, withCustom
 }
 
 @available(iOS 18.0, *)
@@ -725,25 +737,27 @@ private struct SampleContentRow: View {
 @available(iOS 18.0, *)
 #Preview("Icon") {
     FlowingHeaderExample()
-        .preferredColorScheme(.dark)
 }
 
 @available(iOS 18.0, *)
 #Preview("Custom") {
     FlowingHeaderCustomViewExample()
-        .preferredColorScheme(.light)
 }
 @available(iOS 18.0, *)
 #Preview("Image") {
     FlowingHeaderBundleImageExample()
-        .preferredColorScheme(.dark)
 }
 
 @available(iOS 18.0, *)
 #Preview("Text Only") {
     FlowingHeaderTextOnlyExample()
-        .preferredColorScheme(.light)
 }
+
+@available(iOS 18.0, *)
+#Preview("Dynamic") {
+    FlowingHeaderMultiStyleExample()
+}
+
 
 
 @available(iOS 18.0, *)

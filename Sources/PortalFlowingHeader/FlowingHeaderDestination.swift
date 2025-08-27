@@ -241,4 +241,52 @@ public extension View {
     ) -> some View {
         modifier(FlowingHeaderDestinationWithCustomView(title: title, destinationView: customView()))
     }
+
+    /// Creates destination anchors for a flowing header with multiple optional content types.
+    ///
+    /// This is the most flexible variant that allows you to conditionally specify
+    /// different destination anchor types for dynamic header switching scenarios.
+    ///
+    /// ## Usage with Dynamic Content
+    ///
+    /// ```swift
+    /// ScrollView {
+    ///     // Dynamic header content...
+    /// }
+    /// .flowingHeaderDestination("Title",
+    ///     systemImage: showIcon ? "star" : nil,
+    ///     image: showImage ? Image("hero") : nil
+    /// ) {
+    ///     if showCustom {
+    ///         CustomView()
+    ///     }
+    /// }
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - title: The title string that matches your FlowingHeaderView
+    ///   - systemImage: Optional system image for the destination anchor
+    ///   - image: Optional image for the destination anchor
+    ///   - customView: Optional view builder for custom view destination anchor
+    /// - Returns: A view with destination anchors configured based on provided parameters
+    ///
+    /// - Note: Only the first non-nil content parameter will be used. Priority order is:
+    ///   customView > image > systemImage
+    func flowingHeaderDestination<DestinationView: View>(
+        _ title: String,
+        systemImage: String? = nil,
+        image: Image? = nil,
+        @ViewBuilder customView: () -> DestinationView = { EmptyView() }
+    ) -> some View {
+        // Priority: customView > image > systemImage
+        if DestinationView.self != EmptyView.self {
+            return AnyView(modifier(FlowingHeaderDestinationWithCustomView(title: title, destinationView: customView())))
+        } else if let image = image {
+            return AnyView(modifier(FlowingHeaderDestinationWithImage(title: title, image: image)))
+        } else if let systemImage = systemImage {
+            return AnyView(modifier(FlowingHeaderDestinationWithSystemImage(title: title, systemImage: systemImage)))
+        } else {
+            return AnyView(modifier(FlowingHeaderDestination(title: title)))
+        }
+    }
 }

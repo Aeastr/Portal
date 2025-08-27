@@ -435,4 +435,55 @@ public extension View {
                 transitionRange: transitionRange
             ))
     }
+
+    /// Adds a flowing header transition with multiple optional content types.
+    ///
+    /// This is the most flexible variant that allows you to conditionally specify
+    /// different content types for dynamic header switching scenarios.
+    ///
+    /// ## Usage with Dynamic Content
+    ///
+    /// ```swift
+    /// NavigationStack {
+    ///     ScrollView {
+    ///         // Dynamic header content...
+    ///     }
+    ///     .flowingHeaderDestination("Title") { /* conditional destination */ }
+    /// }
+    /// .flowingHeader("Title", 
+    ///     systemImage: showIcon ? "star" : nil,
+    ///     image: showImage ? Image("hero") : nil,
+    ///     customView: showCustom ? CustomView() : nil
+    /// )
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - title: The title string that matches the FlowingHeaderView title
+    ///   - systemImage: Optional system image that flows to navigation bar
+    ///   - image: Optional image that flows to navigation bar  
+    ///   - customView: Optional custom view that flows to navigation bar
+    ///   - transitionStartOffset: Scroll offset where transition begins (default: -20)
+    ///   - transitionRange: Distance over which transition occurs (default: 40)
+    /// - Returns: A view with the flowing header transition applied
+    ///
+    /// - Note: Only the first non-nil content parameter will be used. Priority order is:
+    ///   customView > image > systemImage
+    func flowingHeader<CustomView: View>(
+        _ title: String,
+        systemImage: String? = nil,
+        image: Image? = nil,
+        customView: CustomView? = nil,
+        transitionStartOffset: CGFloat = -20,
+        transitionRange: CGFloat = 40
+    ) -> some View {
+        modifier(
+            FlowingHeaderTransition(
+                title: title,
+                systemImage: systemImage,
+                image: image,
+                customView: customView,
+                transitionStartOffset: transitionStartOffset,
+                transitionRange: transitionRange
+            ))
+    }
 }
