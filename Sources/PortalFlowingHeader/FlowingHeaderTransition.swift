@@ -23,6 +23,7 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
     let customView: CustomView?
     let transitionStartOffset: CGFloat
     let transitionRange: CGFloat
+    let experimentalAvoidance: Bool
     @State private var titleProgress: Double = 0.0
     @State private var isScrolling = false
     @State private var scrollOffset: CGFloat = 0
@@ -36,13 +37,15 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
     ///   - customView: Optional custom view to animate alongside the title
     ///   - transitionStartOffset: Scroll offset where transition begins (default: -20)
     ///   - transitionRange: Distance over which transition occurs (default: 40)
-    init(title: String, systemImage: String?, image: Image?, customView: CustomView?, transitionStartOffset: CGFloat = -20, transitionRange: CGFloat = 40) {
+    ///   - experimentalAvoidance: Enable experimental collision avoidance (default: false)
+    init(title: String, systemImage: String?, image: Image?, customView: CustomView?, transitionStartOffset: CGFloat = -20, transitionRange: CGFloat = 40, experimentalAvoidance: Bool = false) {
         self.title = title
         self.systemImage = systemImage
         self.image = image
         self.customView = customView
         self.transitionStartOffset = transitionStartOffset
         self.transitionRange = transitionRange
+        self.experimentalAvoidance = experimentalAvoidance
     }
 
     func body(content: Content) -> some View {
@@ -114,9 +117,24 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
                             titleDstAnchor != nil
                             ? geometry[titleDstAnchor!] : (titleSrcAnchor != nil ? geometry[titleSrcAnchor!] : .zero)
 
-                        // Lerp centers
-                        let x = srcRect.midX + (dstRect.midX - srcRect.midX) * t
-                        let y = srcRect.midY + (dstRect.midY - srcRect.midY) * t
+                        let titleDynamicOffset = experimentalAvoidance 
+                            ? calculateDynamicOffset(
+                                progress: t, 
+                                accessoryOffset: calculateAccessoryOffset(
+                                    geometry: geometry,
+                                    customSrcAnchor: customSrcAnchor,
+                                    iconSrcAnchor: iconSrcAnchor,
+                                    imageSrcAnchor: imageSrcAnchor
+                                ) / 2
+                            ) 
+                            : 0
+                        
+                        let titlePosition = calculateTitlePosition(
+                            srcRect: srcRect,
+                            dstRect: dstRect,
+                            progress: t,
+                            offset: titleDynamicOffset
+                        )
 
                         // Compute scale from 28→17pt
                         let sourceFontSize: CGFloat = 28
@@ -129,7 +147,7 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
                             .font(.system(size: sourceFontSize, weight: .semibold))
                             .foregroundStyle(.primary)
                             .scaleEffect(currentScale)
-                            .position(x: x, y: y)
+                            .position(x: titlePosition.x, y: titlePosition.y)
                     }
 
                     // Handle system image animation if anchors exist and systemImage is provided
@@ -141,8 +159,11 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
                             iconDstAnchor != nil
                             ? geometry[iconDstAnchor!] : (iconSrcAnchor != nil ? geometry[iconSrcAnchor!] : .zero)
 
-                        // Lerp centers for system image
-                        let x = srcRect.midX + (dstRect.midX - srcRect.midX) * t
+                        // Calculate position with optional collision avoidance
+                        let baseX = srcRect.midX + (dstRect.midX - srcRect.midX) * t
+                        let x = experimentalAvoidance 
+                            ? baseX + calculateDynamicOffset(progress: t, accessoryOffset: -(srcRect.width / 2) / 2)
+                            : baseX
                         let y = srcRect.midY + (dstRect.midY - srcRect.midY) * t
 
                         // Scale the system image (from source size to destination size)
@@ -171,8 +192,11 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
                             customDstAnchor != nil
                             ? geometry[customDstAnchor!] : (customSrcAnchor != nil ? geometry[customSrcAnchor!] : .zero)
 
-                        // Lerp centers for custom view
-                        let x = srcRect.midX + (dstRect.midX - srcRect.midX) * t
+                        // Calculate position with optional collision avoidance
+                        let baseX = srcRect.midX + (dstRect.midX - srcRect.midX) * t
+                        let x = experimentalAvoidance 
+                            ? baseX + calculateDynamicOffset(progress: t, accessoryOffset: -(srcRect.width / 2) / 2)
+                            : baseX
                         let y = srcRect.midY + (dstRect.midY - srcRect.midY) * t
 
                         // Scale the custom view (from source size to destination size)
@@ -199,8 +223,11 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
                             imageDstAnchor != nil
                             ? geometry[imageDstAnchor!] : (imageSrcAnchor != nil ? geometry[imageSrcAnchor!] : .zero)
 
-                        // Lerp centers for image
-                        let x = srcRect.midX + (dstRect.midX - srcRect.midX) * t
+                        // Calculate position with optional collision avoidance
+                        let baseX = srcRect.midX + (dstRect.midX - srcRect.midX) * t
+                        let x = experimentalAvoidance 
+                            ? baseX + calculateDynamicOffset(progress: t, accessoryOffset: -(srcRect.width / 2) / 2)
+                            : baseX
                         let y = srcRect.midY + (dstRect.midY - srcRect.midY) * t
 
                         // Scale the image (from source size to destination size)
@@ -252,6 +279,61 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
         let progress = min(1.0, (offset - transitionStartOffset) / transitionRange)
         return Double(progress)
     }
+    
+    /// Calculates the accessory offset to avoid collision with title text.
+    ///
+    /// - Parameters:
+    ///   - geometry: The geometry reader containing anchor bounds
+    ///   - customSrcAnchor: Optional custom view source anchor
+    ///   - iconSrcAnchor: Optional system image source anchor
+    ///   - imageSrcAnchor: Optional image source anchor
+    /// - Returns: Half the width of the detected accessory, or 0 if none found
+    private func calculateAccessoryOffset(
+        geometry: GeometryProxy,
+        customSrcAnchor: Anchor<CGRect>?,
+        iconSrcAnchor: Anchor<CGRect>?,
+        imageSrcAnchor: Anchor<CGRect>?
+    ) -> CGFloat {
+        if let customSrcAnchor = customSrcAnchor {
+            return geometry[customSrcAnchor].width / 2
+        } else if let iconSrcAnchor = iconSrcAnchor {
+            return geometry[iconSrcAnchor].width / 2
+        } else if let imageSrcAnchor = imageSrcAnchor {
+            return geometry[imageSrcAnchor].width / 2
+        }
+        return 0
+    }
+    
+    /// Calculates dynamic offset during transition using sine curve.
+    ///
+    /// - Parameters:
+    ///   - progress: Current transition progress (0-1)
+    ///   - accessoryOffset: Base offset amount from accessory width
+    /// - Returns: Smoothly interpolated offset that peaks at mid-transition
+    private func calculateDynamicOffset(progress: CGFloat, accessoryOffset: CGFloat) -> CGFloat {
+        let offsetMultiplier = sin(progress * .pi) // Peaks at 0.5 progress, zero at start/end
+        return accessoryOffset * offsetMultiplier
+    }
+    
+    /// Calculates title position with collision avoidance offset.
+    ///
+    /// - Parameters:
+    ///   - srcRect: Source rectangle bounds
+    ///   - dstRect: Destination rectangle bounds
+    ///   - progress: Current transition progress (0-1)
+    ///   - offset: Dynamic offset to apply
+    /// - Returns: Final position point with offset applied
+    private func calculateTitlePosition(
+        srcRect: CGRect,
+        dstRect: CGRect,
+        progress: CGFloat,
+        offset: CGFloat
+    ) -> CGPoint {
+        let baseX = srcRect.midX + (dstRect.midX - srcRect.midX) * progress
+        let x = baseX + offset
+        let y = srcRect.midY + (dstRect.midY - srcRect.midY) * progress
+        return CGPoint(x: x, y: y)
+    }
 }
 
 // MARK: - Public API
@@ -281,6 +363,7 @@ public extension View {
     ///   - title: The title string that matches the FlowingHeaderView title
     ///   - transitionStartOffset: Scroll offset where transition begins (default: -20)
     ///   - transitionRange: Distance over which transition occurs (default: 40)
+    ///   - experimentalAvoidance: Enable experimental collision avoidance (default: false)
     /// - Returns: A view with the flowing header transition applied
     ///
     /// - Important: This modifier must be applied outside the NavigationStack,
@@ -288,7 +371,8 @@ public extension View {
     func flowingHeader(
         _ title: String,
         transitionStartOffset: CGFloat = -20,
-        transitionRange: CGFloat = 40
+        transitionRange: CGFloat = 40,
+        experimentalAvoidance: Bool = false
     ) -> some View {
         modifier(
             FlowingHeaderTransition<EmptyView>(
@@ -297,7 +381,8 @@ public extension View {
                 image: nil,
                 customView: nil,
                 transitionStartOffset: transitionStartOffset,
-                transitionRange: transitionRange
+                transitionRange: transitionRange,
+                experimentalAvoidance: experimentalAvoidance
             ))
     }
 
@@ -326,12 +411,14 @@ public extension View {
     ///   - systemImage: The SF Symbol that should flow to the navigation bar
     ///   - transitionStartOffset: Scroll offset where transition begins (default: -20)
     ///   - transitionRange: Distance over which transition occurs (default: 40)
+    ///   - experimentalAvoidance: Enable experimental collision avoidance (default: false)
     /// - Returns: A view with the flowing header transition applied
     func flowingHeader(
         _ title: String,
         systemImage: String,
         transitionStartOffset: CGFloat = -20,
-        transitionRange: CGFloat = 40
+        transitionRange: CGFloat = 40,
+        experimentalAvoidance: Bool = false
     ) -> some View {
         modifier(
             FlowingHeaderTransition<EmptyView>(
@@ -340,7 +427,8 @@ public extension View {
                 image: nil,
                 customView: nil,
                 transitionStartOffset: transitionStartOffset,
-                transitionRange: transitionRange
+                transitionRange: transitionRange,
+                experimentalAvoidance: experimentalAvoidance
             ))
     }
     
@@ -351,12 +439,14 @@ public extension View {
     ///   - systemImage: Optional SF Symbol that should flow to the navigation bar
     ///   - transitionStartOffset: Scroll offset where transition begins (default: -20)
     ///   - transitionRange: Distance over which transition occurs (default: 40)
+    ///   - experimentalAvoidance: Enable experimental collision avoidance (default: false)
     /// - Returns: A view with the flowing header transition applied
     func flowingHeader(
         _ title: String,
         systemImage: String?,
         transitionStartOffset: CGFloat = -20,
-        transitionRange: CGFloat = 40
+        transitionRange: CGFloat = 40,
+        experimentalAvoidance: Bool = false
     ) -> some View {
         let actualSystemImage = (systemImage?.isEmpty == false) ? systemImage : nil
         return modifier(
@@ -366,7 +456,8 @@ public extension View {
                 image: nil,
                 customView: nil,
                 transitionStartOffset: transitionStartOffset,
-                transitionRange: transitionRange
+                transitionRange: transitionRange,
+                experimentalAvoidance: experimentalAvoidance
             ))
     }
 
@@ -377,12 +468,14 @@ public extension View {
     ///   - image: Optional Image that should flow to the navigation bar
     ///   - transitionStartOffset: Scroll offset where transition begins (default: -20)
     ///   - transitionRange: Distance over which transition occurs (default: 40)
+    ///   - experimentalAvoidance: Enable experimental collision avoidance (default: false)
     /// - Returns: A view with the flowing header transition applied
     func flowingHeader(
         _ title: String,
         image: Image?,
         transitionStartOffset: CGFloat = -20,
-        transitionRange: CGFloat = 40
+        transitionRange: CGFloat = 40,
+        experimentalAvoidance: Bool = false
     ) -> some View {
         modifier(
             FlowingHeaderTransition<EmptyView>(
@@ -391,7 +484,8 @@ public extension View {
                 image: image,
                 customView: nil,
                 transitionStartOffset: transitionStartOffset,
-                transitionRange: transitionRange
+                transitionRange: transitionRange,
+                experimentalAvoidance: experimentalAvoidance
             ))
     }
 
@@ -418,12 +512,14 @@ public extension View {
     ///   - customView: The custom view that should animate alongside the title
     ///   - transitionStartOffset: Scroll offset where transition begins (default: -20)
     ///   - transitionRange: Distance over which transition occurs (default: 40)
+    ///   - experimentalAvoidance: Enable experimental collision avoidance (default: false)
     /// - Returns: A view with the flowing header transition applied
     func flowingHeader<CustomView: View>(
         _ title: String,
         customView: CustomView,
         transitionStartOffset: CGFloat = -20,
-        transitionRange: CGFloat = 40
+        transitionRange: CGFloat = 40,
+        experimentalAvoidance: Bool = false
     ) -> some View {
         modifier(
             FlowingHeaderTransition(
@@ -432,7 +528,8 @@ public extension View {
                 image: nil,
                 customView: customView,
                 transitionStartOffset: transitionStartOffset,
-                transitionRange: transitionRange
+                transitionRange: transitionRange,
+                experimentalAvoidance: experimentalAvoidance
             ))
     }
 
@@ -481,6 +578,7 @@ public extension View {
     ///   - customView: Optional type-erased custom view that flows to navigation bar
     ///   - transitionStartOffset: Scroll offset where transition begins (default: -20)
     ///   - transitionRange: Distance over which transition occurs (default: 40)
+    ///   - experimentalAvoidance: Enable experimental collision avoidance (default: false)
     /// - Returns: A view with the flowing header transition applied
     func flowingHeader(
         _ title: String,
@@ -488,7 +586,8 @@ public extension View {
         image: Image? = nil,
         customView: AnyView? = nil,
         transitionStartOffset: CGFloat = -20,
-        transitionRange: CGFloat = 40
+        transitionRange: CGFloat = 40,
+        experimentalAvoidance: Bool = false
     ) -> some View {
         if let customView = customView {
             return AnyView(modifier(
@@ -498,7 +597,8 @@ public extension View {
                     image: nil,
                     customView: customView,
                     transitionStartOffset: transitionStartOffset,
-                    transitionRange: transitionRange
+                    transitionRange: transitionRange,
+                    experimentalAvoidance: experimentalAvoidance
                 )))
         } else if let image = image {
             return AnyView(modifier(
@@ -508,7 +608,8 @@ public extension View {
                     image: image,
                     customView: nil,
                     transitionStartOffset: transitionStartOffset,
-                    transitionRange: transitionRange
+                    transitionRange: transitionRange,
+                    experimentalAvoidance: experimentalAvoidance
                 )))
         } else if let systemImage = systemImage {
             return AnyView(modifier(
@@ -518,7 +619,8 @@ public extension View {
                     image: nil,
                     customView: nil,
                     transitionStartOffset: transitionStartOffset,
-                    transitionRange: transitionRange
+                    transitionRange: transitionRange,
+                    experimentalAvoidance: experimentalAvoidance
                 )))
         } else {
             return AnyView(modifier(
@@ -528,7 +630,8 @@ public extension View {
                     image: nil,
                     customView: nil,
                     transitionStartOffset: transitionStartOffset,
-                    transitionRange: transitionRange
+                    transitionRange: transitionRange,
+                    experimentalAvoidance: experimentalAvoidance
                 )))
         }
     }
