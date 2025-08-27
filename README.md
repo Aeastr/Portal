@@ -23,7 +23,7 @@
 
 ## **Demo**
 
-![Example](/assets/example1.gif)
+![Example](/assets/demo.gif)
 
 <details>
   <summary><strong>Real Examples</strong></summary>
