@@ -475,10 +475,6 @@ public struct FlowingHeaderBundleImageExample: View {
                         .padding(.horizontal, 24)
                         .padding(.vertical, 24)
                     
-                    // Flow toggle
-                    FlowToggle(title: "Image flows to nav bar", isOn: $imageFlows)
-                        .padding(.vertical, 12)
-                    
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 2), spacing: 8) {
                         ForEach(artworks) { artwork in
                             ArtworkCard(artwork: artwork)
@@ -489,6 +485,9 @@ public struct FlowingHeaderBundleImageExample: View {
                 }
                 .padding(.bottom, 100)
             }
+            .safeAreaInset(edge: .bottom, content: {
+                FlowToggle(title: "Image flows to nav bar", isOn: $imageFlows)
+            })
             .flowingHeaderDestination("Gallery", image: imageFlows ? GalleryImages.heroImage : nil)
         }
         .flowingHeader("Gallery", image: imageFlows ? GalleryImages.heroImage : nil)
