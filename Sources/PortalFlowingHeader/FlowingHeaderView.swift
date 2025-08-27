@@ -127,7 +127,9 @@ public struct FlowingHeaderView<Content: View>: View {
             // Show icon, image, or custom content
             if let content = content {
                 content
-                    .opacity(customViewFlowing ? 0 : 1)  // Hide completely if flowing, otherwise visible
+                    .opacity(customViewFlowing ? 0 : max(0.6, (1 - progress)))
+                    .scaleEffect(customViewFlowing ? 1 : (max(0.6, (1 - progress))), anchor: .top)
+                    .animation(.smooth(duration: 0.3), value: progress)
                     .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
                         return [AnchorKeyID(kind: "source", id: title, type: "customView"): anchor]
                     }
