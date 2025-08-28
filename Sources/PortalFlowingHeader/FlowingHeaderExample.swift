@@ -64,6 +64,7 @@ public struct FlowingHeaderExample: View {
             .flowingHeaderDestination("Photos", systemImage: iconFlows ? "camera.fill" : nil)
         }
         .flowingHeader("Photos", systemImage: iconFlows ? "camera.fill" : nil)
+        .flowingHeaderLayout(.vertical)
     }
     
     private var filteredPhotos: [MockPhoto] {

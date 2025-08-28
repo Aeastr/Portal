@@ -137,7 +137,7 @@ public struct FlowingHeaderView<Content: View>: View {
                 Image(systemName: icon)
                     .font(.system(size: 64))
                     .foregroundStyle(.tint)
-                    .opacity(systemImageFlowing ? 0 : max(0.6, (1 - progress)))
+                    .opacity(systemImageFlowing ? 0.5 : max(0.6, (1 - progress)))
                     .scaleEffect(systemImageFlowing ? 1 : (max(0.6, (1 - progress))), anchor: .top)
                     .animation(.smooth(duration: 0.3), value: progress)
                     .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in

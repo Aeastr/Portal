@@ -7,6 +7,29 @@
 
 import SwiftUI
 
+/// Layout style for accessory view positioning in the navigation bar.
+@available(iOS 18.0, *)
+public enum AccessoryLayout: Sendable {
+    /// Accessory positioned horizontally (side by side with title)
+    case horizontal
+    /// Accessory positioned vertically (stacked on top of title)
+    case vertical
+}
+
+/// Environment key for flowing header layout
+@available(iOS 18.0, *)
+private struct FlowingHeaderLayoutKey: EnvironmentKey {
+    static let defaultValue: AccessoryLayout = .horizontal
+}
+
+@available(iOS 18.0, *)
+public extension EnvironmentValues {
+    var flowingHeaderLayout: AccessoryLayout {
+        get { self[FlowingHeaderLayoutKey.self] }
+        set { self[FlowingHeaderLayoutKey.self] = newValue }
+    }
+}
+
 /// A view modifier that provides destination anchors for flowing header transitions.
 ///
 /// This modifier creates invisible anchor points in the navigation bar that serve as
@@ -39,29 +62,45 @@ internal struct FlowingHeaderDestination: ViewModifier {
 internal struct FlowingHeaderDestinationWithSystemImage: ViewModifier {
     let title: String
     let systemImage: String
+    @Environment(\.flowingHeaderLayout) private var layout
 
     func body(content: Content) -> some View {
         content
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    HStack {
-                        // System image (invisible but present for anchor extraction)
-                        Image(systemName: systemImage)
-                            .font(.headline)
-                            .opacity(0)
-                            .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                                [AnchorKeyID(kind: "destination", id: title, type: "systemImage"): anchor]
+                    Group {
+                        switch layout {
+                        case .horizontal:
+                            HStack {
+                                accessoryView
+                                titleView
                             }
-
-                        // Title (invisible but present for anchor extraction)
-                        Text(title)
-                            .font(.headline.weight(.semibold))
-                            .opacity(0)
-                            .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                                [AnchorKeyID(kind: "destination", id: title, type: "title"): anchor]
+                        case .vertical:
+                            VStack(spacing: 2) {
+                                accessoryView
+                                titleView
                             }
+                        }
                     }
                 }
+            }
+    }
+    
+    private var accessoryView: some View {
+        Image(systemName: systemImage)
+            .font(.headline)
+            .opacity(0)
+            .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
+                [AnchorKeyID(kind: "destination", id: title, type: "systemImage"): anchor]
+            }
+    }
+    
+    private var titleView: some View {
+        Text(title)
+            .font(.headline.weight(.semibold))
+            .opacity(0)
+            .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
+                [AnchorKeyID(kind: "destination", id: title, type: "title"): anchor]
             }
     }
 }
@@ -70,28 +109,44 @@ internal struct FlowingHeaderDestinationWithSystemImage: ViewModifier {
 internal struct FlowingHeaderDestinationWithCustomView<DestinationView: View>: ViewModifier {
     let title: String
     let destinationView: DestinationView
+    @Environment(\.flowingHeaderLayout) private var layout
 
     func body(content: Content) -> some View {
         content
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    HStack {
-                        // Custom view (invisible but present for anchor extraction)
-                        destinationView
-                            .opacity(0)
-                            .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                                [AnchorKeyID(kind: "destination", id: title, type: "customView"): anchor]
+                    Group {
+                        switch layout {
+                        case .horizontal:
+                            HStack {
+                                accessoryView
+                                titleView
                             }
-
-                        // Title (invisible but present for anchor extraction)
-                        Text(title)
-                            .font(.headline.weight(.semibold))
-                            .opacity(0)
-                            .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                                [AnchorKeyID(kind: "destination", id: title, type: "title"): anchor]
+                        case .vertical:
+                            VStack(spacing: 2) {
+                                accessoryView
+                                titleView
                             }
+                        }
                     }
                 }
+            }
+    }
+    
+    private var accessoryView: some View {
+        destinationView
+            .opacity(0)
+            .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
+                [AnchorKeyID(kind: "destination", id: title, type: "customView"): anchor]
+            }
+    }
+    
+    private var titleView: some View {
+        Text(title)
+            .font(.headline.weight(.semibold))
+            .opacity(0)
+            .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
+                [AnchorKeyID(kind: "destination", id: title, type: "title"): anchor]
             }
     }
 }
@@ -100,31 +155,47 @@ internal struct FlowingHeaderDestinationWithCustomView<DestinationView: View>: V
 internal struct FlowingHeaderDestinationWithImage: ViewModifier {
     let title: String
     let image: Image
+    @Environment(\.flowingHeaderLayout) private var layout
 
     func body(content: Content) -> some View {
         content
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    HStack {
-                        // Image (invisible but present for anchor extraction)
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 32, height: 32)
-                            .opacity(0)
-                            .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                                [AnchorKeyID(kind: "destination", id: title, type: "image"): anchor]
+                    Group {
+                        switch layout {
+                        case .horizontal:
+                            HStack {
+                                accessoryView
+                                titleView
                             }
-
-                        // Title (invisible but present for anchor extraction)
-                        Text(title)
-                            .font(.headline.weight(.semibold))
-                            .opacity(0)
-                            .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                                [AnchorKeyID(kind: "destination", id: title, type: "title"): anchor]
+                        case .vertical:
+                            VStack(spacing: 2) {
+                                accessoryView
+                                titleView
                             }
+                        }
                     }
                 }
+            }
+    }
+    
+    private var accessoryView: some View {
+        image
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(width: 32, height: 32)
+            .opacity(0)
+            .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
+                [AnchorKeyID(kind: "destination", id: title, type: "image"): anchor]
+            }
+    }
+    
+    private var titleView: some View {
+        Text(title)
+            .font(.headline.weight(.semibold))
+            .opacity(0)
+            .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
+                [AnchorKeyID(kind: "destination", id: title, type: "title"): anchor]
             }
     }
 }
@@ -288,5 +359,29 @@ public extension View {
         } else {
             return AnyView(modifier(FlowingHeaderDestination(title: title)))
         }
+    }
+    
+    /// Sets the layout style for accessory views in flowing headers.
+    ///
+    /// Use this modifier to control how accessory views (system images, custom views, etc.)
+    /// are positioned relative to the title in the navigation bar when in toolbar state.
+    ///
+    /// ## Usage
+    ///
+    /// ```swift
+    /// NavigationStack {
+    ///     ScrollView {
+    ///         FlowingHeaderView("Profile", systemImage: "person.circle", subtitle: "Settings")
+    ///         // Content...
+    ///     }
+    ///     .flowingHeaderDestination("Profile", systemImage: "person.circle")
+    ///     .flowingHeaderLayout(.vertical)  // Stacks accessory on top
+    /// }
+    /// ```
+    ///
+    /// - Parameter layout: The layout style - `.horizontal` (default) or `.vertical`
+    /// - Returns: A view with the specified flowing header layout
+    func flowingHeaderLayout(_ layout: AccessoryLayout) -> some View {
+        environment(\.flowingHeaderLayout, layout)
     }
 }
