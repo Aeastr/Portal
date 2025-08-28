@@ -63,7 +63,7 @@ public struct FlowingHeaderExample: View {
             })
             .flowingHeaderDestination("Photos", systemImage: iconFlows ? "camera.fill" : nil)
         }
-        .flowingHeader()
+        .flowingHeader("Photos", systemImage: iconFlows ? "camera.fill" : nil)
         .flowingHeaderLayout(.vertical)
     }
     
@@ -162,7 +162,21 @@ public struct FlowingHeaderCustomViewExample: View {
                 }
             }
         }
-        .flowingHeader()
+        .flowingHeader(user.name, customView: avatarFlows ? AnyView(
+            Circle()
+                .fill(
+                    LinearGradient(
+                        colors: [user.avatarColor, user.avatarColor.opacity(0.7)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .overlay {
+                    Text(user.initials)
+                        .font(.system(.title, weight: .semibold))
+                        .foregroundStyle(.white)
+                }
+        ) : nil)
     }
 }
 
@@ -456,7 +470,7 @@ public struct FlowingHeaderTextOnlyExample: View {
             }
             .flowingHeaderDestination("Settings")
         }
-        .flowingHeader()
+        .flowingHeader("Settings")
     }
 }
 
@@ -491,7 +505,7 @@ public struct FlowingHeaderBundleImageExample: View {
             })
             .flowingHeaderDestination("Gallery", image: imageFlows ? GalleryImages.heroImage : nil)
         }
-        .flowingHeader()
+        .flowingHeader("Gallery", image: imageFlows ? GalleryImages.heroImage : nil)
     }
 }
 
@@ -559,7 +573,11 @@ public struct FlowingHeaderMultiStyleExample: View {
                 }
             }
         }
-        .flowingHeader()
+        .flowingHeader("Dynamic Header", 
+            systemImage: selectedStyle == .withIcon ? "sparkles" : nil,
+            image: selectedStyle == .withImage ? GalleryImages.heroImage : nil,
+            customView: selectedStyle == .withCustom ? AnyView(GradientCircle(colors: [.purple, .pink])) : nil
+        )
     }
 }
 
@@ -799,7 +817,7 @@ public struct FlowingHeaderNavigationExample: View {
                 .flowingHeaderDestination("Settings", systemImage: "gearshape.fill")
             }
         }
-        .flowingHeader()
+        .flowingHeader("Settings", systemImage: "gearshape.fill")
         .flowingHeaderLayout(useVerticalLayout ? .vertical : .horizontal)
     }
 }
@@ -811,15 +829,21 @@ private struct DetailView: View {
     
     var body: some View {
         ScrollView {
-            VStack(spacing: 0) {
-                // Add FlowingHeaderView for the detail page
-                FlowingHeaderView(
-                    title,
-                    systemImage: icon,
-                    subtitle: "Configure your \(title.lowercased()) settings"
-                )
-                .padding(.horizontal, 24)
-                .padding(.vertical, 24)
+            VStack(spacing: 20) {
+                Image(systemName: icon)
+                    .font(.system(size: 64))
+                    .foregroundStyle(.tint)
+                    .padding(.top, 40)
+                
+                Text(title)
+                    .font(.title.weight(.semibold))
+                
+                Text("This is a detail view for \(title.lowercased()) settings. The flowing header smoothly transitions when navigating between views.")
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 24)
+                
+                Spacer(minLength: 40)
                 
                 // Sample content
                 VStack(spacing: 16) {
@@ -849,11 +873,10 @@ private struct DetailView: View {
                         .padding(.horizontal, 24)
                     }
                 }
-                .padding(.top, 20)
             }
         }
-        .flowingHeaderDestination(title, systemImage: icon)
         .navigationBarTitleDisplayMode(.inline)
+        .navigationTitle(title)
     }
 }
 

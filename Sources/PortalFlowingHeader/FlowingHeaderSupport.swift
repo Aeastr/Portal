@@ -9,46 +9,32 @@ import SwiftUI
 
 // MARK: - Internal Support Types
 
-/// Content info carried with anchor data for flowing header transitions.
-internal struct FlowingHeaderContent: Hashable {
-    let title: String
-    let systemImage: String?
-    let image: String? // We'll store image name/identifier as string for hashability
-    let hasCustomView: Bool
-}
-
 /// A unique identifier for anchor preferences used in flowing header transitions.
 ///
-/// This type combines components to create unique keys for tracking UI elements:
-/// - `id`: The unique identifier (title) for matching source/destination pairs
+/// This type combines three components to create unique keys for tracking UI elements
+/// during the flowing header animation:
 /// - `kind`: Whether this is a "source" or "destination" anchor
-/// - `type`: The element type ("title" or "accessory")
+/// - `id`: The unique identifier string for the header
+/// - `type`: The element type ("title" or "customView")
 internal struct AnchorKeyID: Hashable {
-    let id: String
     let kind: String
+    let id: String
     let type: String
 }
 
-/// Extended anchor data that includes both bounds and content info.
-internal struct AnchorData {
-    let anchor: Anchor<CGRect>
-    let content: FlowingHeaderContent
-}
-
-/// Preference key for collecting anchor bounds and content during flowing header transitions.
+/// Preference key for collecting anchor bounds during flowing header transitions.
 ///
 /// This preference key accumulates anchor bounds from both source (header content)
-/// and destination (navigation bar) locations along with content information.
-/// Uses an array to preserve the order anchors are added in the view hierarchy.
+/// and destination (navigation bar) locations to enable smooth position interpolation.
 internal struct AnchorKey: PreferenceKey {
-    typealias Value = [(key: AnchorKeyID, data: AnchorData)]
-    nonisolated(unsafe) static var defaultValue: [(key: AnchorKeyID, data: AnchorData)] = []
+    typealias Value = [AnchorKeyID: Anchor<CGRect>]
+    nonisolated(unsafe) static var defaultValue: [AnchorKeyID: Anchor<CGRect>] = [:]
 
     static func reduce(
-        value: inout [(key: AnchorKeyID, data: AnchorData)],
-        nextValue: () -> [(key: AnchorKeyID, data: AnchorData)]
+        value: inout [AnchorKeyID: Anchor<CGRect>],
+        nextValue: () -> [AnchorKeyID: Anchor<CGRect>]
     ) {
-        value.append(contentsOf: nextValue())
+        value.merge(nextValue()) { _, new in new }
     }
 }
 

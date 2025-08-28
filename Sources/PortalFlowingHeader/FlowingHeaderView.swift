@@ -125,21 +125,13 @@ public struct FlowingHeaderView<Content: View>: View {
             let progress = (titleProgress * 4)
             
             // Show icon, image, or custom content
-            let headerContent = FlowingHeaderContent(
-                title: title,
-                systemImage: icon,
-                image: nil, // TODO: Handle image identifier
-                hasCustomView: content != nil
-            )
-            
             if let content = content {
                 content
                     .opacity(customViewFlowing ? 0 : max(0.6, (1 - progress)))
                     .scaleEffect(customViewFlowing ? 1 : (max(0.6, (1 - progress))), anchor: .top)
                     .animation(.smooth(duration: 0.3), value: progress)
                     .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                        let key = AnchorKeyID(id: title, kind: "source", type: "accessory")
-                        return [(key: key, data: AnchorData(anchor: anchor, content: headerContent))]
+                        return [AnchorKeyID(kind: "source", id: title, type: "accessory"): anchor]
                     }
             } else if let icon = icon {
                 Image(systemName: icon)
@@ -149,8 +141,7 @@ public struct FlowingHeaderView<Content: View>: View {
                     .scaleEffect(systemImageFlowing ? 1 : (max(0.6, (1 - progress))), anchor: .top)
                     .animation(.smooth(duration: 0.3), value: progress)
                     .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                        let key = AnchorKeyID(id: title, kind: "source", type: "accessory")
-                        return [(key: key, data: AnchorData(anchor: anchor, content: headerContent))]
+                        return [AnchorKeyID(kind: "source", id: title, type: "accessory"): anchor]
                     }
             } else if let image = image {
                 image
@@ -161,8 +152,7 @@ public struct FlowingHeaderView<Content: View>: View {
                     .scaleEffect(imageFlowing ? 1 : (max(0.6, (1 - progress))), anchor: .top)
                     .animation(.smooth(duration: 0.3), value: progress)
                     .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                        let key = AnchorKeyID(id: title, kind: "source", type: "accessory")
-                        return [(key: key, data: AnchorData(anchor: anchor, content: headerContent))]
+                        return [AnchorKeyID(kind: "source", id: title, type: "accessory"): anchor]
                     }
             }
             
@@ -172,8 +162,7 @@ public struct FlowingHeaderView<Content: View>: View {
                     .font(.title.weight(.semibold))
                     .opacity(0)  // Always invisible to maintain layout
                     .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                        let key = AnchorKeyID(id: title, kind: "source", type: "title")
-                        return [(key: key, data: AnchorData(anchor: anchor, content: headerContent))]
+                        return [AnchorKeyID(kind: "source", id: title, type: "title"): anchor]
                     }
                     
                 Text(subtitle)
