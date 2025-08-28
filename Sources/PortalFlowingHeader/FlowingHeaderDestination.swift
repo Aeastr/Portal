@@ -47,7 +47,14 @@ internal struct FlowingHeaderDestination: ViewModifier {
                         .font(.headline.weight(.semibold))
                         .opacity(0)  // Invisible but present for anchor extraction
                         .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                            [AnchorKeyID(kind: "destination", id: title, type: "title"): anchor]
+                            let headerContent = FlowingHeaderContent(
+                                title: title,
+                                systemImage: nil,
+                                image: nil,
+                                hasCustomView: false
+                            )
+                            let key = AnchorKeyID(id: title, kind: "destination", type: "title")
+                            return [(key: key, data: AnchorData(anchor: anchor, content: headerContent))]
                         }
                 }
             }
@@ -86,21 +93,32 @@ internal struct FlowingHeaderDestinationWithSystemImage: ViewModifier {
             }
     }
     
+    private var headerContent: FlowingHeaderContent {
+        FlowingHeaderContent(
+            title: title,
+            systemImage: systemImage,
+            image: nil,
+            hasCustomView: false
+        )
+    }
+    
     private var accessoryView: some View {
         Image(systemName: systemImage)
             .font(.headline)
-            .opacity(0)
+            .opacity(0.5)
             .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                [AnchorKeyID(kind: "destination", id: title, type: "accessory"): anchor]
+                let key = AnchorKeyID(id: title, kind: "destination", type: "accessory")
+                return [(key: key, data: AnchorData(anchor: anchor, content: headerContent))]
             }
     }
     
     private var titleView: some View {
         Text(title)
             .font(.headline.weight(.semibold))
-            .opacity(0)
+            .opacity(0.5)
             .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                [AnchorKeyID(kind: "destination", id: title, type: "title"): anchor]
+                let key = AnchorKeyID(id: title, kind: "destination", type: "title")
+                return [(key: key, data: AnchorData(anchor: anchor, content: headerContent))]
             }
     }
 }
@@ -133,11 +151,21 @@ internal struct FlowingHeaderDestinationWithCustomView<DestinationView: View>: V
             }
     }
     
+    private var headerContent: FlowingHeaderContent {
+        FlowingHeaderContent(
+            title: title,
+            systemImage: nil,
+            image: nil,
+            hasCustomView: true
+        )
+    }
+    
     private var accessoryView: some View {
         destinationView
             .opacity(0)
             .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                [AnchorKeyID(kind: "destination", id: title, type: "accessory"): anchor]
+                let key = AnchorKeyID(id: title, kind: "destination", type: "accessory")
+                return [(key: key, data: AnchorData(anchor: anchor, content: headerContent))]
             }
     }
     
@@ -146,7 +174,8 @@ internal struct FlowingHeaderDestinationWithCustomView<DestinationView: View>: V
             .font(.headline.weight(.semibold))
             .opacity(0)
             .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                [AnchorKeyID(kind: "destination", id: title, type: "title"): anchor]
+                let key = AnchorKeyID(id: title, kind: "destination", type: "title")
+                return [(key: key, data: AnchorData(anchor: anchor, content: headerContent))]
             }
     }
 }
@@ -179,6 +208,15 @@ internal struct FlowingHeaderDestinationWithImage: ViewModifier {
             }
     }
     
+    private var headerContent: FlowingHeaderContent {
+        FlowingHeaderContent(
+            title: title,
+            systemImage: nil,
+            image: "image", // TODO: Get actual image identifier
+            hasCustomView: false
+        )
+    }
+    
     private var accessoryView: some View {
         image
             .resizable()
@@ -186,7 +224,8 @@ internal struct FlowingHeaderDestinationWithImage: ViewModifier {
             .frame(width: 32, height: 32)
             .opacity(0)
             .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                [AnchorKeyID(kind: "destination", id: title, type: "accessory"): anchor]
+                let key = AnchorKeyID(id: title, kind: "destination", type: "accessory")
+                return [(key: key, data: AnchorData(anchor: anchor, content: headerContent))]
             }
     }
     
@@ -195,7 +234,8 @@ internal struct FlowingHeaderDestinationWithImage: ViewModifier {
             .font(.headline.weight(.semibold))
             .opacity(0)
             .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                [AnchorKeyID(kind: "destination", id: title, type: "title"): anchor]
+                let key = AnchorKeyID(id: title, kind: "destination", type: "title")
+                return [(key: key, data: AnchorData(anchor: anchor, content: headerContent))]
             }
     }
 }

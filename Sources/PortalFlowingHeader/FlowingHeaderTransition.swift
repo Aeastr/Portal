@@ -7,6 +7,47 @@
 
 import SwiftUI
 
+/// Helper function to select the current header ID with debug logging
+@available(iOS 18.0, *)
+private func selectHeaderID(from anchors: [(key: AnchorKeyID, data: AnchorData)]) -> String? {
+    // Convert array to dictionary for easier lookups
+    let anchorDict = Dictionary(anchors.map { ($0.key, $0.data) }, uniquingKeysWith: { _, last in last })
+    
+    // Find the last source title in the array (most recently added)
+    let lastSourceTitle = anchors.reversed().first { $0.key.kind == "source" && $0.key.type == "title" }
+    
+    guard let activeID = lastSourceTitle?.key.id else {
+        #if DEBUG
+        print("=== Anchor Selection Debug ===")
+        print("No source title anchors found")
+        print("==============================")
+        #endif
+        return nil
+    }
+    
+    // Verify this ID has both title anchors needed for animation
+    let hasSrcTitle = anchorDict[AnchorKeyID(id: activeID, kind: "source", type: "title")] != nil
+    let hasDstTitle = anchorDict[AnchorKeyID(id: activeID, kind: "destination", type: "title")] != nil
+    
+    if hasSrcTitle && hasDstTitle {
+        #if DEBUG
+        print("=== Anchor Selection Debug ===")
+        print("Anchor order: \(anchors.map { "\($0.key.id):\($0.key.kind):\($0.key.type)" })")
+        print("Selected ID: \(activeID) (last source title with destination)")
+        print("==============================")
+        #endif
+        return activeID
+    }
+    
+    #if DEBUG
+    print("=== Anchor Selection Debug ===")
+    print("Selected ID: \(activeID) missing destination, skipping")
+    print("==============================")
+    #endif
+    
+    return nil
+}
+
 /// A view modifier that creates smooth scroll-based transitions for flowing headers.
 ///
 /// This modifier tracks scroll position and animates header elements between their
@@ -16,11 +57,7 @@ import SwiftUI
 /// The transition supports both text titles and custom views, with configurable timing
 /// and scroll thresholds.
 @available(iOS 18.0, *)
-internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
-    let title: String
-    let systemImage: String?
-    let image: Image?
-    let customView: CustomView?
+internal struct FlowingHeaderTransition: ViewModifier {
     let transitionStartOffset: CGFloat
     let transitionRange: CGFloat
     let experimentalAvoidance: Bool
@@ -31,18 +68,10 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
     /// Creates a new flowing header transition modifier.
     ///
     /// - Parameters:
-    ///   - title: The title string to track for transitions
-    ///   - systemImage: Optional system image to animate alongside the title
-    ///   - image: Optional image to animate alongside the title
-    ///   - customView: Optional custom view to animate alongside the title
     ///   - transitionStartOffset: Scroll offset where transition begins (default: -20)
     ///   - transitionRange: Distance over which transition occurs (default: 40)
     ///   - experimentalAvoidance: Enable experimental collision avoidance (default: false)
-    init(title: String, systemImage: String?, image: Image?, customView: CustomView?, transitionStartOffset: CGFloat = -20, transitionRange: CGFloat = 40, experimentalAvoidance: Bool = false) {
-        self.title = title
-        self.systemImage = systemImage
-        self.image = image
-        self.customView = customView
+    init(transitionStartOffset: CGFloat = -20, transitionRange: CGFloat = 40, experimentalAvoidance: Bool = false) {
         self.transitionStartOffset = transitionStartOffset
         self.transitionRange = transitionRange
         self.experimentalAvoidance = experimentalAvoidance
@@ -51,9 +80,7 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
     func body(content: Content) -> some View {
         content
             .environment(\.titleProgress, titleProgress)
-            .environment(\.systemImageFlowing, systemImage != nil && !systemImage!.isEmpty)
-            .environment(\.imageFlowing, image != nil)
-            .environment(\.customViewFlowing, customView != nil)
+            // TODO: Set flowing flags based on detected content
             .onScrollPhaseChange { oldPhase, newPhase in
                 isScrolling = [ScrollPhase.interacting, ScrollPhase.decelerating].contains(newPhase)
                 
@@ -80,51 +107,161 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
             }
             .overlayPreferenceValue(AnchorKey.self) { anchors in
                 GeometryReader { geometry in
-                    // Try to find both title anchors
-                    let titleSrcKey = AnchorKeyID(kind: "source", id: title, type: "title")
-                    let titleDstKey = AnchorKeyID(kind: "destination", id: title, type: "title")
-                    let titleSrcAnchor = anchors[titleSrcKey]
-                    let titleDstAnchor = anchors[titleDstKey]
+                    ZStack {
+                        // Use helper function to select header ID with debug logging
+                        let currentID = selectHeaderID(from: anchors)
+                        
+                        // Convert array to dictionary for lookups
+                        let anchorDict = Dictionary(anchors.map { ($0.key, $0.data) }, uniquingKeysWith: { _, last in last })
+                        
+                        // Get unique IDs for debug display
+                        let sourceAnchors = anchors.filter { $0.key.kind == "source" }
+                        let uniqueIDs = Set(sourceAnchors.map { $0.key.id })
+                        
+                        if let currentID = currentID {
+                            // Try to find both title anchors
+                            let titleSrcKey = AnchorKeyID(id: currentID, kind: "source", type: "title")
+                            let titleDstKey = AnchorKeyID(id: currentID, kind: "destination", type: "title")
+                            let titleSrcData = anchorDict[titleSrcKey]
+                            let titleDstData = anchorDict[titleDstKey]
 
-                    // Try to find both accessory anchors (any type of accessory content)
-                    let accessorySrcKey = AnchorKeyID(kind: "source", id: title, type: "accessory")
-                    let accessoryDstKey = AnchorKeyID(kind: "destination", id: title, type: "accessory")
-                    let accessorySrcAnchor = anchors[accessorySrcKey]
-                    let accessoryDstAnchor = anchors[accessoryDstKey]
+                            // Try to find both accessory anchors
+                            let accessorySrcKey = AnchorKeyID(id: currentID, kind: "source", type: "accessory")
+                            let accessoryDstKey = AnchorKeyID(id: currentID, kind: "destination", type: "accessory")
+                            let accessorySrcData = anchorDict[accessorySrcKey]
+                            let accessoryDstData = anchorDict[accessoryDstKey]
 
-                    // Clamp progress t ∈ [0,1]
-                    let clamped = min(max(abs(titleProgress), 0), 1)
-                    let t: CGFloat = CGFloat(clamped)
+                            // Extract content info from the first available data
+                            let content = titleSrcData?.content ?? titleDstData?.content ?? 
+                                        accessorySrcData?.content ?? accessoryDstData?.content
 
-                    // Render title if both anchors exist
-                    if titleSrcAnchor != nil && titleDstAnchor != nil {
-                        renderTitle(
-                            geometry: geometry,
-                            srcAnchor: titleSrcAnchor!,
-                            dstAnchor: titleDstAnchor!,
-                            progress: t,
-                            accessorySrcAnchor: accessorySrcAnchor
-                        )
-                    }
+                            // Clamp progress t ∈ [0,1]
+                            let clamped = min(max(abs(titleProgress), 0), 1)
+                            let t: CGFloat = CGFloat(clamped)
 
-                    // Render accessory if both anchors exist
-                    if accessorySrcAnchor != nil && accessoryDstAnchor != nil {
-                        renderAccessory(
-                            geometry: geometry,
-                            srcAnchor: accessorySrcAnchor!,
-                            dstAnchor: accessoryDstAnchor!,
-                            progress: t
-                        )
-                    }
+                            // Render title if both anchors exist
+                            if let titleSrcData = titleSrcData, let titleDstData = titleDstData {
+                                renderTitle(
+                                    geometry: geometry,
+                                    srcAnchor: titleSrcData.anchor,
+                                    dstAnchor: titleDstData.anchor,
+                                    progress: t,
+                                    accessorySrcAnchor: accessorySrcData?.anchor,
+                                    title: content?.title ?? ""
+                                )
+                            }
 
-                    // Debug message if no anchors found
-                    if titleSrcAnchor == nil && titleDstAnchor == nil && 
-                       accessorySrcAnchor == nil && accessoryDstAnchor == nil
-                    {
-                        Text("none found – keys: \\(anchors.keys), looking for \\(title)")
-                            .foregroundStyle(.red)
-                            .background(.white)
-                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                            // Render accessory if both anchors exist
+                            if let accessorySrcData = accessorySrcData, let accessoryDstData = accessoryDstData, let content = content {
+                                renderAccessory(
+                                    geometry: geometry,
+                                    srcAnchor: accessorySrcData.anchor,
+                                    dstAnchor: accessoryDstData.anchor,
+                                    progress: t,
+                                    content: content
+                                )
+                            }
+                            
+                            // Debug overlay
+                            #if DEBUG
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("🔍 Active: \"\(currentID)\"")
+                                    .font(.caption.monospaced())
+                                    .foregroundStyle(.white)
+                                
+                                if uniqueIDs.count > 1 {
+                                    let availableInfo = uniqueIDs.sorted().map { id in
+                                        let count = [
+                                            anchorDict[AnchorKeyID(id: id, kind: "source", type: "title")] != nil,
+                                            anchorDict[AnchorKeyID(id: id, kind: "destination", type: "title")] != nil,
+                                            anchorDict[AnchorKeyID(id: id, kind: "source", type: "accessory")] != nil,
+                                            anchorDict[AnchorKeyID(id: id, kind: "destination", type: "accessory")] != nil
+                                        ].filter { $0 }.count
+                                        return "\(id)(\(count))"
+                                    }.joined(separator: ", ")
+                                    
+                                    Text("Available: \(availableInfo)")
+                                        .font(.caption2.monospaced())
+                                        .foregroundStyle(.yellow)
+                                }
+                                
+                                HStack(spacing: 12) {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text("Title")
+                                            .font(.caption2.weight(.semibold))
+                                        HStack(spacing: 4) {
+                                            Circle()
+                                                .fill(titleSrcData != nil ? .green : .red)
+                                                .frame(width: 8, height: 8)
+                                            Text("src")
+                                                .font(.caption2.monospaced())
+                                        }
+                                        HStack(spacing: 4) {
+                                            Circle()
+                                                .fill(titleDstData != nil ? .green : .red)
+                                                .frame(width: 8, height: 8)
+                                            Text("dst")
+                                                .font(.caption2.monospaced())
+                                        }
+                                    }
+                                    
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text("Accessory")
+                                            .font(.caption2.weight(.semibold))
+                                        HStack(spacing: 4) {
+                                            Circle()
+                                                .fill(accessorySrcData != nil ? .green : .red)
+                                                .frame(width: 8, height: 8)
+                                            Text("src")
+                                                .font(.caption2.monospaced())
+                                        }
+                                        HStack(spacing: 4) {
+                                            Circle()
+                                                .fill(accessoryDstData != nil ? .green : .red)
+                                                .frame(width: 8, height: 8)
+                                            Text("dst")
+                                                .font(.caption2.monospaced())
+                                        }
+                                    }
+                                }
+                                
+                                if let content = content {
+                                    Text("Content: \(content.systemImage ?? "none")")
+                                        .font(.caption2.monospaced())
+                                        .foregroundStyle(.white.opacity(0.7))
+                                }
+                                
+                                Text("Progress: \(String(format: "%.2f", t))")
+                                    .font(.caption2.monospaced())
+                                    .foregroundStyle(.white.opacity(0.7))
+                            }
+                            .padding(8)
+                            .background(.black.opacity(0.8), in: RoundedRectangle(cornerRadius: 8))
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+                            .padding()
+                            #endif
+                        } else {
+                            // No headers found debug
+                            #if DEBUG
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("⚠️ No headers detected")
+                                    .font(.caption.monospaced())
+                                    .foregroundStyle(.white)
+                                
+                                Text("Available IDs: \(uniqueIDs.isEmpty ? "none" : uniqueIDs.joined(separator: ", "))")
+                                    .font(.caption2.monospaced())
+                                    .foregroundStyle(.white.opacity(0.7))
+                                
+                                Text("Total anchors: \(anchors.count)")
+                                    .font(.caption2.monospaced())
+                                    .foregroundStyle(.white.opacity(0.7))
+                            }
+                            .padding(8)
+                            .background(.orange.opacity(0.8), in: RoundedRectangle(cornerRadius: 8))
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+                            .padding()
+                            #endif
+                        }
                     }
                 }
             }
@@ -155,7 +292,8 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
         srcAnchor: Anchor<CGRect>,
         dstAnchor: Anchor<CGRect>,
         progress: CGFloat,
-        accessorySrcAnchor: Anchor<CGRect>?
+        accessorySrcAnchor: Anchor<CGRect>?,
+        title: String
     ) -> some View {
         let srcRect = geometry[srcAnchor]
         let dstRect = geometry[dstAnchor]
@@ -193,7 +331,8 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
         geometry: GeometryProxy,
         srcAnchor: Anchor<CGRect>,
         dstAnchor: Anchor<CGRect>,
-        progress: CGFloat
+        progress: CGFloat,
+        content: FlowingHeaderContent
     ) -> some View {
         let srcRect = geometry[srcAnchor]
         let dstRect = geometry[dstAnchor]
@@ -215,16 +354,17 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
 
         // Render the appropriate accessory content with transformations
         return Group {
-            if let systemImage = systemImage {
+            if let systemImage = content.systemImage {
                 Image(systemName: systemImage)
                     .font(.system(size: 64))
                     .foregroundStyle(.tint)
-            } else if let customView = customView {
-                customView
-            } else if let image = image {
-                image
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
+            } else if content.hasCustomView {
+                // For custom views, we'd need a way to reconstruct them
+                // For now, show a placeholder
+                Circle().fill(.tint.opacity(0.5))
+            } else if content.image != nil {
+                // Similarly for images, we'd need the actual Image
+                RoundedRectangle(cornerRadius: 8).fill(.tint.opacity(0.5))
             }
         }
         .frame(width: sourceSize.width, height: sourceSize.height)
@@ -271,24 +411,23 @@ public extension View {
     /// Adds a flowing header transition that animates based on scroll position.
     ///
     /// This modifier creates a smooth transition effect where header content flows
-    /// to the navigation bar as the user scrolls. The transition timing and behavior
-    /// can be customized through the provided parameters.
+    /// to the navigation bar as the user scrolls. It automatically detects the current
+    /// header by matching source and destination anchors.
     ///
     /// ## Basic Usage
     ///
     /// ```swift
     /// NavigationStack {
     ///     ScrollView {
-    ///         FlowingHeaderView(icon: "star", title: "Title", subtitle: "Subtitle")
+    ///         FlowingHeaderView("Title", systemImage: "star", subtitle: "Subtitle")
     ///         // Content...
     ///     }
-    ///     .flowingHeaderDestination("Title")
+    ///     .flowingHeaderDestination("Title", systemImage: "star")
     /// }
-    /// .flowingHeader("Title")
+    /// .flowingHeader()  // No parameters needed!
     /// ```
     ///
     /// - Parameters:
-    ///   - title: The title string that matches the FlowingHeaderView title
     ///   - transitionStartOffset: Scroll offset where transition begins (default: -20)
     ///   - transitionRange: Distance over which transition occurs (default: 40)
     ///   - experimentalAvoidance: Enable experimental collision avoidance (default: false)
@@ -297,270 +436,15 @@ public extension View {
     /// - Important: This modifier must be applied outside the NavigationStack,
     ///   while `.flowingHeaderDestination()` should be applied to the scroll content.
     func flowingHeader(
-        _ title: String,
-        transitionStartOffset: CGFloat = -20,
-        transitionRange: CGFloat = 40,
-        experimentalAvoidance: Bool = false
-    ) -> some View {
-        modifier(
-            FlowingHeaderTransition<EmptyView>(
-                title: title,
-                systemImage: nil,
-                image: nil,
-                customView: nil,
-                transitionStartOffset: transitionStartOffset,
-                transitionRange: transitionRange,
-                experimentalAvoidance: experimentalAvoidance
-            ))
-    }
-
-    /// Adds a flowing header transition with a system image that flows to the navigation bar.
-    ///
-    /// Use this variant when your header includes a system image that should animate
-    /// to the navigation bar along with the title.
-    ///
-    /// ## Usage with Flowing System Image
-    ///
-    /// ```swift
-    /// NavigationStack {
-    ///     ScrollView {
-    ///         FlowingHeaderView("Profile", systemImage: "person.circle", subtitle: "Settings")
-    ///         // Content...
-    ///     }
-    ///     .flowingHeaderDestination("Profile") {
-    ///         Image(systemName: "person.circle").font(.headline)
-    ///     }
-    /// }
-    /// .flowingHeader("Profile", systemImage: "person.circle")
-    /// ```
-    ///
-    /// - Parameters:
-    ///   - title: The title string that matches your FlowingHeaderView
-    ///   - systemImage: The SF Symbol that should flow to the navigation bar
-    ///   - transitionStartOffset: Scroll offset where transition begins (default: -20)
-    ///   - transitionRange: Distance over which transition occurs (default: 40)
-    ///   - experimentalAvoidance: Enable experimental collision avoidance (default: false)
-    /// - Returns: A view with the flowing header transition applied
-    func flowingHeader(
-        _ title: String,
-        systemImage: String,
-        transitionStartOffset: CGFloat = -20,
-        transitionRange: CGFloat = 40,
-        experimentalAvoidance: Bool = false
-    ) -> some View {
-        modifier(
-            FlowingHeaderTransition<EmptyView>(
-                title: title,
-                systemImage: systemImage,
-                image: nil,
-                customView: nil,
-                transitionStartOffset: transitionStartOffset,
-                transitionRange: transitionRange,
-                experimentalAvoidance: experimentalAvoidance
-            ))
-    }
-    
-    /// Adds a flowing header transition with optional system image.
-    ///
-    /// - Parameters:
-    ///   - title: The title string that matches your FlowingHeaderView
-    ///   - systemImage: Optional SF Symbol that should flow to the navigation bar
-    ///   - transitionStartOffset: Scroll offset where transition begins (default: -20)
-    ///   - transitionRange: Distance over which transition occurs (default: 40)
-    ///   - experimentalAvoidance: Enable experimental collision avoidance (default: false)
-    /// - Returns: A view with the flowing header transition applied
-    func flowingHeader(
-        _ title: String,
-        systemImage: String?,
-        transitionStartOffset: CGFloat = -20,
-        transitionRange: CGFloat = 40,
-        experimentalAvoidance: Bool = false
-    ) -> some View {
-        let actualSystemImage = (systemImage?.isEmpty == false) ? systemImage : nil
-        return modifier(
-            FlowingHeaderTransition<EmptyView>(
-                title: title,
-                systemImage: actualSystemImage,
-                image: nil,
-                customView: nil,
-                transitionStartOffset: transitionStartOffset,
-                transitionRange: transitionRange,
-                experimentalAvoidance: experimentalAvoidance
-            ))
-    }
-
-    /// Adds a flowing header transition with optional image.
-    ///
-    /// - Parameters:
-    ///   - title: The title string that matches your FlowingHeaderView
-    ///   - image: Optional Image that should flow to the navigation bar
-    ///   - transitionStartOffset: Scroll offset where transition begins (default: -20)
-    ///   - transitionRange: Distance over which transition occurs (default: 40)
-    ///   - experimentalAvoidance: Enable experimental collision avoidance (default: false)
-    /// - Returns: A view with the flowing header transition applied
-    func flowingHeader(
-        _ title: String,
-        image: Image?,
-        transitionStartOffset: CGFloat = -20,
-        transitionRange: CGFloat = 40,
-        experimentalAvoidance: Bool = false
-    ) -> some View {
-        modifier(
-            FlowingHeaderTransition<EmptyView>(
-                title: title,
-                systemImage: nil,
-                image: image,
-                customView: nil,
-                transitionStartOffset: transitionStartOffset,
-                transitionRange: transitionRange,
-                experimentalAvoidance: experimentalAvoidance
-            ))
-    }
-
-    /// Adds a flowing header transition with a custom view component.
-    ///
-    /// Use this variant when your header includes a custom view that should also
-    /// animate to the navigation bar along with the title.
-    ///
-    /// ## Usage with Custom View
-    ///
-    /// ```swift
-    /// NavigationStack {
-    ///     ScrollView {
-    ///         FlowingHeaderView(customView: Avatar(), title: "Profile", subtitle: "Settings")
-    ///         // Content...
-    ///     }
-    ///     .flowingHeaderDestination("Profile") { Avatar() }
-    /// }
-    /// .flowingHeader("Profile", customView: Avatar())
-    /// ```
-    ///
-    /// - Parameters:
-    ///   - title: The title string that matches the FlowingHeaderView title
-    ///   - customView: The custom view that should animate alongside the title
-    ///   - transitionStartOffset: Scroll offset where transition begins (default: -20)
-    ///   - transitionRange: Distance over which transition occurs (default: 40)
-    ///   - experimentalAvoidance: Enable experimental collision avoidance (default: false)
-    /// - Returns: A view with the flowing header transition applied
-    func flowingHeader<CustomView: View>(
-        _ title: String,
-        customView: CustomView,
         transitionStartOffset: CGFloat = -20,
         transitionRange: CGFloat = 40,
         experimentalAvoidance: Bool = false
     ) -> some View {
         modifier(
             FlowingHeaderTransition(
-                title: title,
-                systemImage: nil,
-                image: nil,
-                customView: customView,
                 transitionStartOffset: transitionStartOffset,
                 transitionRange: transitionRange,
                 experimentalAvoidance: experimentalAvoidance
             ))
-    }
-
-    /// Adds a flowing header transition with multiple optional content types.
-    ///
-    /// This is the most flexible variant that allows you to conditionally specify
-    /// different content types for dynamic header switching scenarios.
-    ///
-    /// ## Usage with Dynamic Content
-    ///
-    /// ```swift
-    /// NavigationStack {
-    ///     ScrollView {
-    ///         // Dynamic header content...
-    ///     }
-    ///     .flowingHeaderDestination("Title") { /* conditional destination */ }
-    /// }
-    /// .flowingHeader("Title", 
-    ///     systemImage: showIcon ? "star" : nil,
-    ///     image: showImage ? Image("hero") : nil,
-    ///     customView: showCustom ? CustomView() : nil
-    /// )
-    /// ```
-    ///
-    /// - Parameters:
-    ///   - title: The title string that matches the FlowingHeaderView title
-    ///   - systemImage: Optional system image that flows to navigation bar
-    ///   - image: Optional image that flows to navigation bar  
-    ///   - customView: Optional custom view that flows to navigation bar
-    ///   - transitionStartOffset: Scroll offset where transition begins (default: -20)
-    ///   - transitionRange: Distance over which transition occurs (default: 40)
-    /// - Returns: A view with the flowing header transition applied
-    ///
-    /// - Note: Only the first non-nil content parameter will be used. Priority order is:
-    ///   customView > image > systemImage
-
-    /// Adds a flowing header transition with multiple optional content types.
-    ///
-    /// This variant uses AnyView for the custom view parameter to avoid Swift's generic
-    /// type inference issues with conditional expressions.
-    ///
-    /// - Parameters:
-    ///   - title: The title string that matches the FlowingHeaderView title
-    ///   - systemImage: Optional system image that flows to navigation bar
-    ///   - image: Optional image that flows to navigation bar  
-    ///   - customView: Optional type-erased custom view that flows to navigation bar
-    ///   - transitionStartOffset: Scroll offset where transition begins (default: -20)
-    ///   - transitionRange: Distance over which transition occurs (default: 40)
-    ///   - experimentalAvoidance: Enable experimental collision avoidance (default: false)
-    /// - Returns: A view with the flowing header transition applied
-    func flowingHeader(
-        _ title: String,
-        systemImage: String? = nil,
-        image: Image? = nil,
-        customView: AnyView? = nil,
-        transitionStartOffset: CGFloat = -20,
-        transitionRange: CGFloat = 40,
-        experimentalAvoidance: Bool = false
-    ) -> some View {
-        if let customView = customView {
-            return AnyView(modifier(
-                FlowingHeaderTransition(
-                    title: title,
-                    systemImage: nil,
-                    image: nil,
-                    customView: customView,
-                    transitionStartOffset: transitionStartOffset,
-                    transitionRange: transitionRange,
-                    experimentalAvoidance: experimentalAvoidance
-                )))
-        } else if let image = image {
-            return AnyView(modifier(
-                FlowingHeaderTransition<EmptyView>(
-                    title: title,
-                    systemImage: nil,
-                    image: image,
-                    customView: nil,
-                    transitionStartOffset: transitionStartOffset,
-                    transitionRange: transitionRange,
-                    experimentalAvoidance: experimentalAvoidance
-                )))
-        } else if let systemImage = systemImage {
-            return AnyView(modifier(
-                FlowingHeaderTransition<EmptyView>(
-                    title: title,
-                    systemImage: systemImage,
-                    image: nil,
-                    customView: nil,
-                    transitionStartOffset: transitionStartOffset,
-                    transitionRange: transitionRange,
-                    experimentalAvoidance: experimentalAvoidance
-                )))
-        } else {
-            return AnyView(modifier(
-                FlowingHeaderTransition<EmptyView>(
-                    title: title,
-                    systemImage: nil,
-                    image: nil,
-                    customView: nil,
-                    transitionStartOffset: transitionStartOffset,
-                    transitionRange: transitionRange,
-                    experimentalAvoidance: experimentalAvoidance
-                )))
-        }
     }
 }
