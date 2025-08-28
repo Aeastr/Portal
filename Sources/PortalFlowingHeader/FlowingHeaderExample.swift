@@ -747,6 +747,140 @@ private struct SampleContentRow: View {
     }
 }
 
+@available(iOS 18.0, *)
+public struct FlowingHeaderNavigationExample: View {
+    @State private var useVerticalLayout = false
+    
+    public init() {}
+    
+    public var body: some View {
+        NavigationStack {
+            ScrollView {
+                LazyVStack(spacing: 0) {
+                    FlowingHeaderView(
+                        "Settings",
+                        systemImage: "gearshape.fill",
+                        subtitle: "Manage your preferences"
+                    )
+                    .tint(.blue)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 24)
+                    
+                    VStack(spacing: 16) {
+                        // Layout toggle
+                        HStack {
+                            Text("Layout Style")
+                                .font(.headline)
+                            Spacer()
+                            Button(action: { useVerticalLayout.toggle() }) {
+                                HStack {
+                                    Image(systemName: useVerticalLayout ? "rectangle.stack" : "rectangle.2.swap")
+                                    Text(useVerticalLayout ? "Vertical" : "Horizontal")
+                                }
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(.blue.opacity(0.1))
+                                .foregroundColor(.blue)
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                            }
+                        }
+                        .padding(.horizontal, 24)
+                        
+                        // Navigation options
+                        VStack(spacing: 12) {
+                            NavigationLink(destination: DetailView(title: "Profile", icon: "person.circle")) {
+                                SettingsRow(title: "Profile", subtitle: "Manage your account", icon: "person.circle", color: .blue)
+                            }
+                            
+                            NavigationLink(destination: DetailView(title: "Notifications", icon: "bell")) {
+                                SettingsRow(title: "Notifications", subtitle: "Configure alerts and sounds", icon: "bell", color: .orange)
+                            }
+                            
+                            NavigationLink(destination: DetailView(title: "Privacy", icon: "lock.shield")) {
+                                SettingsRow(title: "Privacy & Security", subtitle: "Control your data", icon: "lock.shield", color: .green)
+                            }
+                            
+                            NavigationLink(destination: DetailView(title: "Appearance", icon: "paintbrush")) {
+                                SettingsRow(title: "Appearance", subtitle: "Customize the look", icon: "paintbrush", color: .purple)
+                            }
+                        }
+                        .padding(.horizontal, 24)
+                        
+                        // More content for scrolling
+                        ForEach(0..<20, id: \.self) { index in
+                            SampleContentRow(index: index)
+                                .padding(.horizontal, 24)
+                        }
+                    }
+                    .padding(.vertical, 20)
+                }
+                .flowingHeaderDestination("Settings", systemImage: "gearshape.fill")
+            }
+        }
+        .flowingHeader("Settings", systemImage: "gearshape.fill")
+        .flowingHeaderLayout(useVerticalLayout ? .vertical : .horizontal)
+    }
+}
+
+@available(iOS 18.0, *)
+private struct DetailView: View {
+    let title: String
+    let icon: String
+    
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 20) {
+                Image(systemName: icon)
+                    .font(.system(size: 64))
+                    .foregroundStyle(.tint)
+                    .padding(.top, 40)
+                
+                Text(title)
+                    .font(.title.weight(.semibold))
+                
+                Text("This is a detail view for \(title.lowercased()) settings. The flowing header smoothly transitions when navigating between views.")
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 24)
+                
+                Spacer(minLength: 40)
+                
+                // Sample content
+                VStack(spacing: 16) {
+                    ForEach(0..<10, id: \.self) { index in
+                        HStack {
+                            Circle()
+                                .fill(.gray.opacity(0.3))
+                                .frame(width: 32, height: 32)
+                                .overlay {
+                                    Text("\(index + 1)")
+                                        .font(.caption2.weight(.medium))
+                                }
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("\(title) Option \(index + 1)")
+                                    .font(.body.weight(.medium))
+                                Text("Configure this setting")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            
+                            Spacer()
+                            
+                            Toggle("", isOn: .constant(index % 2 == 0))
+                                .labelsHidden()
+                        }
+                        .padding(.horizontal, 24)
+                    }
+                }
+            }
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationTitle(title)
+    }
+}
+
+
 // MARK: - Preview
 
 @available(iOS 18.0, *)
@@ -771,4 +905,9 @@ private struct SampleContentRow: View {
 @available(iOS 18.0, *)
 #Preview("Dynamic") {
     FlowingHeaderMultiStyleExample()
+}
+
+@available(iOS 18.0, *)
+#Preview("Navigation") {
+    FlowingHeaderNavigationExample()
 }

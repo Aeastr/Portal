@@ -86,172 +86,40 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
                     let titleSrcAnchor = anchors[titleSrcKey]
                     let titleDstAnchor = anchors[titleDstKey]
 
-                    // Try to find both custom view anchors
-                    let customSrcKey = AnchorKeyID(kind: "source", id: title, type: "customView")
-                    let customDstKey = AnchorKeyID(kind: "destination", id: title, type: "customView")
-                    let customSrcAnchor = anchors[customSrcKey]
-                    let customDstAnchor = anchors[customDstKey]
-                    
-                    // Try to find both system image anchors
-                    let iconSrcKey = AnchorKeyID(kind: "source", id: title, type: "systemImage")
-                    let iconDstKey = AnchorKeyID(kind: "destination", id: title, type: "systemImage")
-                    let iconSrcAnchor = anchors[iconSrcKey]
-                    let iconDstAnchor = anchors[iconDstKey]
-                    
-                    // Try to find both image anchors
-                    let imageSrcKey = AnchorKeyID(kind: "source", id: title, type: "image")
-                    let imageDstKey = AnchorKeyID(kind: "destination", id: title, type: "image")
-                    let imageSrcAnchor = anchors[imageSrcKey]
-                    let imageDstAnchor = anchors[imageDstKey]
+                    // Try to find both accessory anchors (any type of accessory content)
+                    let accessorySrcKey = AnchorKeyID(kind: "source", id: title, type: "accessory")
+                    let accessoryDstKey = AnchorKeyID(kind: "destination", id: title, type: "accessory")
+                    let accessorySrcAnchor = anchors[accessorySrcKey]
+                    let accessoryDstAnchor = anchors[accessoryDstKey]
 
                     // Clamp progress t ∈ [0,1]
                     let clamped = min(max(abs(titleProgress), 0), 1)
                     let t: CGFloat = CGFloat(clamped)
 
-                    // Handle title animation if anchors exist
-                    if titleSrcAnchor != nil || titleDstAnchor != nil {
-                        let srcRect =
-                            titleSrcAnchor != nil
-                            ? geometry[titleSrcAnchor!] : (titleDstAnchor != nil ? geometry[titleDstAnchor!] : .zero)
-                        let dstRect =
-                            titleDstAnchor != nil
-                            ? geometry[titleDstAnchor!] : (titleSrcAnchor != nil ? geometry[titleSrcAnchor!] : .zero)
-
-                        let titleDynamicOffset = experimentalAvoidance 
-                            ? calculateDynamicOffset(
-                                progress: t, 
-                                accessoryOffset: calculateAccessoryOffset(
-                                    geometry: geometry,
-                                    customSrcAnchor: customSrcAnchor,
-                                    iconSrcAnchor: iconSrcAnchor,
-                                    imageSrcAnchor: imageSrcAnchor
-                                ) / 2
-                            ) 
-                            : 0
-                        
-                        let titlePosition = calculateTitlePosition(
-                            srcRect: srcRect,
-                            dstRect: dstRect,
+                    // Render title if both anchors exist
+                    if titleSrcAnchor != nil && titleDstAnchor != nil {
+                        renderTitle(
+                            geometry: geometry,
+                            srcAnchor: titleSrcAnchor!,
+                            dstAnchor: titleDstAnchor!,
                             progress: t,
-                            offset: titleDynamicOffset
+                            accessorySrcAnchor: accessorySrcAnchor
                         )
-
-                        // Compute scale from 28→17pt
-                        let sourceFontSize: CGFloat = 28
-                        let destFontSize: CGFloat = 17
-                        let finalScale = destFontSize / sourceFontSize
-                        let currentScale = 1 + (finalScale - 1) * t
-
-                        // Draw title at the source size, scaled & positioned
-                        Text(title)
-                            .font(.system(size: sourceFontSize, weight: .semibold))
-                            .foregroundStyle(.primary)
-                            .scaleEffect(currentScale)
-                            .position(x: titlePosition.x, y: titlePosition.y)
                     }
 
-                    // Handle system image animation if anchors exist and systemImage is provided
-                    if let systemImage = systemImage, iconSrcAnchor != nil || iconDstAnchor != nil {
-                        let srcRect =
-                            iconSrcAnchor != nil
-                            ? geometry[iconSrcAnchor!] : (iconDstAnchor != nil ? geometry[iconDstAnchor!] : .zero)
-                        let dstRect =
-                            iconDstAnchor != nil
-                            ? geometry[iconDstAnchor!] : (iconSrcAnchor != nil ? geometry[iconSrcAnchor!] : .zero)
-
-                        // Calculate position with optional collision avoidance
-                        let baseX = srcRect.midX + (dstRect.midX - srcRect.midX) * t
-                        let x = experimentalAvoidance 
-                            ? baseX + calculateDynamicOffset(progress: t, accessoryOffset: -(srcRect.width / 2) / 2)
-                            : baseX
-                        let y = srcRect.midY + (dstRect.midY - srcRect.midY) * t
-
-                        // Scale the system image (from source size to destination size)
-                        let sourceSize = srcRect.size
-                        let destSize = dstRect.size
-
-                        // Calculate scale factor to go from source size to destination size
-                        let targetWidth = sourceSize.width + (destSize.width - sourceSize.width) * t
-                        let targetHeight = sourceSize.height + (destSize.height - sourceSize.height) * t
-
-                        // Render the system image with transformations
-                        Image(systemName: systemImage)
-                            .font(.system(size: 64))
-                            .foregroundStyle(.tint)
-                            .frame(width: sourceSize.width, height: sourceSize.height)
-                            .scaleEffect(x: targetWidth / sourceSize.width, y: targetHeight / sourceSize.height)
-                            .position(x: x, y: y)
-                    }
-
-                    // Handle custom view animation if anchors exist and custom view is provided
-                    if let customView = customView, customSrcAnchor != nil || customDstAnchor != nil {
-                        let srcRect =
-                            customSrcAnchor != nil
-                            ? geometry[customSrcAnchor!] : (customDstAnchor != nil ? geometry[customDstAnchor!] : .zero)
-                        let dstRect =
-                            customDstAnchor != nil
-                            ? geometry[customDstAnchor!] : (customSrcAnchor != nil ? geometry[customSrcAnchor!] : .zero)
-
-                        // Calculate position with optional collision avoidance
-                        let baseX = srcRect.midX + (dstRect.midX - srcRect.midX) * t
-                        let x = experimentalAvoidance 
-                            ? baseX + calculateDynamicOffset(progress: t, accessoryOffset: -(srcRect.width / 2) / 2)
-                            : baseX
-                        let y = srcRect.midY + (dstRect.midY - srcRect.midY) * t
-
-                        // Scale the custom view (from source size to destination size)
-                        let sourceSize = srcRect.size
-                        let destSize = dstRect.size
-
-                        // Calculate scale factor to go from source size to destination size
-                        let targetWidth = sourceSize.width + (destSize.width - sourceSize.width) * t
-                        let targetHeight = sourceSize.height + (destSize.height - sourceSize.height) * t
-
-                        // Render the actual custom view with transformations
-                        customView
-                            .frame(width: sourceSize.width, height: sourceSize.height)
-                            .scaleEffect(x: targetWidth / sourceSize.width, y: targetHeight / sourceSize.height)
-                            .position(x: x, y: y)
-                    }
-
-                    // Handle image animation if anchors exist and image is provided
-                    if let image = image, imageSrcAnchor != nil || imageDstAnchor != nil {
-                        let srcRect =
-                            imageSrcAnchor != nil
-                            ? geometry[imageSrcAnchor!] : (imageDstAnchor != nil ? geometry[imageDstAnchor!] : .zero)
-                        let dstRect =
-                            imageDstAnchor != nil
-                            ? geometry[imageDstAnchor!] : (imageSrcAnchor != nil ? geometry[imageSrcAnchor!] : .zero)
-
-                        // Calculate position with optional collision avoidance
-                        let baseX = srcRect.midX + (dstRect.midX - srcRect.midX) * t
-                        let x = experimentalAvoidance 
-                            ? baseX + calculateDynamicOffset(progress: t, accessoryOffset: -(srcRect.width / 2) / 2)
-                            : baseX
-                        let y = srcRect.midY + (dstRect.midY - srcRect.midY) * t
-
-                        // Scale the image (from source size to destination size)
-                        let sourceSize = srcRect.size
-                        let destSize = dstRect.size
-
-                        // Calculate scale factor to go from source size to destination size
-                        let targetWidth = sourceSize.width + (destSize.width - sourceSize.width) * t
-                        let targetHeight = sourceSize.height + (destSize.height - sourceSize.height) * t
-
-                        // Render the actual image with transformations
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: sourceSize.width, height: sourceSize.height)
-                            .scaleEffect(x: targetWidth / sourceSize.width, y: targetHeight / sourceSize.height)
-                            .position(x: x, y: y)
+                    // Render accessory if both anchors exist
+                    if accessorySrcAnchor != nil && accessoryDstAnchor != nil {
+                        renderAccessory(
+                            geometry: geometry,
+                            srcAnchor: accessorySrcAnchor!,
+                            dstAnchor: accessoryDstAnchor!,
+                            progress: t
+                        )
                     }
 
                     // Debug message if no anchors found
                     if titleSrcAnchor == nil && titleDstAnchor == nil && 
-                       customSrcAnchor == nil && customDstAnchor == nil &&
-                       iconSrcAnchor == nil && iconDstAnchor == nil &&
-                       imageSrcAnchor == nil && imageDstAnchor == nil
+                       accessorySrcAnchor == nil && accessoryDstAnchor == nil
                     {
                         Text("none found – keys: \\(anchors.keys), looking for \\(title)")
                             .foregroundStyle(.red)
@@ -280,30 +148,90 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
         return Double(progress)
     }
     
-    /// Calculates the accessory offset to avoid collision with title text.
-    ///
-    /// - Parameters:
-    ///   - geometry: The geometry reader containing anchor bounds
-    ///   - customSrcAnchor: Optional custom view source anchor
-    ///   - iconSrcAnchor: Optional system image source anchor
-    ///   - imageSrcAnchor: Optional image source anchor
-    /// - Returns: Half the width of the detected accessory, or 0 if none found
-    private func calculateAccessoryOffset(
+    
+    /// Renders the title with animation between source and destination positions.
+    private func renderTitle(
         geometry: GeometryProxy,
-        customSrcAnchor: Anchor<CGRect>?,
-        iconSrcAnchor: Anchor<CGRect>?,
-        imageSrcAnchor: Anchor<CGRect>?
-    ) -> CGFloat {
-        if let customSrcAnchor = customSrcAnchor {
-            return geometry[customSrcAnchor].width / 2
-        } else if let iconSrcAnchor = iconSrcAnchor {
-            return geometry[iconSrcAnchor].width / 2
-        } else if let imageSrcAnchor = imageSrcAnchor {
-            return geometry[imageSrcAnchor].width / 2
-        }
-        return 0
+        srcAnchor: Anchor<CGRect>,
+        dstAnchor: Anchor<CGRect>,
+        progress: CGFloat,
+        accessorySrcAnchor: Anchor<CGRect>?
+    ) -> some View {
+        let srcRect = geometry[srcAnchor]
+        let dstRect = geometry[dstAnchor]
+
+        let titleDynamicOffset = experimentalAvoidance 
+            ? calculateDynamicOffset(
+                progress: progress, 
+                accessoryOffset: (accessorySrcAnchor != nil ? geometry[accessorySrcAnchor!].width / 4 : 0)
+            ) 
+            : 0
+        
+        let titlePosition = calculateTitlePosition(
+            srcRect: srcRect,
+            dstRect: dstRect,
+            progress: progress,
+            offset: titleDynamicOffset
+        )
+
+        // Compute scale from 28→17pt
+        let sourceFontSize: CGFloat = 28
+        let destFontSize: CGFloat = 17
+        let finalScale = destFontSize / sourceFontSize
+        let currentScale = 1 + (finalScale - 1) * progress
+
+        // Draw title at the source size, scaled & positioned
+        return Text(title)
+            .font(.system(size: sourceFontSize, weight: .semibold))
+            .foregroundStyle(.primary)
+            .scaleEffect(currentScale)
+            .position(x: titlePosition.x, y: titlePosition.y)
     }
     
+    /// Renders the accessory with animation between source and destination positions.
+    private func renderAccessory(
+        geometry: GeometryProxy,
+        srcAnchor: Anchor<CGRect>,
+        dstAnchor: Anchor<CGRect>,
+        progress: CGFloat
+    ) -> some View {
+        let srcRect = geometry[srcAnchor]
+        let dstRect = geometry[dstAnchor]
+
+        // Calculate position with optional collision avoidance
+        let baseX = srcRect.midX + (dstRect.midX - srcRect.midX) * progress
+        let x = experimentalAvoidance 
+            ? baseX + calculateDynamicOffset(progress: progress, accessoryOffset: -(srcRect.width / 2) / 2)
+            : baseX
+        let y = srcRect.midY + (dstRect.midY - srcRect.midY) * progress
+
+        // Scale the accessory (from source size to destination size)
+        let sourceSize = srcRect.size
+        let destSize = dstRect.size
+
+        // Calculate scale factor to go from source size to destination size
+        let targetWidth = sourceSize.width + (destSize.width - sourceSize.width) * progress
+        let targetHeight = sourceSize.height + (destSize.height - sourceSize.height) * progress
+
+        // Render the appropriate accessory content with transformations
+        return Group {
+            if let systemImage = systemImage {
+                Image(systemName: systemImage)
+                    .font(.system(size: 64))
+                    .foregroundStyle(.tint)
+            } else if let customView = customView {
+                customView
+            } else if let image = image {
+                image
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+            }
+        }
+        .frame(width: sourceSize.width, height: sourceSize.height)
+        .scaleEffect(x: targetWidth / sourceSize.width, y: targetHeight / sourceSize.height)
+        .position(x: x, y: y)
+    }
+
     /// Calculates dynamic offset during transition using sine curve.
     ///
     /// - Parameters:

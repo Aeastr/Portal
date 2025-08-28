@@ -42,7 +42,7 @@ internal struct FlowingHeaderDestination: ViewModifier {
     func body(content: Content) -> some View {
         content
             .toolbar {
-                ToolbarItem(placement: .principal) {
+                ToolbarItem(placement: .title) {
                     Text(title)
                         .font(.headline.weight(.semibold))
                         .opacity(0)  // Invisible but present for anchor extraction
@@ -67,7 +67,7 @@ internal struct FlowingHeaderDestinationWithSystemImage: ViewModifier {
     func body(content: Content) -> some View {
         content
             .toolbar {
-                ToolbarItem(placement: .principal) {
+                ToolbarItem(placement: .title) {
                     Group {
                         switch layout {
                         case .horizontal:
@@ -91,7 +91,7 @@ internal struct FlowingHeaderDestinationWithSystemImage: ViewModifier {
             .font(.headline)
             .opacity(0)
             .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                [AnchorKeyID(kind: "destination", id: title, type: "systemImage"): anchor]
+                [AnchorKeyID(kind: "destination", id: title, type: "accessory"): anchor]
             }
     }
     
@@ -114,7 +114,7 @@ internal struct FlowingHeaderDestinationWithCustomView<DestinationView: View>: V
     func body(content: Content) -> some View {
         content
             .toolbar {
-                ToolbarItem(placement: .principal) {
+                ToolbarItem(placement: .title) {
                     Group {
                         switch layout {
                         case .horizontal:
@@ -137,7 +137,7 @@ internal struct FlowingHeaderDestinationWithCustomView<DestinationView: View>: V
         destinationView
             .opacity(0)
             .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                [AnchorKeyID(kind: "destination", id: title, type: "customView"): anchor]
+                [AnchorKeyID(kind: "destination", id: title, type: "accessory"): anchor]
             }
     }
     
@@ -160,7 +160,7 @@ internal struct FlowingHeaderDestinationWithImage: ViewModifier {
     func body(content: Content) -> some View {
         content
             .toolbar {
-                ToolbarItem(placement: .principal) {
+                ToolbarItem(placement: .title) {
                     Group {
                         switch layout {
                         case .horizontal:
@@ -186,7 +186,7 @@ internal struct FlowingHeaderDestinationWithImage: ViewModifier {
             .frame(width: 32, height: 32)
             .opacity(0)
             .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                [AnchorKeyID(kind: "destination", id: title, type: "image"): anchor]
+                [AnchorKeyID(kind: "destination", id: title, type: "accessory"): anchor]
             }
     }
     
