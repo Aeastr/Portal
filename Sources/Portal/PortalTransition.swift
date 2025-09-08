@@ -585,6 +585,360 @@ internal struct ConditionalPortalTransitionModifierLegacy<LayerView: View>: View
     }
 }
 
+// MARK: - Multi-Item Portal Transition Modifier
+
+/// A view modifier that manages coordinated portal transitions for multiple `Identifiable` items.
+///
+/// This modifier enables multiple portal animations to run simultaneously as a coordinated group.
+/// When the items array changes, all items in the array are animated together to their destinations.
+/// This is perfect for scenarios like multiple photos transitioning to a detail view simultaneously.
+///
+/// **Key Features:**
+/// - Coordinates multiple portal animations as a single group
+/// - Automatic ID generation from `Identifiable` items
+/// - Synchronized timing for all portals in the group
+/// - Individual layer views for each item
+/// - Proper cleanup when animations complete
+///
+/// **Usage Pattern:**
+/// ```swift
+/// @State private var selectedPhotos: [Photo] = []
+///
+/// PhotoGridView()
+///     .portalTransition(items: $selectedPhotos, groupID: "photoStack") { photo in
+///         PhotoView(photo: photo)
+///     }
+/// ```
+@available(iOS 17.0, *)
+public struct MultiItemPortalTransitionModifier<Item: Identifiable, LayerView: View>: ViewModifier {
+    
+    /// Binding to the array of items that controls the portal transitions.
+    @Binding public var items: [Item]
+    
+    /// Group identifier for coordinating the animations.
+    public let groupID: String
+    
+    /// Configuration object containing animation and styling parameters.
+    public let config: PortalTransitionConfig
+    
+    /// Closure that generates the layer view for each item in the transition.
+    public let layerView: (Item) -> LayerView
+    
+    /// Completion handler called when all transitions finish.
+    public let completion: (Bool) -> Void
+    
+    /// Stagger delay between each item's animation start (in seconds).
+    /// When > 0, each subsequent item will start animating with this additional delay.
+    /// For example, with staggerDelay = 0.1: first item starts at base delay,
+    /// second item at base + 0.1s, third at base + 0.2s, etc.
+    public let staggerDelay: TimeInterval
+    
+    /// The shared portal model that manages all portal animations.
+    @Environment(CrossModel.self) private var portalModel
+    
+    /// Tracks the last set of keys for cleanup during reverse transitions.
+    @State private var lastKeys: Set<String> = []
+    
+    public init(
+        items: Binding<[Item]>,
+        groupID: String,
+        config: PortalTransitionConfig,
+        layerView: @escaping (Item) -> LayerView,
+        completion: @escaping (Bool) -> Void,
+        staggerDelay: TimeInterval = 0.0
+    ) {
+        self._items = items
+        self.groupID = groupID
+        self.config = config
+        self.layerView = layerView
+        self.completion = completion
+        self.staggerDelay = staggerDelay
+    }
+    
+    /// Generates string keys from the current items' IDs.
+    private var keys: Set<String> {
+        Set(items.map { "\($0.id)" })
+    }
+    
+    /// Handles changes to the items array, triggering appropriate portal transitions.
+    private func onChange(oldValue: [Item], hasItems: Bool) {
+        let currentKeys = keys
+        
+        if hasItems && !items.isEmpty {
+            // Forward transition: items were added
+            lastKeys = currentKeys
+            
+            // Ensure portal info exists for all items
+            for item in items {
+                let key = "\(item.id)"
+                if portalModel.info.firstIndex(where: { $0.infoID == key }) == nil {
+                    portalModel.info.append(PortalInfo(id: key, groupID: groupID))
+                }
+            }
+            
+            // Configure all portals in the group
+            let groupIndices = portalModel.info.enumerated().compactMap { index, info in
+                currentKeys.contains(info.infoID) ? index : nil
+            }
+            
+            // Set up group coordination - first item becomes coordinator
+            for (i, idx) in groupIndices.enumerated() {
+                portalModel.info[idx].initalized = true
+                portalModel.info[idx].animation = config.animation
+                portalModel.info[idx].corners = config.corners
+                portalModel.info[idx].groupID = groupID
+                portalModel.info[idx].isGroupCoordinator = (i == 0)
+                
+                // Find the corresponding item for this portal
+                if let item = items.first(where: { "\($0.id)" == portalModel.info[idx].infoID }) {
+                    portalModel.info[idx].layerView = AnyView(layerView(item))
+                }
+                
+                // Only coordinator gets completion callback
+                if i == 0 {
+                    portalModel.info[idx].completion = completion
+                } else {
+                    portalModel.info[idx].completion = { _ in }
+                }
+            }
+            
+            // Start staggered animations
+            if staggerDelay > 0 {
+                // Staggered animation: start each item with increasing delay
+                for (i, idx) in groupIndices.enumerated() {
+                    let itemDelay = config.animation.delay + (TimeInterval(i) * staggerDelay)
+                    
+                    DispatchQueue.main.asyncAfter(deadline: .now() + itemDelay) {
+                        config.animation.performAnimation({
+                            portalModel.info[idx].animateView = true
+                        }) {
+                            // Hide destination view for this item
+                            portalModel.info[idx].hideView = true
+                            
+                            // Only coordinator calls completion, and only after the last item
+                            if portalModel.info[idx].isGroupCoordinator {
+                                // Wait for the last item to finish before calling completion
+                                let lastItemDelay = TimeInterval(groupIndices.count - 1) * staggerDelay
+                                DispatchQueue.main.asyncAfter(deadline: .now() + lastItemDelay) {
+                                    portalModel.info[idx].completion(true)
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                // Coordinated animation: all items start together
+                DispatchQueue.main.asyncAfter(deadline: .now() + config.animation.delay) {
+                    config.animation.performAnimation({
+                        for idx in groupIndices {
+                            portalModel.info[idx].animateView = true
+                        }
+                    }) {
+                        // Hide destination views and notify completion (only coordinator calls completion)
+                        for idx in groupIndices {
+                            portalModel.info[idx].hideView = true
+                            if portalModel.info[idx].isGroupCoordinator {
+                                portalModel.info[idx].completion(true)
+                            }
+                        }
+                    }
+                }
+            }
+            
+        } else {
+            // Reverse transition: items were cleared
+            let cleanupKeys = lastKeys
+            let cleanupIndices = portalModel.info.enumerated().compactMap { index, info in
+                cleanupKeys.contains(info.infoID) ? index : nil
+            }
+            
+            // Prepare for reverse animation
+            for idx in cleanupIndices {
+                portalModel.info[idx].hideView = false
+            }
+            
+            // Start coordinated reverse animation
+            config.animation.performAnimation({
+                for idx in cleanupIndices {
+                    portalModel.info[idx].animateView = false
+                }
+            }) {
+                // Complete cleanup after reverse animation
+                for idx in cleanupIndices {
+                    portalModel.info[idx].initalized = false
+                    portalModel.info[idx].layerView = nil
+                    portalModel.info[idx].sourceAnchor = nil
+                    portalModel.info[idx].destinationAnchor = nil
+                    portalModel.info[idx].groupID = nil
+                    portalModel.info[idx].isGroupCoordinator = false
+                    if portalModel.info[idx].isGroupCoordinator {
+                        portalModel.info[idx].completion(false)
+                    }
+                }
+            }
+            
+            lastKeys.removeAll()
+        }
+    }
+    
+    public func body(content: Content) -> some View {
+        content.onChange(of: !items.isEmpty) { newValue in
+            onChange(oldValue: items, hasItems: newValue)
+        }
+    }
+}
+
+/// iOS 15 compatible version of MultiItemPortalTransitionModifier.
+@available(iOS, introduced: 15.0, deprecated: 17.0, message: "Use the iOS 17+ version when possible")
+public struct MultiItemPortalTransitionModifierLegacy<Item: Identifiable, LayerView: View>: ViewModifier {
+    @Binding public var items: [Item]
+    public let groupID: String
+    public let config: PortalTransitionConfig
+    public let layerView: (Item) -> LayerView
+    public let completion: (Bool) -> Void
+    public let staggerDelay: TimeInterval
+    @EnvironmentObject private var portalModel: CrossModelLegacy
+    @State private var lastKeys: Set<String> = []
+    
+    public init(
+        items: Binding<[Item]>,
+        groupID: String,
+        config: PortalTransitionConfig,
+        layerView: @escaping (Item) -> LayerView,
+        completion: @escaping (Bool) -> Void,
+        staggerDelay: TimeInterval = 0.0
+    ) {
+        self._items = items
+        self.groupID = groupID
+        self.config = config
+        self.layerView = layerView
+        self.completion = completion
+        self.staggerDelay = staggerDelay
+    }
+    
+    private var keys: Set<String> {
+        Set(items.map { "\($0.id)" })
+    }
+    
+    private func onChange(oldValue: [Item], hasItems: Bool) {
+        // Similar implementation to iOS 17+ version
+        // (Implementation details similar to above but using CrossModelLegacy)
+        let currentKeys = keys
+        
+        if hasItems && !items.isEmpty {
+            lastKeys = currentKeys
+            
+            for item in items {
+                let key = "\(item.id)"
+                if portalModel.info.firstIndex(where: { $0.infoID == key }) == nil {
+                    portalModel.info.append(PortalInfo(id: key, groupID: groupID))
+                }
+            }
+            
+            let groupIndices = portalModel.info.enumerated().compactMap { index, info in
+                currentKeys.contains(info.infoID) ? index : nil
+            }
+            
+            for (i, idx) in groupIndices.enumerated() {
+                portalModel.info[idx].initalized = true
+                portalModel.info[idx].animation = config.animation
+                portalModel.info[idx].corners = config.corners
+                portalModel.info[idx].groupID = groupID
+                portalModel.info[idx].isGroupCoordinator = (i == 0)
+                
+                if let item = items.first(where: { "\($0.id)" == portalModel.info[idx].infoID }) {
+                    portalModel.info[idx].layerView = AnyView(layerView(item))
+                }
+                
+                if i == 0 {
+                    portalModel.info[idx].completion = completion
+                } else {
+                    portalModel.info[idx].completion = { _ in }
+                }
+            }
+            
+            // Start staggered animations (legacy version)
+            if staggerDelay > 0 {
+                // Staggered animation: start each item with increasing delay
+                for (i, idx) in groupIndices.enumerated() {
+                    let itemDelay = config.animation.delay + (TimeInterval(i) * staggerDelay)
+                    
+                    DispatchQueue.main.asyncAfter(deadline: .now() + itemDelay) {
+                        config.animation.performAnimation({
+                            portalModel.info[idx].animateView = true
+                        }) {
+                            // Hide destination view for this item
+                            portalModel.info[idx].hideView = true
+                            
+                            // Only coordinator calls completion, and only after the last item
+                            if portalModel.info[idx].isGroupCoordinator {
+                                // Wait for the last item to finish before calling completion
+                                let lastItemDelay = TimeInterval(groupIndices.count - 1) * staggerDelay
+                                DispatchQueue.main.asyncAfter(deadline: .now() + lastItemDelay) {
+                                    portalModel.info[idx].completion(true)
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                // Coordinated animation: all items start together
+                DispatchQueue.main.asyncAfter(deadline: .now() + config.animation.delay) {
+                    config.animation.performAnimation({
+                        for idx in groupIndices {
+                            portalModel.info[idx].animateView = true
+                        }
+                    }) {
+                        for idx in groupIndices {
+                            portalModel.info[idx].hideView = true
+                            if portalModel.info[idx].isGroupCoordinator {
+                                portalModel.info[idx].completion(true)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else {
+           let cleanupKeys = lastKeys
+           let cleanupIndices = portalModel.info.enumerated().compactMap { index, info in
+               cleanupKeys.contains(info.infoID) ? index : nil
+           }
+           
+           for idx in cleanupIndices {
+               portalModel.info[idx].hideView = false
+           }
+           
+           config.animation.performAnimation({
+               for idx in cleanupIndices {
+                   portalModel.info[idx].animateView = false
+               }
+           }) {
+               for idx in cleanupIndices {
+                   portalModel.info[idx].initalized = false
+                   portalModel.info[idx].layerView = nil
+                   portalModel.info[idx].sourceAnchor = nil
+                   portalModel.info[idx].destinationAnchor = nil
+                   portalModel.info[idx].groupID = nil
+                   portalModel.info[idx].isGroupCoordinator = false
+                   if portalModel.info[idx].isGroupCoordinator {
+                       portalModel.info[idx].completion(false)
+                   }
+               }
+           }
+           
+           lastKeys.removeAll()
+       }
+    }
+            
+    
+    public func body(content: Content) -> some View {
+        content.onChange(of: !items.isEmpty) { newValue in
+            onChange(oldValue: items, hasItems: newValue)
+        }
+    }
+}
+
 // MARK: - View Extensions
 
 public extension View {
@@ -687,6 +1041,80 @@ public extension View {
                     config: config,
                     layerView: layerView,
                     completion: completion
+                )
+            )
+        }
+    }
+    
+    /// Applies coordinated portal transitions for multiple `Identifiable` items.
+    ///
+    /// This modifier enables multiple portal animations to run simultaneously as a coordinated group.
+    /// All items in the array are animated together with synchronized timing, perfect for scenarios
+    /// like multiple photos transitioning to a detail view simultaneously.
+    ///
+    /// **Usage Pattern:**
+    /// ```swift
+    /// @State private var selectedPhotos: [Photo] = []
+    ///
+    /// PhotoGridView()
+    ///     .portalTransition(items: $selectedPhotos, groupID: "photoStack") { photo in
+    ///         PhotoView(photo: photo)
+    ///     }
+    /// ```
+    ///
+    /// **Group Coordination:**
+    /// - All portals with the same `groupID` animate together
+    /// - Source views should use `.portal(item:, .source, groupID:)`
+    /// - Destination views should use `.portal(item:, .destination, groupID:)`
+    /// **Group Coordination:**
+    /// - All portals with the same `groupID` animate together
+    /// - Source views should use `.portal(item:, .source, groupID:)`
+    /// - Destination views should use `.portal(item:, .destination, groupID:)`
+    /// - Animation timing can be synchronized or staggered based on `staggerDelay`
+    ///
+    /// **Staggered Animation:**
+    /// When `staggerDelay` > 0, each item starts animating with an increasing delay:
+    /// - First item: starts at base delay
+    /// - Second item: starts at base delay + staggerDelay
+    /// - Third item: starts at base delay + (2 * staggerDelay), etc.
+    ///
+    /// - Parameters:
+    ///   - items: Binding to an array of `Identifiable` items that controls the transitions
+    ///   - groupID: Group identifier for coordinating animations. Must match portal source/destination groupIDs.
+    ///   - config: Configuration for animation and styling (optional, defaults to standard config)
+    ///   - staggerDelay: Delay between each item's animation start in seconds (optional, defaults to 0 for synchronized)
+    ///   - layerView: Closure that receives each item and returns the view to animate for that item
+    ///   - completion: Optional completion handler called when all animations finish (defaults to no-op)
+    /// - Returns: A view with the multi-item portal transition modifier applied
+    @available(iOS 15.0, *)
+    func portalTransition<Item: Identifiable, LayerView: View>(
+        items: Binding<[Item]>,
+        groupID: String,
+        config: PortalTransitionConfig = .init(),
+        staggerDelay: TimeInterval = 0.0,
+        @ViewBuilder layerView: @escaping (Item) -> LayerView,
+        completion: @escaping (Bool) -> Void = { _ in }
+    ) -> some View {
+        if #available(iOS 17.0, *) {
+            return self.modifier(
+                MultiItemPortalTransitionModifier(
+                    items: items,
+                    groupID: groupID,
+                    config: config,
+                    layerView: layerView,
+                    completion: completion,
+                    staggerDelay: staggerDelay
+                )
+            )
+        } else {
+            return self.modifier(
+                MultiItemPortalTransitionModifierLegacy(
+                    items: items,
+                    groupID: groupID,
+                    config: config,
+                    layerView: layerView,
+                    completion: completion,
+                    staggerDelay: staggerDelay
                 )
             )
         }
