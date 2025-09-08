@@ -93,6 +93,14 @@ public struct PortalInfo: Identifiable {
     /// Set when the destination view reports its position through the preference system.
     public var destinationAnchor: Anchor<CGRect>? = nil
     
+    /// Captured absolute rect for the source view at animation start.
+    /// Used to prevent the floating layer from following layout changes (e.g., list scrolling).
+    public var sourceRect: CGRect? = nil
+    
+    /// Captured absolute rect for the destination view at animation start.
+    /// Used to prevent the floating layer from following layout changes (e.g., list scrolling).
+    public var destinationRect: CGRect? = nil
+    
     /// Completion callback executed when the portal animation finishes.
     ///
     /// This closure is called with a boolean parameter indicating whether the animation
