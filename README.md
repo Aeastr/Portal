@@ -32,7 +32,12 @@
 
 ## Documentation
 
-For full installation steps, usage guides, examples, and animation deep-dives, visit the [Portal Wiki](https://github.com/Aeastr/Portal/wiki): 
+Portal uses a hybrid documentation approach to provide the best developer experience:
+
+- **Inline DocC comments** - Rich documentation that appears directly in Xcode while coding, providing immediate context and autocomplete assistance
+- **Comprehensive wiki** - Extensive guides, examples, and deep-dive explanations available at the [Portal Wiki](https://github.com/Aeastr/Portal/wiki)
+
+This approach keeps the codebase clean and focused while ensuring developers have both quick inline help and comprehensive resources when needed. 
 
 ---
 

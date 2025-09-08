@@ -23,5 +23,10 @@ let package = Package(
             name: "PortalFlowingHeader",
             path: "Sources/PortalFlowingHeader"
         ),
+        .testTarget(
+            name: "PortalFlowingHeaderTests",
+            dependencies: ["PortalFlowingHeader"],
+            path: "Tests/PortalFlowingHeaderTests"
+        ),
     ]
 )

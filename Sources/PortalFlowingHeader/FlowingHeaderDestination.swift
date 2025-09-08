@@ -259,11 +259,12 @@ public extension View {
     ///   - title: The title string that matches your FlowingHeaderView
     ///   - systemImage: Optional SF Symbol that should serve as the destination
     /// - Returns: A view with destination anchors
+    @ViewBuilder
     func flowingHeaderDestination(_ title: String, systemImage: String?) -> some View {
         if let systemImage = systemImage, !systemImage.isEmpty {
-            return AnyView(modifier(FlowingHeaderDestinationWithSystemImage(title: title, systemImage: systemImage)))
+            modifier(FlowingHeaderDestinationWithSystemImage(title: title, systemImage: systemImage))
         } else {
-            return AnyView(modifier(FlowingHeaderDestination(title: title)))
+            modifier(FlowingHeaderDestination(title: title))
         }
     }
 
@@ -273,11 +274,12 @@ public extension View {
     ///   - title: The title string that matches your FlowingHeaderView
     ///   - image: Optional Image that should serve as the destination
     /// - Returns: A view with destination anchors
+    @ViewBuilder
     func flowingHeaderDestination(_ title: String, image: Image?) -> some View {
         if let image = image {
-            return AnyView(modifier(FlowingHeaderDestinationWithImage(title: title, image: image)))
+            modifier(FlowingHeaderDestinationWithImage(title: title, image: image))
         } else {
-            return AnyView(modifier(FlowingHeaderDestination(title: title)))
+            modifier(FlowingHeaderDestination(title: title))
         }
     }
     
