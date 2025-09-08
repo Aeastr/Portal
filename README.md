@@ -8,18 +8,13 @@
   </p>
 </div>
 
-<div align="center">
-  <a href="https://swift.org">
-<!--     <img src="https://img.shields.io/badge/Swift-6.0%20%7C%206-orange.svg" alt="Swift Version"> -->
-    <img src="https://img.shields.io/badge/Swift-6.0-orange.svg" alt="Swift Version">
-  </a>
-  <a href="https://www.apple.com/ios/">
-    <img src="https://img.shields.io/badge/iOS-15%2B-blue.svg" alt="iOS">
-  </a>
-  <a href="LICENSE">
-    <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT">
-  </a>
-</div>
+<p align="center">
+    <a href="https://www.apple.com/macos/"><img src="https://badgen.net/badge/macOS/14+/blue" alt="macOS"></a>
+    <a href="https://developer.apple.com/xcode/"><img src="https://badgen.net/badge/Xcode/15+/blue" alt="Xcode"></a>
+    <a href="https://swift.org"><img src="https://badgen.net/badge/Swift/5.9/orange" alt="Swift Version"></a>
+    <a href="https://brew.sh"><img src="https://badgen.net/badge/Homebrew/required/yellow" alt="Homebrew"></a>
+    <a href="LICENSE.md"><img src="https://badgen.net/badge/License/MIT/green" alt="License: MIT"></a>
+</p>
 
 ## **Demo**
 
