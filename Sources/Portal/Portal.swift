@@ -53,13 +53,12 @@ public struct Portal<Content: View>: View {
             .anchorPreference(key: AnchorKey.self, value: .bounds, transform: anchorPreferenceTransform)
             .onPreferenceChange(AnchorKey.self) { prefs in
                 Task { @MainActor in
-                    guard let idx = currentIndex, model.info[idx].initalized else { return }
-                    guard let anchor = prefs[currentKey] else { return }
-                    // Keep anchors aligned with live layout so animated layer follows scrolling/dragging
-                    if isSource {
-                        model.info[idx].sourceAnchor = anchor
-                    } else {
-                        model.info[idx].destinationAnchor = anchor
+                    if let idx = currentIndex, model.info[idx].initalized {
+                        if !isSource {
+                            model.info[idx].destinationAnchor = prefs[currentKey]
+                        } else if model.info[idx].sourceAnchor == nil {
+                            model.info[idx].sourceAnchor = prefs[currentKey]
+                        }
                     }
                 }
             }
@@ -132,13 +131,12 @@ public struct PortalLegacy<Content: View>: View {
             .anchorPreference(key: AnchorKey.self, value: .bounds, transform: anchorPreferenceTransform)
             .onPreferenceChange(AnchorKey.self) { prefs in
                 Task { @MainActor in
-                    guard let idx = currentIndex, model.info[idx].initalized else { return }
-                    guard let anchor = prefs[currentKey] else { return }
-                    // Keep anchors aligned with live layout so animated layer follows scrolling/dragging
-                    if isSource {
-                        model.info[idx].sourceAnchor = anchor
-                    } else {
-                        model.info[idx].destinationAnchor = anchor
+                    if let idx = currentIndex, model.info[idx].initalized {
+                        if !isSource {
+                            model.info[idx].destinationAnchor = prefs[currentKey]
+                        } else if model.info[idx].sourceAnchor == nil {
+                            model.info[idx].sourceAnchor = prefs[currentKey]
+                        }
                     }
                 }
             }
