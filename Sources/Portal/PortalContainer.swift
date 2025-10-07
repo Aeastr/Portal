@@ -24,19 +24,26 @@ import UIKit
 public struct PortalContainer<Content: View>: View {
     @ViewBuilder public var content: Content
     @Environment(\.scenePhase) private var scene
-    @State private var portalModel = CrossModel()
+    // The @State property will no longer have an initial value directly here.
+    // Its initial value will be set in the initializer.
+    @State private var portalModel: CrossModel
+    
     private let hideStatusBar: Bool
     
-    /// Creates a new PortalContainer.
+    /// Initializes a `PortalContainer` with optional custom settings.
     /// - Parameters:
-    ///   - hideStatusBar: Whether the overlay should hide the status bar.
-    ///   - content: The main content view.
-    
+    ///   - hideStatusBar: A boolean indicating whether the status bar should be hidden. Defaults to `false`.
+    ///   - portalModel: An optional `CrossModel` to use. If `nil`, a default `CrossModel()` is created.
+    ///   - content: The content view builder for the container.
     public init(
         hideStatusBar: Bool = false,
+        portalModel: CrossModel? = nil,
         @ViewBuilder content: () -> Content
     ) {
         self.hideStatusBar = hideStatusBar
+        // Initialize the @State property using its special initializer syntax.
+        // If portalModel is nil, use a default CrossModel instance.
+        _portalModel = State(initialValue: portalModel ?? CrossModel())
         self.content = content()
     }
     
