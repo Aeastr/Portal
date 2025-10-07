@@ -1,16 +1,15 @@
 {
   "fill" : {
-    "linear-gradient" : [
-      "display-p3:0.90576,0.72168,0.79590,1.00000",
-      "display-p3:0.80371,0.58838,0.97266,1.00000"
-    ]
+    "automatic-gradient" : "display-p3:0.19608,0.57255,0.97255,1.00000"
   },
   "groups" : [
     {
+      "blur-material" : 0.5,
       "layers" : [
         {
           "image-name" : "vga-kinetic-export2.png",
           "name" : "vga-kinetic-export2",
+          "opacity" : 1,
           "position" : {
             "scale" : 1.4,
             "translation-in-points" : [
@@ -48,11 +47,12 @@
           "fill" : {
             "solid" : "extended-gray:1.00000,1.00000"
           },
-          "image-name" : "grid.png",
+          "hidden" : false,
+          "image-name" : "Grid.png",
           "name" : "Grid",
-          "opacity" : 0.55,
+          "opacity" : 0.2,
           "position" : {
-            "scale" : 0.5,
+            "scale" : 1,
             "translation-in-points" : [
               0,
               0
