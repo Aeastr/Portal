@@ -16,18 +16,21 @@ import SwiftUI
 public struct Portal<Content: View>: View {
     private let id: String
     private let source: Bool
+    private let groupID: String?
     @ViewBuilder private let content: Content
     @Environment(CrossModel.self) private var portalModel
-    
+
     /// Initializes a new Portal view.
     ///
     /// - Parameters:
     ///   - id: A unique string identifier for this portal
     ///   - source: Whether this portal acts as a source (true) or destination (false). Defaults to true.
+    ///   - groupID: Optional group identifier for coordinated animations. When provided, this portal will animate as part of a coordinated group.
     ///   - content: A view builder closure that returns the content to be wrapped
-    public init(id: String, source: Bool = true, @ViewBuilder content: () -> Content) {
+    public init(id: String, source: Bool = true, groupID: String? = nil, @ViewBuilder content: () -> Content) {
         self.id = id
         self.source = source
+        self.groupID = groupID
         self.content = content()
     }
     
@@ -41,13 +44,14 @@ public struct Portal<Content: View>: View {
         }
         return [:]
     }
-    
+
     public var body: some View {
         let currentKey = key
         let currentIndex = index
         let isSource = source
         let model = portalModel
-        
+        let currentGroupID = groupID
+
         return content
             .opacity(opacity)
             .anchorPreference(key: AnchorKey.self, value: .bounds, transform: anchorPreferenceTransform)
@@ -55,6 +59,12 @@ public struct Portal<Content: View>: View {
                 Task { @MainActor in
                     guard let idx = currentIndex, model.info[idx].initalized else { return }
                     guard let anchor = prefs[currentKey] else { return }
+
+                    // Set the group ID if provided
+                    if let groupID = currentGroupID {
+                        model.info[idx].groupID = groupID
+                    }
+
                     // Keep anchors aligned with live layout so animated layer follows scrolling/dragging
                     if isSource {
                         model.info[idx].sourceAnchor = anchor
@@ -64,7 +74,7 @@ public struct Portal<Content: View>: View {
                 }
             }
     }
-    
+
     private var key: String { source ? id : "\(id)DEST" }
     
     private var opacity: CGFloat {
@@ -94,18 +104,21 @@ public struct Portal<Content: View>: View {
 public struct PortalLegacy<Content: View>: View {
     private let id: String
     private let source: Bool
+    private let groupID: String?
     @ViewBuilder private let content: Content
     @EnvironmentObject private var portalModel: CrossModelLegacy
-    
+
     /// Initializes a new PortalLegacy view.
     ///
     /// - Parameters:
     ///   - id: A unique string identifier for this portal
     ///   - source: Whether this portal acts as a source (true) or destination (false). Defaults to true.
+    ///   - groupID: Optional group identifier for coordinated animations. When provided, this portal will animate as part of a coordinated group.
     ///   - content: A view builder closure that returns the content to be wrapped
-    public init(id: String, source: Bool = true, @ViewBuilder content: () -> Content) {
+    public init(id: String, source: Bool = true, groupID: String? = nil, @ViewBuilder content: () -> Content) {
         self.id = id
         self.source = source
+        self.groupID = groupID
         self.content = content()
     }
     
@@ -120,13 +133,14 @@ public struct PortalLegacy<Content: View>: View {
         }
         return result
     }
-    
+
     public var body: some View {
         let currentKey = key
         let currentIndex = index
         let isSource = source
         let model = portalModel
-        
+        let currentGroupID = groupID
+
         return content
             .opacity(opacity)
             .anchorPreference(key: AnchorKey.self, value: .bounds, transform: anchorPreferenceTransform)
@@ -134,6 +148,12 @@ public struct PortalLegacy<Content: View>: View {
                 Task { @MainActor in
                     guard let idx = currentIndex, model.info[idx].initalized else { return }
                     guard let anchor = prefs[currentKey] else { return }
+
+                    // Set the group ID if provided
+                    if let groupID = currentGroupID {
+                        model.info[idx].groupID = groupID
+                    }
+
                     // Keep anchors aligned with live layout so animated layer follows scrolling/dragging
                     if isSource {
                         model.info[idx].sourceAnchor = anchor
@@ -143,7 +163,7 @@ public struct PortalLegacy<Content: View>: View {
                 }
             }
     }
-    
+
     private var key: String { source ? id : "\(id)DEST" }
     
     private var opacity: CGFloat {
@@ -238,6 +258,41 @@ public extension View {
             return Portal(id: key, source: isSource) { self }
         } else {
             return PortalLegacy(id: key, source: isSource) { self }
+        }
+    }
+    
+    /// Marks this view as a portal with the specified role using an `Identifiable` item's ID and group.
+    ///
+    /// This modifier extends the basic portal functionality to support coordinated group animations.
+    /// Multiple portals with the same `groupID` will animate together as a coordinated group.
+    ///
+    /// - Parameters:
+    ///   - item: An `Identifiable` item whose ID will be used as the portal identifier.
+    ///   - role: The role of this portal (`.source` or `.destination`).
+    ///   - groupID: A group identifier for coordinated animations. Portals with the same groupID animate together.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// // Multiple photos that should animate together
+    /// ForEach(photos) { photo in
+    ///     PhotoView(photo: photo)
+    ///         .portal(item: photo, .source, groupID: "photoStack")
+    /// }
+    ///
+    /// // Destination views with the same groupID
+    /// ForEach(photos) { photo in
+    ///     PhotoView(photo: photo)
+    ///         .portal(item: photo, .destination, groupID: "photoStack")
+    /// }
+    /// ```
+    @available(iOS 15.0, *)
+    func portal<Item: Identifiable>(item: Item, _ role: PortalRole, groupID: String) -> some View {
+        let key = "\(item.id)"
+        let isSource = role == .source
+        if #available(iOS 17.0, *) {
+            return Portal(id: key, source: isSource, groupID: groupID) { self }
+        } else {
+            return PortalLegacy(id: key, source: isSource, groupID: groupID) { self }
         }
     }
     /// Marks this view as a portal source (leaving view).
