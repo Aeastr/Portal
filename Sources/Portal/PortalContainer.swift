@@ -288,10 +288,12 @@ final class OverlayWindowManager {
 internal struct DebugOverlayIndicator: View {
     let text: String
     let alignment: Alignment
+    let color: Color
 
-    init(_ text: String, alignment: Alignment = .bottomTrailing) {
+    init(_ text: String, alignment: Alignment = .bottomTrailing, color: Color = .pink) {
         self.text = text
         self.alignment = alignment
+        self.color = color
     }
 
     var body: some View {
@@ -301,7 +303,7 @@ internal struct DebugOverlayIndicator: View {
                     .font(.caption2)
                     .padding(.horizontal, 3)
                     .padding(6)
-                    .glassEffect(.regular.tint(.pink.opacity(0.6)))
+                    .glassEffect(.regular.tint(color.opacity(0.6)))
                     .foregroundStyle(.white)
             }
             else{
@@ -309,7 +311,7 @@ internal struct DebugOverlayIndicator: View {
                     .font(.caption2)
                     .padding(.horizontal, 3)
                     .padding(6)
-                    .background(Color.pink.opacity(0.6))
+                    .background(color.opacity(0.6))
                     .background(.ultraThinMaterial)
                     .clipShape(.capsule)
                     .foregroundStyle(.white)

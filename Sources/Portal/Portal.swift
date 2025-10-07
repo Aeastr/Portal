@@ -59,7 +59,7 @@ public struct Portal<Content: View>: View {
                 RoundedRectangle(cornerRadius: 4)
                     .stroke(isSource ? Color.blue : Color.orange, lineWidth: 2)
                     .overlay(
-                        DebugOverlayIndicator(isSource ? "Source" : "Destination", alignment: .bottomLeading)
+                        DebugOverlayIndicator(isSource ? "Source" : "Destination", alignment: .bottomLeading, color: isSource ? .blue : .orange)
                     )
             )
             #endif
@@ -157,7 +157,7 @@ public struct PortalLegacy<Content: View>: View {
                 RoundedRectangle(cornerRadius: 4)
                     .stroke(isSource ? Color.blue : Color.orange, lineWidth: 2)
                     .overlay(
-                        DebugOverlayIndicator(isSource ? "Source" : "Destination", alignment: .bottomLeading)
+                        DebugOverlayIndicator(isSource ? "Source" : "Destination", alignment: .bottomLeading, color: isSource ? .blue : .orange)
                     )
             )
             #endif
