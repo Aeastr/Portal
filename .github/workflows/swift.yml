@@ -40,7 +40,7 @@ jobs:
         # Find the latest available iOS simulator runtime that actually has devices
         RUNTIME_ID=$(xcrun simctl list runtimes --json |
           jq -r '.runtimes
-            | map(select((.identifier | test("\\.iOS-")) and (.isAvailable == true)))
+            | map(select((.identifier | test("\.iOS-")) and (.isAvailable == true)))
             | sort_by(.version)
             | reverse
             | .[0].identifier')
