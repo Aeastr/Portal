@@ -19,12 +19,10 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Select Xcode 16.2 with iOS simulator
+    - name: Select Xcode (latest)
       uses: maxim-lobanov/setup-xcode@v1
       with:
-        xcode-version: '16.2'
-        components: |
-          Simulator - iOS 18.2
+        xcode-version: 'latest'
 
     - name: Setup Swift 6.0
       uses: SwiftyLab/setup-swift@latest
@@ -37,30 +35,20 @@ jobs:
     - name: Find an iOS Simulator
       id: find_simulator
       run: |
-        # Find the latest available iOS simulator runtime that actually has devices
-        RUNTIME_ID=$(xcrun simctl list runtimes --json |
-          jq -r '.runtimes
-            | map(select((.identifier | test("\.iOS-")) and (.isAvailable == true)))
-            | sort_by(.version)
-            | reverse
-            | .[0].identifier')
+        # Find an available iOS simulator runtime and device
+        RUNTIME_ID=$(xcrun simctl list runtimes ios --json | jq -r '.runtimes[0].identifier')
         if [ -z "$RUNTIME_ID" ] || [ "$RUNTIME_ID" == "null" ]; then
           echo "::error::No iOS runtime found."
           exit 1
         fi
-
-        DEVICE_ID=$(xcrun simctl list devices --json |
-          jq -r --arg RT_ID "$RUNTIME_ID" '.devices[$RT_ID]
-            | map(select(.isAvailable == true and (.name | test("^iPhone"))))
-            | .[0].udid')
+        DEVICE_ID=$(xcrun simctl list devices --json | jq -r --arg RT_ID "$RUNTIME_ID" '.devices[$RT_ID] | map(select(.isAvailable)) | .[0].udid')
         if [ -z "$DEVICE_ID" ] || [ "$DEVICE_ID" == "null" ]; then
-          echo "::error::No available iPhone simulator found for runtime $RUNTIME_ID."
+          echo "::error::No available iOS simulator device found for runtime $RUNTIME_ID."
           exit 1
         fi
-
         echo "Found iOS Simulator Runtime: $RUNTIME_ID"
-        echo "Found iPhone Simulator Device UDID: $DEVICE_ID"
-        echo "SIMULATOR_DESTINATION=platform=iOS Simulator,id=$DEVICE_ID" >> "$GITHUB_OUTPUT"
+        echo "Found iOS Simulator Device UDID: $DEVICE_ID"
+        echo "SIMULATOR_DESTINATION=platform=iOS Simulator,id=$DEVICE_ID" >> $GITHUB_OUTPUT
 
     - name: Build and Test (${{ matrix.config }})
       run: |
