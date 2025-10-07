@@ -31,43 +31,43 @@ import SwiftUI
 /// ```
 @available(iOS 17.0, *)
 public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: View>: ViewModifier {
-    
+
     /// Binding to the optional item that controls the portal transition.
     ///
     /// When this value changes from `nil` to non-`nil`, a forward portal transition
     /// is initiated. When it changes from non-`nil` to `nil`, a reverse transition
     /// with cleanup is performed.
     @Binding public var item: Item?
-    
+
     /// Configuration object containing animation and styling parameters.
     ///
     /// Defines how the portal transition behaves, including timing, easing curves,
     /// corner styling, and completion criteria.
     public let config: PortalTransitionConfig
-    
+
     /// Closure that generates the layer view for the transition animation.
     ///
     /// This closure receives the unwrapped item and returns the view that will
     /// be animated during the portal transition. The view should represent the
     /// visual content that bridges the source and destination views.
     public let layerView: (Item) -> LayerView
-    
+
     /// Completion handler called when the transition finishes.
     ///
     /// Called with `true` when the transition completes successfully, or `false`
     /// when the transition is cancelled or fails. This allows for additional
     /// UI updates or state changes after the portal animation.
     public let completion: (Bool) -> Void
-    
+
     /// The shared portal model that manages all portal animations.
     @Environment(CrossModel.self) private var portalModel
-    
+
     /// Tracks the last generated key to handle cleanup during reverse transitions.
     ///
     /// Since the item becomes `nil` during reverse transitions, we need to remember
     /// the last key to properly clean up the portal state.
     @State private var lastKey: String?
-    
+
     /// Initializes a new optional portal transition modifier.
     ///
     /// - Parameters:
@@ -344,38 +344,38 @@ public struct OptionalPortalTransitionModifierLegacy<Item: Identifiable, LayerVi
 /// - Automatic cleanup after reverse transitions
 @available(iOS 17.0, *)
 internal struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier {
-    
+
     /// The shared portal model that manages all portal animations.
     @Environment(CrossModel.self) private var portalModel
-    
+
     /// Unique identifier for this portal transition.
     ///
     /// This ID must match the IDs used by the corresponding portal source and
     /// destination views for the transition to work correctly.
     public let id: String
-    
+
     /// Configuration object containing animation and styling parameters.
     public let config: PortalTransitionConfig
-    
+
     /// Boolean binding that controls the portal transition state.
     ///
     /// When this value changes to `true`, a forward portal transition is initiated.
     /// When it changes to `false`, a reverse portal transition with cleanup is performed.
     @Binding public var isActive: Bool
-    
+
     /// Closure that generates the layer view for the transition animation.
     ///
     /// This closure returns the view that will be animated during the portal
     /// transition. The view should represent the visual content that bridges
     /// the source and destination views.
     public let layerView: () -> LayerView
-    
+
     /// Completion handler called when the transition finishes.
     ///
     /// Called with `true` when the transition completes successfully, or `false`
     /// when the transition is cancelled or fails.
     public let completion: (Bool) -> Void
-    
+
     /// Initializes a new conditional portal transition modifier.
     ///
     /// - Parameters:
@@ -442,7 +442,7 @@ internal struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifi
         portalInfoArray[idx].corners = config.corners
         portalInfoArray[idx].completion = completion
         portalInfoArray[idx].layerView = AnyView(layerView())
-        
+
         if newValue {
             // Forward transition: isActive became true
             DispatchQueue.main.asyncAfter(deadline: .now() + config.animation.delay) {
@@ -494,25 +494,25 @@ internal struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifi
 ///   Use the iOS 17+ version when possible.
 @available(iOS, introduced: 15.0, deprecated: 17.0, message: "Use the iOS 17+ version when possible")
 internal struct ConditionalPortalTransitionModifierLegacy<LayerView: View>: ViewModifier {
-    
+
     /// The shared portal model that manages all portal animations.
     @EnvironmentObject private var portalModel: CrossModelLegacy
-    
+
     /// Unique identifier for this portal transition.
     public let id: String
-    
+
     /// Configuration object containing animation and styling parameters.
     public let config: PortalTransitionConfig
-    
+
     /// Boolean binding that controls the portal transition state.
     @Binding public var isActive: Bool
-    
+
     /// Closure that generates the layer view for the transition animation.
     public let layerView: () -> LayerView
-    
+
     /// Completion handler called when the transition finishes.
     public let completion: (Bool) -> Void
-    
+
     /// Initializes a new conditional portal transition modifier.
     public init(
         id: String,
@@ -534,18 +534,18 @@ internal struct ConditionalPortalTransitionModifierLegacy<LayerView: View>: View
             portalModel.info.append(PortalInfo(id: id))
         }
     }
-    
+
     /// Handles changes to the active state, triggering appropriate portal transitions.
     private func onChange(oldValue: Bool, newValue: Bool) {
         guard let idx = portalModel.info.firstIndex(where: { $0.infoID == id }) else { return }
-        
+
         // Configure portal info for any transition
         portalModel.info[idx].initalized = true
         portalModel.info[idx].animation = config.animation
         portalModel.info[idx].corners = config.corners
         portalModel.info[idx].completion = completion
         portalModel.info[idx].layerView = AnyView(layerView())
-        
+
         if newValue {
             // Forward transition: isActive became true
             DispatchQueue.main.asyncAfter(deadline: .now() + config.animation.delay) {
@@ -576,6 +576,248 @@ internal struct ConditionalPortalTransitionModifierLegacy<LayerView: View>: View
     }
     
     /// Applies the modifier to the content view.
+    public func body(content: Content) -> some View {
+        content
+            .onAppear(perform: onAppear)
+            .onChange(of: isActive) { newValue in
+                onChange(oldValue: !newValue, newValue: newValue)
+            }
+    }
+}
+
+// MARK: - Multi-ID Portal Transition Modifier
+
+/// A view modifier that manages coordinated portal transitions for multiple portal IDs.
+///
+/// This modifier enables multiple portal animations to run simultaneously as a coordinated group
+/// using string IDs. When the active state changes, all portals with IDs in the array are animated
+/// together to their destinations.
+///
+/// **Key Features:**
+/// - Coordinates multiple portal animations as a single group using string IDs
+/// - Boolean state control for transitions
+/// - Synchronized timing for all portals in the group
+/// - Proper cleanup when animations complete
+@available(iOS 17.0, *)
+public struct MultiIDPortalTransitionModifier<LayerView: View>: ViewModifier {
+
+    /// Array of portal IDs to animate together.
+    public let ids: [String]
+
+    /// Group identifier for coordinating the animations.
+    public let groupID: String
+
+    /// Configuration object containing animation and styling parameters.
+    public let config: PortalTransitionConfig
+
+    /// Boolean binding that controls the portal transition state.
+    @Binding public var isActive: Bool
+
+    /// Closure that generates the layer view for each ID in the transition.
+    public let layerView: (String) -> LayerView
+
+    /// Completion handler called when all transitions finish.
+    public let completion: (Bool) -> Void
+
+    /// The shared portal model that manages all portal animations.
+    @Environment(CrossModel.self) private var portalModel
+
+    public init(
+        ids: [String],
+        groupID: String,
+        config: PortalTransitionConfig,
+        isActive: Binding<Bool>,
+        layerView: @escaping (String) -> LayerView,
+        completion: @escaping (Bool) -> Void
+    ) {
+        self.ids = ids
+        self.groupID = groupID
+        self.config = config
+        self._isActive = isActive
+        self.layerView = layerView
+        self.completion = completion
+    }
+
+    /// Ensures portal info exists for all IDs when the view appears.
+    private func onAppear() {
+        for id in ids {
+            if !portalModel.info.contains(where: { $0.infoID == id }) {
+                portalModel.info.append(PortalInfo(id: id, groupID: groupID))
+            }
+        }
+    }
+
+    /// Handles changes to the active state, triggering appropriate portal transitions.
+    private func onChange(oldValue: Bool, newValue: Bool) {
+        let groupIndices = portalModel.info.enumerated().compactMap { index, info in
+            ids.contains(info.infoID) ? index : nil
+        }
+
+        if newValue {
+            // Forward transition: isActive became true
+            for (i, idx) in groupIndices.enumerated() {
+                let portalID = portalModel.info[idx].infoID
+                portalModel.info[idx].initalized = true
+                portalModel.info[idx].animation = config.animation
+                portalModel.info[idx].corners = config.corners
+                portalModel.info[idx].groupID = groupID
+                portalModel.info[idx].isGroupCoordinator = (i == 0)
+                portalModel.info[idx].layerView = AnyView(layerView(portalID))
+
+                // Only coordinator gets completion callback
+                if i == 0 {
+                    portalModel.info[idx].completion = completion
+                } else {
+                    portalModel.info[idx].completion = { _ in }
+                }
+            }
+
+            // Start coordinated animation
+            DispatchQueue.main.asyncAfter(deadline: .now() + config.animation.delay) {
+                config.animation.performAnimation({
+                    for idx in groupIndices {
+                        portalModel.info[idx].animateView = true
+                    }
+                }) {
+                    for idx in groupIndices {
+                        portalModel.info[idx].hideView = true
+                        if portalModel.info[idx].isGroupCoordinator {
+                            portalModel.info[idx].completion(true)
+                        }
+                    }
+                }
+            }
+
+        } else {
+            // Reverse transition: isActive became false
+            for idx in groupIndices {
+                portalModel.info[idx].hideView = false
+            }
+
+            config.animation.performAnimation({
+                for idx in groupIndices {
+                    portalModel.info[idx].animateView = false
+                }
+            }) {
+                for idx in groupIndices {
+                    portalModel.info[idx].initalized = false
+                    portalModel.info[idx].layerView = nil
+                    portalModel.info[idx].sourceAnchor = nil
+                    portalModel.info[idx].destinationAnchor = nil
+                    portalModel.info[idx].groupID = nil
+                    portalModel.info[idx].isGroupCoordinator = false
+                    if portalModel.info[idx].isGroupCoordinator {
+                        portalModel.info[idx].completion(false)
+                    }
+                }
+            }
+        }
+    }
+
+    public func body(content: Content) -> some View {
+        content
+            .onAppear(perform: onAppear)
+            .onChange(of: isActive, onChange)
+    }
+}
+
+/// iOS 15 compatible version of MultiIDPortalTransitionModifier.
+@available(iOS, introduced: 15.0, deprecated: 17.0, message: "Use the iOS 17+ version when possible")
+public struct MultiIDPortalTransitionModifierLegacy<LayerView: View>: ViewModifier {
+    public let ids: [String]
+    public let groupID: String
+    public let config: PortalTransitionConfig
+    @Binding public var isActive: Bool
+    public let layerView: (String) -> LayerView
+    public let completion: (Bool) -> Void
+    @EnvironmentObject private var portalModel: CrossModelLegacy
+
+    public init(
+        ids: [String],
+        groupID: String,
+        config: PortalTransitionConfig,
+        isActive: Binding<Bool>,
+        layerView: @escaping (String) -> LayerView,
+        completion: @escaping (Bool) -> Void
+    ) {
+        self.ids = ids
+        self.groupID = groupID
+        self.config = config
+        self._isActive = isActive
+        self.layerView = layerView
+        self.completion = completion
+    }
+
+    private func onAppear() {
+        for id in ids {
+            if !portalModel.info.contains(where: { $0.infoID == id }) {
+                portalModel.info.append(PortalInfo(id: id, groupID: groupID))
+            }
+        }
+    }
+
+    private func onChange(oldValue: Bool, newValue: Bool) {
+        let groupIndices = portalModel.info.enumerated().compactMap { index, info in
+            ids.contains(info.infoID) ? index : nil
+        }
+
+        if newValue {
+            for (i, idx) in groupIndices.enumerated() {
+                let portalID = portalModel.info[idx].infoID
+                portalModel.info[idx].initalized = true
+                portalModel.info[idx].animation = config.animation
+                portalModel.info[idx].corners = config.corners
+                portalModel.info[idx].groupID = groupID
+                portalModel.info[idx].isGroupCoordinator = (i == 0)
+                portalModel.info[idx].layerView = AnyView(layerView(portalID))
+
+                if i == 0 {
+                    portalModel.info[idx].completion = completion
+                } else {
+                    portalModel.info[idx].completion = { _ in }
+                }
+            }
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + config.animation.delay) {
+                config.animation.performAnimation({
+                    for idx in groupIndices {
+                        portalModel.info[idx].animateView = true
+                    }
+                }) {
+                    for idx in groupIndices {
+                        portalModel.info[idx].hideView = true
+                        if portalModel.info[idx].isGroupCoordinator {
+                            portalModel.info[idx].completion(true)
+                        }
+                    }
+                }
+            }
+
+        } else {
+            for idx in groupIndices {
+                portalModel.info[idx].hideView = false
+            }
+
+            config.animation.performAnimation({
+                for idx in groupIndices {
+                    portalModel.info[idx].animateView = false
+                }
+            }) {
+                for idx in groupIndices {
+                    portalModel.info[idx].initalized = false
+                    portalModel.info[idx].layerView = nil
+                    portalModel.info[idx].sourceAnchor = nil
+                    portalModel.info[idx].destinationAnchor = nil
+                    portalModel.info[idx].groupID = nil
+                    portalModel.info[idx].isGroupCoordinator = false
+                    if portalModel.info[idx].isGroupCoordinator {
+                        portalModel.info[idx].completion(false)
+                    }
+                }
+            }
+        }
+    }
+
     public func body(content: Content) -> some View {
         content
             .onAppear(perform: onAppear)
@@ -989,6 +1231,63 @@ public extension View {
             return self.modifier(
                 ConditionalPortalTransitionModifierLegacy(
                     id: id,
+                    config: config,
+                    isActive: isActive,
+                    layerView: layerView,
+                    completion: completion))
+        }
+    }
+
+    /// Applies coordinated portal transitions for multiple portal IDs.
+    ///
+    /// This modifier enables multiple portal animations to run simultaneously as a coordinated group
+    /// using string IDs. All IDs in the array are animated together with synchronized timing.
+    ///
+    /// **Usage Pattern:**
+    /// ```swift
+    /// @State private var showPortals = false
+    ///
+    /// ContentView()
+    ///     .portalTransition(
+    ///         ids: ["portal1", "portal2", "portal3"],
+    ///         groupID: "myGroup",
+    ///         isActive: $showPortals
+    ///     ) { id in
+    ///         OverlayView(id: id)
+    ///     }
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - ids: Array of portal IDs that should animate together
+    ///   - groupID: Group identifier for coordinating animations
+    ///   - config: Configuration for animation and styling (optional, defaults to standard config)
+    ///   - isActive: Boolean binding that controls the transition state
+    ///   - layerView: Closure that receives each ID and returns the view to animate for that ID
+    ///   - completion: Optional completion handler (defaults to no-op)
+    /// - Returns: A view with the multi-ID portal transition modifier applied
+    @available(iOS 15.0, *)
+    func portalTransition<LayerView: View>(
+        ids: [String],
+        groupID: String,
+        config: PortalTransitionConfig = .init(),
+        isActive: Binding<Bool>,
+        @ViewBuilder layerView: @escaping (String) -> LayerView,
+        completion: @escaping (Bool) -> Void = { _ in }
+    ) -> some View {
+        if #available(iOS 17.0, *) {
+            return self.modifier(
+                MultiIDPortalTransitionModifier(
+                    ids: ids,
+                    groupID: groupID,
+                    config: config,
+                    isActive: isActive,
+                    layerView: layerView,
+                    completion: completion))
+        } else {
+            return self.modifier(
+                MultiIDPortalTransitionModifierLegacy(
+                    ids: ids,
+                    groupID: groupID,
                     config: config,
                     isActive: isActive,
                     layerView: layerView,
