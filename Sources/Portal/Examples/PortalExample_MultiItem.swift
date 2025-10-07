@@ -48,8 +48,7 @@ public struct PortalExample_MultiItem: View {
             groupID: "photoStack",
             config: .init(
                 animation: PortalAnimation(portal_animationExample)
-            ),
-            staggerDelay: 0.04  // 0.1 second delay between each item
+            )
         ) { photo in
             AnimatedLayer(id: photo.id.uuidString, scale: 1.15) {
                 PhotoView(photo: photo)
