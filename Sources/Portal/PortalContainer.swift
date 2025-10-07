@@ -180,7 +180,8 @@ final class OverlayWindowManager {
                             PortalLayerView()
                                 .environment(portalModel)
 #if DEBUG
-                            DebugOverlayIndicator()
+                            DebugOverlayIndicator("PortalContainerOverlay")
+                                .padding(20)
                                 .ignoresSafeArea()
 #endif
                         }
@@ -191,7 +192,8 @@ final class OverlayWindowManager {
                             PortalLayerView()
                                 .environment(portalModel)
 #if DEBUG
-                            DebugOverlayIndicator()
+                            DebugOverlayIndicator("PortalContainerOverlay")
+                                .padding(20)
                                 .ignoresSafeArea()
 #endif
                         }
@@ -238,7 +240,9 @@ final class OverlayWindowManager {
                             PortalLayerViewLegacy()
                                 .environmentObject(portalModel)
 #if DEBUG
-                            DebugOverlayIndicator()
+                            DebugOverlayIndicator("PortalContainerOverlay")
+                                .ignoresSafeArea()
+                                .padding(20)
 #endif
                         }
                     )
@@ -248,7 +252,9 @@ final class OverlayWindowManager {
                             PortalLayerViewLegacy()
                                 .environmentObject(portalModel)
 #if DEBUG
-                            DebugOverlayIndicator()
+                            DebugOverlayIndicator("PortalContainerOverlay")
+                                .ignoresSafeArea()
+                                .padding(20)
 #endif
                         }
                     )
@@ -279,11 +285,19 @@ final class OverlayWindowManager {
 #if DEBUG
 /// Debug indicator view to visualize overlay window presence
 @available(iOS 15.0, *)
-private struct DebugOverlayIndicator: View {
+internal struct DebugOverlayIndicator: View {
+    let text: String
+    let alignment: Alignment
+
+    init(_ text: String, alignment: Alignment = .bottomTrailing) {
+        self.text = text
+        self.alignment = alignment
+    }
+
     var body: some View {
         Group {
             if #available(iOS 26.0, *) {
-                Text("PortalContainerOverlay")
+                Text(text)
                     .font(.caption2)
                     .padding(.horizontal, 3)
                     .padding(6)
@@ -291,7 +305,7 @@ private struct DebugOverlayIndicator: View {
                     .foregroundStyle(.white)
             }
             else{
-                Text("PortalContainerOverlay")
+                Text(text)
                     .font(.caption2)
                     .padding(.horizontal, 3)
                     .padding(6)
@@ -301,14 +315,14 @@ private struct DebugOverlayIndicator: View {
                     .foregroundStyle(.white)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-        .padding(30)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: alignment)
         .allowsHitTesting(false)
     }
 }
 
 #Preview{
-    DebugOverlayIndicator()
+    DebugOverlayIndicator("PortalContainerOverlay")
+        .padding(20)
         .ignoresSafeArea()
 }
 #endif

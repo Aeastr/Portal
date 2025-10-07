@@ -113,6 +113,11 @@ fileprivate struct PortalLayerContentView: View {
                     layer
                 }
             }
+            #if DEBUG
+            .overlay(
+                DebugOverlayIndicator("Portal Layer", alignment: .topLeading)
+            )
+            #endif
             .frame(width: width, height: height)
             .offset(x: x, y: y)
             .transition(.identity)  // Prevents additional SwiftUI transitions
@@ -207,6 +212,11 @@ fileprivate struct PortalLayerContentViewLegacy: View {
                     layer
                 }
             }
+            #if DEBUG
+            .overlay(
+                DebugOverlayIndicator("Portal Layer", alignment: .topLeading)
+            )
+            #endif
             .frame(width: width, height: height)
             .offset(x: x, y: y)
             .transition(.identity)  // Prevents additional SwiftUI transitions

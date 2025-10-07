@@ -54,6 +54,15 @@ public struct Portal<Content: View>: View {
 
         return content
             .opacity(opacity)
+            #if DEBUG
+            .overlay(
+                RoundedRectangle(cornerRadius: 4)
+                    .stroke(isSource ? Color.blue : Color.orange, lineWidth: 2)
+                    .overlay(
+                        DebugOverlayIndicator(isSource ? "Source" : "Destination", alignment: .bottomLeading)
+                    )
+            )
+            #endif
             .anchorPreference(key: AnchorKey.self, value: .bounds, transform: anchorPreferenceTransform)
             .onPreferenceChange(AnchorKey.self) { prefs in
                 Task { @MainActor in
@@ -143,6 +152,15 @@ public struct PortalLegacy<Content: View>: View {
 
         return content
             .opacity(opacity)
+            #if DEBUG
+            .overlay(
+                RoundedRectangle(cornerRadius: 4)
+                    .stroke(isSource ? Color.blue : Color.orange, lineWidth: 2)
+                    .overlay(
+                        DebugOverlayIndicator(isSource ? "Source" : "Destination", alignment: .bottomLeading)
+                    )
+            )
+            #endif
             .anchorPreference(key: AnchorKey.self, value: .bounds, transform: anchorPreferenceTransform)
             .onPreferenceChange(AnchorKey.self) { prefs in
                 Task { @MainActor in
