@@ -115,7 +115,9 @@ fileprivate struct PortalLayerContentView: View {
             }
             #if DEBUG
             .overlay(
-                DebugOverlayIndicator("Portal Layer", alignment: .topLeading, color: .green)
+                DebugOverlayIndicator("Portal Layer", color: .green)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                    .padding(5)
             )
             #endif
             .frame(width: width, height: height)
@@ -214,7 +216,9 @@ fileprivate struct PortalLayerContentViewLegacy: View {
             }
             #if DEBUG
             .overlay(
-                DebugOverlayIndicator("Portal Layer", alignment: .topLeading, color: .green)
+                DebugOverlayIndicator("Portal Layer", color: .green)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                    .padding(5)
             )
             #endif
             .frame(width: width, height: height)

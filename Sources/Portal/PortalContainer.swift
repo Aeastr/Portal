@@ -181,6 +181,7 @@ final class OverlayWindowManager {
                                 .environment(portalModel)
 #if DEBUG
                             DebugOverlayIndicator("PortalContainerOverlay")
+                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
                                 .padding(20)
                                 .ignoresSafeArea()
 #endif
@@ -193,6 +194,7 @@ final class OverlayWindowManager {
                                 .environment(portalModel)
 #if DEBUG
                             DebugOverlayIndicator("PortalContainerOverlay")
+                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
                                 .padding(20)
                                 .ignoresSafeArea()
 #endif
@@ -241,8 +243,9 @@ final class OverlayWindowManager {
                                 .environmentObject(portalModel)
 #if DEBUG
                             DebugOverlayIndicator("PortalContainerOverlay")
-                                .ignoresSafeArea()
+                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
                                 .padding(20)
+                                .ignoresSafeArea()
 #endif
                         }
                     )
@@ -253,8 +256,9 @@ final class OverlayWindowManager {
                                 .environmentObject(portalModel)
 #if DEBUG
                             DebugOverlayIndicator("PortalContainerOverlay")
-                                .ignoresSafeArea()
+                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
                                 .padding(20)
+                                .ignoresSafeArea()
 #endif
                         }
                     )
@@ -287,12 +291,10 @@ final class OverlayWindowManager {
 @available(iOS 15.0, *)
 internal struct DebugOverlayIndicator: View {
     let text: String
-    let alignment: Alignment
     let color: Color
 
-    init(_ text: String, alignment: Alignment = .bottomTrailing, color: Color = .pink) {
+    init(_ text: String, color: Color = .pink) {
         self.text = text
-        self.alignment = alignment
         self.color = color
     }
 
@@ -317,7 +319,6 @@ internal struct DebugOverlayIndicator: View {
                     .foregroundStyle(.white)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: alignment)
         .allowsHitTesting(false)
     }
 }
