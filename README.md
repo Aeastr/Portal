@@ -63,6 +63,18 @@ For full installation steps, usage guides, examples, and animation deep-dives, v
 
 ---
 
+## Debugging & Development
+
+Portal includes a visual debug indicator (only in DEBUG builds) to help verify the overlay window is properly installed:
+
+- **Debug Indicator**: A small pink badge labeled "PortalContainerOverlay" appears in the top-right corner when the overlay is active
+- **Automatic**: Enabled in DEBUG builds (Xcode Previews, Debug configurations)
+- **Production**: Automatically hidden in Release builds—no performance impact
+
+This helps troubleshoot issues like hot-reload in Previews or overlay lifecycle problems. For more details, see the [Portal Wiki](https://github.com/Aeastr/Portal/wiki).
+
+---
+
 ## Examples
 
 Portal includes several sample projects to help you get started:
