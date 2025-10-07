@@ -113,6 +113,13 @@ fileprivate struct PortalLayerContentView: View {
                     layer
                 }
             }
+            #if DEBUG
+            .overlay(
+                DebugOverlayIndicator("Portal Layer", color: .green)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                    .padding(5)
+            )
+            #endif
             .frame(width: width, height: height)
             .offset(x: x, y: y)
             .transition(.identity)  // Prevents additional SwiftUI transitions
@@ -207,6 +214,13 @@ fileprivate struct PortalLayerContentViewLegacy: View {
                     layer
                 }
             }
+            #if DEBUG
+            .overlay(
+                DebugOverlayIndicator("Portal Layer", color: .green)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                    .padding(5)
+            )
+            #endif
             .frame(width: width, height: height)
             .offset(x: x, y: y)
             .transition(.identity)  // Prevents additional SwiftUI transitions

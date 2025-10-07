@@ -63,6 +63,21 @@ For full installation steps, usage guides, examples, and animation deep-dives, v
 
 ---
 
+## Debugging & Development
+
+Portal includes comprehensive visual debug indicators (only in DEBUG builds) to help you verify the portal system is working correctly:
+
+- 🩷 **Container Overlay**: Pink badge at bottom-right showing overlay window is installed
+- 🟦 **Source Views**: Blue border + badge on portal source views
+- 🟧 **Destination Views**: Orange border + badge on portal destination views
+- 🟩 **Portal Layers**: Green badge on animating layers during transitions
+- **Automatic**: Enabled in DEBUG builds (Xcode Previews, Debug configurations)
+- **Production**: Automatically hidden in Release builds—zero performance impact
+
+These visual indicators help troubleshoot portal transitions, anchor positioning, and overlay lifecycle issues. For more details, see the [Debugging Guide](https://github.com/Aeastr/Portal/wiki/Debugging).
+
+---
+
 ## Examples
 
 Portal includes several sample projects to help you get started:

@@ -58,10 +58,10 @@ public struct PortalContainer<Content: View>: View {
     private func setupWindow(_ scenePhase: ScenePhase) {
 #if canImport(UIKit)
         if scenePhase == .active {
-//            print("add overlay")
+            //            print("add overlay")
             OverlayWindowManager.shared.addOverlayWindow(with: portalModel, hideStatusBar: hideStatusBar)
         } else {
-//            print("remove overlay")
+            //            print("remove overlay")
             OverlayWindowManager.shared.removeOverlayWindow()
         }
 #endif
@@ -108,10 +108,10 @@ public struct PortalContainerLegacy<Content: View>: View {
     private func setupWindow(_ scenePhase: ScenePhase) {
 #if canImport(UIKit)
         if scenePhase == .active {
-//            print("add overlay")
+            //            print("add overlay")
             OverlayWindowManager.shared.addOverlayWindowLegacy(with: portalModel, hideStatusBar: hideStatusBar)
         } else {
-//            print("remove overlay")
+            //            print("remove overlay")
             OverlayWindowManager.shared.removeOverlayWindow()
         }
 #endif
@@ -176,13 +176,29 @@ final class OverlayWindowManager {
                 let root: UIViewController
                 if hideStatusBar {
                     root = HiddenStatusHostingController(
-                        rootView: PortalLayerView()
-                            .environment(portalModel)
+                        rootView: ZStack {
+                            PortalLayerView()
+                                .environment(portalModel)
+#if DEBUG
+                            DebugOverlayIndicator("PortalContainerOverlay")
+                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                                .padding(20)
+                                .ignoresSafeArea()
+#endif
+                        }
                     )
                 } else {
                     root = UIHostingController(
-                        rootView: PortalLayerView()
-                            .environment(portalModel)
+                        rootView: ZStack {
+                            PortalLayerView()
+                                .environment(portalModel)
+#if DEBUG
+                            DebugOverlayIndicator("PortalContainerOverlay")
+                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                                .padding(20)
+                                .ignoresSafeArea()
+#endif
+                        }
                     )
                 }
                 root.view.backgroundColor = .clear
@@ -191,7 +207,7 @@ final class OverlayWindowManager {
                 window.rootViewController = root
                 guard self.overlayWindow == nil else {
                     
-//                        print("overlayWindow populated, return")
+                    //                        print("overlayWindow populated, return")
                     return }
                 self.overlayWindow = window
                 break
@@ -222,13 +238,29 @@ final class OverlayWindowManager {
                 let root: UIViewController
                 if hideStatusBar {
                     root = HiddenStatusHostingController(
-                        rootView: PortalLayerViewLegacy()
-                            .environmentObject(portalModel)
+                        rootView: ZStack {
+                            PortalLayerViewLegacy()
+                                .environmentObject(portalModel)
+#if DEBUG
+                            DebugOverlayIndicator("PortalContainerOverlay")
+                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                                .padding(20)
+                                .ignoresSafeArea()
+#endif
+                        }
                     )
                 } else {
                     root = UIHostingController(
-                        rootView: PortalLayerViewLegacy()
-                            .environmentObject(portalModel)
+                        rootView: ZStack {
+                            PortalLayerViewLegacy()
+                                .environmentObject(portalModel)
+#if DEBUG
+                            DebugOverlayIndicator("PortalContainerOverlay")
+                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                                .padding(20)
+                                .ignoresSafeArea()
+#endif
+                        }
                     )
                 }
                 root.view.backgroundColor = .clear
@@ -237,7 +269,7 @@ final class OverlayWindowManager {
                 window.rootViewController = root
                 guard self.overlayWindow == nil else {
                     
-//                        print("overlayWindow populated, return")
+                    //                        print("overlayWindow populated, return")
                     return }
                 self.overlayWindow = window
                 break
@@ -253,4 +285,49 @@ final class OverlayWindowManager {
         }
     }
 }
+
+#if DEBUG
+/// Debug indicator view to visualize overlay window presence
+@available(iOS 15.0, *)
+internal struct DebugOverlayIndicator: View {
+    let text: String
+    let color: Color
+
+    init(_ text: String, color: Color = .pink) {
+        self.text = text
+        self.color = color
+    }
+
+    var body: some View {
+        Group {
+            if #available(iOS 26.0, *) {
+                Text(text)
+                    .font(.caption2)
+                    .padding(.horizontal, 3)
+                    .padding(6)
+                    .glassEffect(.regular.tint(color.opacity(0.6)))
+                    .foregroundStyle(.white)
+            }
+            else{
+                Text(text)
+                    .font(.caption2)
+                    .padding(.horizontal, 3)
+                    .padding(6)
+                    .background(color.opacity(0.6))
+                    .background(.ultraThinMaterial)
+                    .clipShape(.capsule)
+                    .foregroundStyle(.white)
+            }
+        }
+        .allowsHitTesting(false)
+    }
+}
+
+#Preview{
+    DebugOverlayIndicator("PortalContainerOverlay")
+        .padding(20)
+        .ignoresSafeArea()
+}
+#endif
+
 #endif
