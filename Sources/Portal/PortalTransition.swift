@@ -1,6 +1,5 @@
 import SwiftUI
 
-// MARK: - iOS 17+ Implementation
 
 /// A view modifier that manages portal transitions based on optional `Identifiable` items.
 ///

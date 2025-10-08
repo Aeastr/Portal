@@ -43,8 +43,6 @@ public extension AnimatedPortalLayer {
     }
 }
 
-// MARK: - iOS 17+ Implementation
-
 private struct AnimatedPortalLayerHost<Layer: AnimatedPortalLayer>: View {
     @Environment(CrossModel.self) private var portalModel
     let layer: Layer

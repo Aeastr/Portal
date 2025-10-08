@@ -1,6 +1,5 @@
 import SwiftUI
 
-// MARK: - iOS 17+ Implementation
 
 /// A unified view wrapper that marks its content as either a portal source (leaving view) or destination (arriving view).
 ///

@@ -1,6 +1,5 @@
 import SwiftUI
 
-// MARK: - iOS 17+ Implementation
 
 /// Internal overlay view responsible for rendering and animating portal transition layers.
 ///

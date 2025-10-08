@@ -3,7 +3,6 @@ import SwiftUI
 import UIKit
 #endif
 
-// MARK: - iOS 17+ Implementation
 
 /// A SwiftUI container that overlays a transparent window above your app's UI,
 /// optionally hiding the status bar in the overlay.
