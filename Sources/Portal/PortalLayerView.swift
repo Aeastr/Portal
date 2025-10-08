@@ -59,9 +59,11 @@ internal struct PortalLayerView: View {
 fileprivate struct PortalLayerContentView: View {
     /// Geometry proxy for coordinate space calculations and position conversions.
     var proxy: GeometryProxy
-    
+
     /// Binding to the portal animation data, allowing direct state modifications.
     @Binding var info: PortalInfo
+
+    @Environment(\.portalDebugOverlays) private var debugOverlaysEnabled
 
     /// Builds the animated layer view that transitions between source and destination.
     ///
@@ -113,13 +115,17 @@ fileprivate struct PortalLayerContentView: View {
                     layer
                 }
             }
-            #if DEBUG
             .overlay(
-                DebugOverlayIndicator("Portal Layer", color: .green)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                    .padding(5)
+                Group {
+                    #if DEBUG
+                    if debugOverlaysEnabled {
+                        DebugOverlayIndicator("Portal Layer", color: .green)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                            .padding(5)
+                    }
+                    #endif
+                }
             )
-            #endif
             .frame(width: width, height: height)
             .offset(x: x, y: y)
             .transition(.identity)  // Prevents additional SwiftUI transitions
@@ -177,9 +183,11 @@ internal struct PortalLayerViewLegacy: View {
 fileprivate struct PortalLayerContentViewLegacy: View {
     /// Geometry proxy for coordinate space calculations and position conversions.
     var proxy: GeometryProxy
-    
+
     /// The portal animation data.
     var info: PortalInfo
+
+    @Environment(\.portalDebugOverlays) private var debugOverlaysEnabled
     
     /// Callback to update the portal info in the model.
     var updateInfo: (PortalInfo) -> Void
@@ -214,13 +222,17 @@ fileprivate struct PortalLayerContentViewLegacy: View {
                     layer
                 }
             }
-            #if DEBUG
             .overlay(
-                DebugOverlayIndicator("Portal Layer", color: .green)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                    .padding(5)
+                Group {
+                    #if DEBUG
+                    if debugOverlaysEnabled {
+                        DebugOverlayIndicator("Portal Layer", color: .green)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                            .padding(5)
+                    }
+                    #endif
+                }
             )
-            #endif
             .frame(width: width, height: height)
             .offset(x: x, y: y)
             .transition(.identity)  // Prevents additional SwiftUI transitions

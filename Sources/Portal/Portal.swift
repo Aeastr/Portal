@@ -19,6 +19,7 @@ public struct Portal<Content: View>: View {
     private let groupID: String?
     @ViewBuilder private let content: Content
     @Environment(CrossModel.self) private var portalModel
+    @Environment(\.portalDebugOverlays) private var debugOverlaysEnabled
 
     /// Initializes a new Portal view.
     ///
@@ -54,17 +55,21 @@ public struct Portal<Content: View>: View {
 
         return content
             .opacity(opacity)
-            #if DEBUG
             .overlay(
-                RoundedRectangle(cornerRadius: 4)
-                    .stroke(isSource ? Color.blue : Color.orange, lineWidth: 2)
-                    .overlay(
-                        DebugOverlayIndicator(isSource ? "Source" : "Destination", color: isSource ? .blue : .orange)
-                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
-                            .padding(5)
-                    )
+                Group {
+                    #if DEBUG
+                    if debugOverlaysEnabled {
+                        RoundedRectangle(cornerRadius: 4)
+                            .stroke(isSource ? Color.blue : Color.orange, lineWidth: 2)
+                            .overlay(
+                                DebugOverlayIndicator(isSource ? "Source" : "Destination", color: isSource ? .blue : .orange)
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+                                    .padding(5)
+                            )
+                    }
+                    #endif
+                }
             )
-            #endif
             .anchorPreference(key: AnchorKey.self, value: .bounds, transform: anchorPreferenceTransform)
             .onPreferenceChange(AnchorKey.self) { prefs in
                 Task { @MainActor in
@@ -118,6 +123,7 @@ public struct PortalLegacy<Content: View>: View {
     private let groupID: String?
     @ViewBuilder private let content: Content
     @EnvironmentObject private var portalModel: CrossModelLegacy
+    @Environment(\.portalDebugOverlays) private var debugOverlaysEnabled
 
     /// Initializes a new PortalLegacy view.
     ///
@@ -154,17 +160,21 @@ public struct PortalLegacy<Content: View>: View {
 
         return content
             .opacity(opacity)
-            #if DEBUG
             .overlay(
-                RoundedRectangle(cornerRadius: 4)
-                    .stroke(isSource ? Color.blue : Color.orange, lineWidth: 2)
-                    .overlay(
-                        DebugOverlayIndicator(isSource ? "Source" : "Destination", color: isSource ? .blue : .orange)
-                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
-                            .padding(5)
-                    )
+                Group {
+                    #if DEBUG
+                    if debugOverlaysEnabled {
+                        RoundedRectangle(cornerRadius: 4)
+                            .stroke(isSource ? Color.blue : Color.orange, lineWidth: 2)
+                            .overlay(
+                                DebugOverlayIndicator(isSource ? "Source" : "Destination", color: isSource ? .blue : .orange)
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+                                    .padding(5)
+                            )
+                    }
+                    #endif
+                }
             )
-            #endif
             .anchorPreference(key: AnchorKey.self, value: .bounds, transform: anchorPreferenceTransform)
             .onPreferenceChange(AnchorKey.self) { prefs in
                 Task { @MainActor in
@@ -245,7 +255,35 @@ public extension View {
             return PortalLegacy(id: id, source: isSource) { self }
         }
     }
-    
+
+    /// Marks this view as a portal with the specified role and group.
+    ///
+    /// This modifier extends the basic portal functionality to support coordinated group animations.
+    /// Multiple portals with the same `groupID` will animate together as a coordinated group.
+    ///
+    /// - Parameters:
+    ///   - id: A unique string identifier for this portal. This should match the `id` used for the corresponding portal transition.
+    ///   - role: The role of this portal (`.source` or `.destination`).
+    ///   - groupID: A group identifier for coordinated animations. Portals with the same groupID animate together.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// // Multiple views that should animate together
+    /// PhotoView(photo: photo1)
+    ///     .portal(id: "photo1", .source, groupID: "photoStack")
+    /// PhotoView(photo: photo2)
+    ///     .portal(id: "photo2", .source, groupID: "photoStack")
+    /// ```
+    @available(iOS 15.0, *)
+    func portal(id: String, _ role: PortalRole, groupID: String) -> some View {
+        let isSource = role == .source
+        if #available(iOS 17.0, *) {
+            return Portal(id: id, source: isSource, groupID: groupID) { self }
+        } else {
+            return PortalLegacy(id: id, source: isSource, groupID: groupID) { self }
+        }
+    }
+
     /// Marks this view as a portal with the specified role using an `Identifiable` item's ID.
     ///
     /// This unified modifier can mark a view as either a source or destination for a portal transition,

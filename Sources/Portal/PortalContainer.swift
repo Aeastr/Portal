@@ -24,10 +24,11 @@ import UIKit
 public struct PortalContainer<Content: View>: View {
     @ViewBuilder public var content: Content
     @Environment(\.scenePhase) private var scene
+    @Environment(\.portalDebugOverlays) private var debugOverlaysEnabled
     // The @State property will no longer have an initial value directly here.
     // Its initial value will be set in the initializer.
     @State private var portalModel: CrossModel
-    
+
     private let hideStatusBar: Bool
     
     /// Initializes a `PortalContainer` with optional custom settings.
@@ -59,7 +60,7 @@ public struct PortalContainer<Content: View>: View {
 #if canImport(UIKit)
         if scenePhase == .active {
             //            print("add overlay")
-            OverlayWindowManager.shared.addOverlayWindow(with: portalModel, hideStatusBar: hideStatusBar)
+            OverlayWindowManager.shared.addOverlayWindow(with: portalModel, hideStatusBar: hideStatusBar, debugOverlaysEnabled: debugOverlaysEnabled)
         } else {
             //            print("remove overlay")
             OverlayWindowManager.shared.removeOverlayWindow()
@@ -81,6 +82,7 @@ public struct PortalContainer<Content: View>: View {
 public struct PortalContainerLegacy<Content: View>: View {
     @ViewBuilder public var content: Content
     @Environment(\.scenePhase) private var scene
+    @Environment(\.portalDebugOverlays) private var debugOverlaysEnabled
     @StateObject private var portalModel = CrossModelLegacy()
     private let hideStatusBar: Bool
     
@@ -109,7 +111,7 @@ public struct PortalContainerLegacy<Content: View>: View {
 #if canImport(UIKit)
         if scenePhase == .active {
             //            print("add overlay")
-            OverlayWindowManager.shared.addOverlayWindowLegacy(with: portalModel, hideStatusBar: hideStatusBar)
+            OverlayWindowManager.shared.addOverlayWindowLegacy(with: portalModel, hideStatusBar: hideStatusBar, debugOverlaysEnabled: debugOverlaysEnabled)
         } else {
             //            print("remove overlay")
             OverlayWindowManager.shared.removeOverlayWindow()
@@ -157,10 +159,12 @@ final class OverlayWindowManager {
     /// - Parameters:
     ///   - portalModel: The shared portal model.
     ///   - hideStatusBar: Whether the overlay should hide the status bar.
+    ///   - debugOverlaysEnabled: Whether debug overlays should be shown.
     @available(iOS 17.0, *)
     func addOverlayWindow(
         with portalModel: CrossModel,
-        hideStatusBar: Bool
+        hideStatusBar: Bool,
+        debugOverlaysEnabled: Bool
     ) {
         guard overlayWindow == nil else { return }
         DispatchQueue.main.async {
@@ -176,29 +180,11 @@ final class OverlayWindowManager {
                 let root: UIViewController
                 if hideStatusBar {
                     root = HiddenStatusHostingController(
-                        rootView: ZStack {
-                            PortalLayerView()
-                                .environment(portalModel)
-#if DEBUG
-                            DebugOverlayIndicator("PortalContainerOverlay")
-                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-                                .padding(20)
-                                .ignoresSafeArea()
-#endif
-                        }
+                        rootView: PortalContainerRootView(portalModel: portalModel, debugOverlaysEnabled: debugOverlaysEnabled)
                     )
                 } else {
                     root = UIHostingController(
-                        rootView: ZStack {
-                            PortalLayerView()
-                                .environment(portalModel)
-#if DEBUG
-                            DebugOverlayIndicator("PortalContainerOverlay")
-                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-                                .padding(20)
-                                .ignoresSafeArea()
-#endif
-                        }
+                        rootView: PortalContainerRootView(portalModel: portalModel, debugOverlaysEnabled: debugOverlaysEnabled)
                     )
                 }
                 root.view.backgroundColor = .clear
@@ -219,10 +205,12 @@ final class OverlayWindowManager {
     /// - Parameters:
     ///   - portalModel: The shared portal model.
     ///   - hideStatusBar: Whether the overlay should hide the status bar.
+    ///   - debugOverlaysEnabled: Whether debug overlays should be shown.
     @available(iOS, introduced: 15.0, deprecated: 17.0, message: "Use the iOS 17+ version when possible")
     func addOverlayWindowLegacy(
         with portalModel: CrossModelLegacy,
-        hideStatusBar: Bool
+        hideStatusBar: Bool,
+        debugOverlaysEnabled: Bool
     ) {
         guard overlayWindow == nil else { return }
         DispatchQueue.main.async {
@@ -238,29 +226,11 @@ final class OverlayWindowManager {
                 let root: UIViewController
                 if hideStatusBar {
                     root = HiddenStatusHostingController(
-                        rootView: ZStack {
-                            PortalLayerViewLegacy()
-                                .environmentObject(portalModel)
-#if DEBUG
-                            DebugOverlayIndicator("PortalContainerOverlay")
-                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-                                .padding(20)
-                                .ignoresSafeArea()
-#endif
-                        }
+                        rootView: PortalContainerRootViewLegacy(portalModel: portalModel, debugOverlaysEnabled: debugOverlaysEnabled)
                     )
                 } else {
                     root = UIHostingController(
-                        rootView: ZStack {
-                            PortalLayerViewLegacy()
-                                .environmentObject(portalModel)
-#if DEBUG
-                            DebugOverlayIndicator("PortalContainerOverlay")
-                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-                                .padding(20)
-                                .ignoresSafeArea()
-#endif
-                        }
+                        rootView: PortalContainerRootViewLegacy(portalModel: portalModel, debugOverlaysEnabled: debugOverlaysEnabled)
                     )
                 }
                 root.view.backgroundColor = .clear
@@ -329,5 +299,53 @@ internal struct DebugOverlayIndicator: View {
         .ignoresSafeArea()
 }
 #endif
+
+// MARK: - Root Views
+
+/// Root view for the portal container overlay window (iOS 17+).
+@available(iOS 17.0, *)
+fileprivate struct PortalContainerRootView: View {
+    let portalModel: CrossModel
+    let debugOverlaysEnabled: Bool
+
+    var body: some View {
+        ZStack {
+            PortalLayerView()
+                .environment(portalModel)
+                .environment(\.portalDebugOverlays, debugOverlaysEnabled)
+            #if DEBUG
+            if debugOverlaysEnabled {
+                DebugOverlayIndicator("PortalContainerOverlay")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                    .padding(20)
+                    .ignoresSafeArea()
+            }
+            #endif
+        }
+    }
+}
+
+/// Root view for the portal container overlay window (iOS 15+).
+@available(iOS, introduced: 15.0, deprecated: 17.0, message: "Use the iOS 17+ version when possible")
+fileprivate struct PortalContainerRootViewLegacy: View {
+    let portalModel: CrossModelLegacy
+    let debugOverlaysEnabled: Bool
+
+    var body: some View {
+        ZStack {
+            PortalLayerViewLegacy()
+                .environmentObject(portalModel)
+                .environment(\.portalDebugOverlays, debugOverlaysEnabled)
+            #if DEBUG
+            if debugOverlaysEnabled {
+                DebugOverlayIndicator("PortalContainerOverlay")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                    .padding(20)
+                    .ignoresSafeArea()
+            }
+            #endif
+        }
+    }
+}
 
 #endif
