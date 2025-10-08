@@ -12,16 +12,12 @@ import UIKit
 /// The overlay is managed automatically as the app's scene becomes active/inactive.
 ///
 /// - Parameters:
-///   - hideStatusBar: Whether the overlay should hide the status bar. Default is `true`.
+///   - hideStatusBar: Whether the overlay should hide the status bar. Default is `false`.
 ///   - content: The main content of your view hierarchy.
-/// - Example:
-/// ```swift
-/// PortalContainer(hideStatusBar: false) {
-///     MyMainView()
-/// }
-/// ```
+/// Prefer using `PortalContainer` unless you specifically need to reference the modern-only
+/// implementation (e.g. for conditional compilation).
 @available(iOS 17.0, *)
-public struct PortalContainer<Content: View>: View {
+public struct PortalContainerModern<Content: View>: View {
     @ViewBuilder public var content: Content
     @Environment(\.scenePhase) private var scene
     @Environment(\.portalDebugOverlays) private var debugOverlaysEnabled
@@ -31,7 +27,7 @@ public struct PortalContainer<Content: View>: View {
 
     private let hideStatusBar: Bool
     
-    /// Initializes a `PortalContainer` with optional custom settings.
+    /// Initializes a `PortalContainerModern` with optional custom settings.
     /// - Parameters:
     ///   - hideStatusBar: A boolean indicating whether the status bar should be hidden. Defaults to `false`.
     ///   - portalModel: An optional `CrossModel` to use. If `nil`, a default `CrossModel()` is created.
@@ -52,7 +48,7 @@ public struct PortalContainer<Content: View>: View {
         content
             .onAppear { setupWindow(scene) }
             .onDisappear(perform: OverlayWindowManager.shared.removeOverlayWindow)
-            .onChange(of: scene) { _, new in setupWindow (new) }
+            .onChange(of: scene) { _, new in setupWindow(new) }
             .environment(portalModel)
     }
     
@@ -120,8 +116,58 @@ public struct PortalContainerLegacy<Content: View>: View {
     }
 }
 
+// MARK: - Public Container Wrapper
+
+/// Type-erased portal container that automatically selects the appropriate implementation
+/// for the current OS version. Use this at the root of your app (e.g. in your `Scene` or
+/// `App` entry point) to install the portal layer once.
+@available(iOS 15.0, *)
+public struct PortalContainer<Content: View>: View {
+    private let hideStatusBar: Bool
+    private let modernPortalModelBox: Any?
+    private let content: () -> Content
+
+    public init(
+        hideStatusBar: Bool = false,
+        @ViewBuilder content: @escaping () -> Content
+    ) {
+        self.hideStatusBar = hideStatusBar
+        self.content = content
+        self.modernPortalModelBox = nil
+    }
+
+    public var body: some View {
+        if #available(iOS 17.0, *) {
+            PortalContainerModern(
+                hideStatusBar: hideStatusBar,
+                portalModel: modernPortalModelBox as? CrossModel,
+                content: content
+            )
+        } else {
+            PortalContainerLegacy(hideStatusBar: hideStatusBar) {
+                content()
+            }
+        }
+    }
+}
+
+@available(iOS 17.0, *)
+public extension PortalContainer {
+    init(
+        hideStatusBar: Bool = false,
+        portalModel: CrossModel? = nil,
+        @ViewBuilder content: @escaping () -> Content
+    ) {
+        self.hideStatusBar = hideStatusBar
+        self.content = content
+        self.modernPortalModelBox = portalModel
+    }
+}
+
 /// Adds a portal container overlay to the view, optionally hiding the status bar.
 ///
+/// - Warning: Deprecated. Use the `PortalContainer` wrapper directly to ensure the
+///   portal layer is always installed and visible at the root of your hierarchy.
 /// - Parameter hideStatusBar: Whether the overlay should hide the status bar. Default is `true`.
 /// - Returns: A view wrapped in a `PortalContainer`.
 /// - Example:
@@ -132,16 +178,11 @@ public struct PortalContainerLegacy<Content: View>: View {
 extension View {
     
     @available(iOS 15.0, *)
+    @available(*, deprecated, message: "Use the PortalContainer wrapper instead to install the portal layer explicitly.")
     @ViewBuilder
     public func portalContainer(hideStatusBar: Bool = true) -> some View {
-        if #available(iOS 17.0, *) {
-            PortalContainer(hideStatusBar: hideStatusBar) {
-                self
-            }
-        } else {
-            PortalContainerLegacy(hideStatusBar: hideStatusBar) {
-                self
-            }
+        PortalContainer(hideStatusBar: hideStatusBar) {
+            self
         }
     }
 }

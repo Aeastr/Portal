@@ -10,59 +10,60 @@ public struct PortalExample_MultiItem: View {
     public init() {}
     
     public var body: some View {
-        NavigationView {
-            VStack(spacing: 20) {
-                // Explanation section
-                VStack(alignment: .center, spacing: 12) {
-                    Text("Tap 'Select Photos' to see multiple elements transition together to the detail view. This demonstrates coordinated portal animations where multiple items move simultaneously with a staggered delay effect.")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                }
-                
-                // Photo grid - Sources
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3), spacing: 8) {
-                    ForEach(allPhotos) { photo in
-                        AnimatedLayer(portalID: photo.id.uuidString, scale: 1.15) {
-                            PhotoThumbnailView(photo: photo)
-                        }
+        PortalContainer {
+            NavigationView {
+                VStack(spacing: 20) {
+                    // Explanation section
+                    VStack(alignment: .center, spacing: 12) {
+                        Text("Tap 'Select Photos' to see multiple elements transition together to the detail view. This demonstrates coordinated portal animations where multiple items move simultaneously with a staggered delay effect.")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                    }
+
+                    // Photo grid - Sources
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3), spacing: 8) {
+                        ForEach(allPhotos) { photo in
+                            AnimatedLayer(portalID: photo.id.uuidString, scale: 1.15) {
+                                PhotoThumbnailView(photo: photo)
+                            }
                             .portal(item: photo, .source, groupID: "photoStack")
+                        }
+                    }
+                    .padding(.horizontal)
+
+                    Spacer()
+                }
+                .navigationTitle("Multi-Item Portal Transitions")
+                .navigationBarTitleDisplayMode(.inline)
+                .background(Color(.systemGroupedBackground).ignoresSafeArea())
+                .toolbar {
+                    ToolbarItem(placement: .bottomBar) {
+                        // Select button
+                        Button("Select Photos") {
+                            selectedPhotos = Array(allPhotos.prefix(4))
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .disabled(!selectedPhotos.isEmpty)
                     }
                 }
-                .padding(.horizontal)
-                
-                Spacer()
             }
-            .navigationTitle("Multi-Item Portal Transitions")
-            .navigationBarTitleDisplayMode(.inline)
-            .background(Color(.systemGroupedBackground).ignoresSafeArea())
-        }
-        .sheet(isPresented: .constant(!selectedPhotos.isEmpty)) {
-            MultiItemDetailView(photos: selectedPhotos) {
-                selectedPhotos.removeAll()
-            }
-        }
-        .portalTransition(
-            items: $selectedPhotos,
-            groupID: "photoStack",
-            config: .init(
-                animation: PortalAnimation(portal_animationExample)
-            )
-        ) { photo in
-            AnimatedLayer(portalID: photo.id.uuidString, scale: 1.15) {
-                PhotoView(photo: photo)
-            }
-        }
-        .portalContainer()
-        .toolbar {
-            ToolbarItem(placement: .bottomBar) {
-                // Select button
-                Button("Select Photos") {
-                    selectedPhotos = Array(allPhotos.prefix(4)) // Select first 4 photos
+            .sheet(isPresented: .constant(!selectedPhotos.isEmpty)) {
+                MultiItemDetailView(photos: selectedPhotos) {
+                    selectedPhotos.removeAll()
                 }
-                .buttonStyle(.borderedProminent)
-                .disabled(!selectedPhotos.isEmpty)
+            }
+            .portalTransition(
+                items: $selectedPhotos,
+                groupID: "photoStack",
+                config: .init(
+                    animation: PortalAnimation(portal_animationExample)
+                )
+            ) { photo in
+                AnimatedLayer(portalID: photo.id.uuidString, scale: 1.15) {
+                    PhotoView(photo: photo)
+                }
             }
         }
     }

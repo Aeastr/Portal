@@ -13,9 +13,10 @@ public struct PortalExample_Comparison: View {
     public init() {}
     
     public var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(spacing: 32) {
+        PortalContainer {
+            NavigationView {
+                ScrollView {
+                    VStack(spacing: 32) {
                     VStack(spacing: 12) {
                         Text("Compare Portal's cross-boundary transitions with native iOS behavior. Tap each card to see the difference.")
                             .font(.subheadline)
@@ -141,26 +142,26 @@ public struct PortalExample_Comparison: View {
                     }
                     
                     Spacer()
+                    }
+                    .padding()
                 }
-                .padding()
+                .navigationTitle("Portal vs Native Comparison")
+                .navigationBarTitleDisplayMode(.inline)
+                .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())
             }
-            .navigationTitle("Portal vs Native Comparison")
-            .navigationBarTitleDisplayMode(.inline)
-            .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())
-        }
-        .sheet(isPresented: $showPortalSheet) {
-            PortalExample_PortalComparisonSheet()
-        }
-        .sheet(isPresented: $showNativeSheet) {
-            PortalExample_NativeComparisonSheet()
-        }
-        .sheet(isPresented: $showZoomSheet) {
-            if #available(iOS 18.0, *) {
-                PortalExample_ZoomComparisonSheet(namespace: namespace)
-                    .navigationTransition(.zoom(sourceID: "zoomDemo", in: namespace))
+            .sheet(isPresented: $showPortalSheet) {
+                PortalExample_PortalComparisonSheet()
             }
-        }
-        .portalTransition(
+            .sheet(isPresented: $showNativeSheet) {
+                PortalExample_NativeComparisonSheet()
+            }
+            .sheet(isPresented: $showZoomSheet) {
+                if #available(iOS 18.0, *) {
+                    PortalExample_ZoomComparisonSheet(namespace: namespace)
+                        .navigationTransition(.zoom(sourceID: "zoomDemo", in: namespace))
+                }
+            }
+            .portalTransition(
             id: "portalDemo",
             config: .init(animation: PortalAnimation(portal_animationExample)),
             isActive: $showPortalSheet
@@ -187,7 +188,8 @@ public struct PortalExample_Comparison: View {
                     )
             }
         }
-        .portalContainer()
+        }
+        .portalDebugOverlays(enabled: false)
     }
 }
 

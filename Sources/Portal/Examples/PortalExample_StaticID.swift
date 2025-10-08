@@ -9,8 +9,8 @@ public struct PortalExample_StaticID: View {
     public init() {}
     
     public var body: some View {
-        NavigationView {
-            
+        PortalContainer {
+            NavigationView {
                 VStack(spacing: 90) {
                     VStack(spacing: 12) {
                         Text("Portal enables seamless transitions using static IDs too. Tap the code block to see it transition across sheet boundaries.")
@@ -83,67 +83,67 @@ public struct PortalExample_StaticID: View {
                     
                     Spacer()
                     
-            }
-            .frame(maxWidth: .infinity)
-            .navigationTitle("Static ID Example")
-            .navigationBarTitleDisplayMode(.inline)
-            .background(Color(.systemGroupedBackground).ignoresSafeArea())
-        }
-        .sheet(isPresented: $showDetail) {
-            PortalExample_StaticIDDetail()
-        }
-        .portalTransition(
-            id: "codeBlock",
-            config: .init(animation: PortalAnimation(.spring(response: 0.4, dampingFraction: 0.8))),
-            isActive: $showDetail
-        ) {
-            AnimatedLayer(portalID: "codeBlock") {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Circle()
-                            .fill(.red)
-                            .frame(width: 12, height: 12)
-                        Circle()
-                            .fill(.yellow)
-                            .frame(width: 12, height: 12)
-                        Circle()
-                            .fill(.green)
-                            .frame(width: 12, height: 12)
-                        Spacer()
-                        Text("Portal.swift")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.top, 12)
-                    
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(".portal(id: \"hero\", .source)")
-                            .font(.system(.body, design: .monospaced))
-                            .foregroundColor(.blue)
-                        Text(".portalTransition(")
-                            .font(.system(.body, design: .monospaced))
-                            .foregroundColor(.purple)
-                        Text("  id: \"hero\",")
-                            .font(.system(.body, design: .monospaced))
-                            .foregroundColor(.primary)
-                        Text("  isActive: $showDetail")
-                            .font(.system(.body, design: .monospaced))
-                            .foregroundColor(.primary)
-                        Text(")")
-                            .font(.system(.body, design: .monospaced))
-                            .foregroundColor(.purple)
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 16)
                 }
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color(.systemBackground))
-                )
+                .frame(maxWidth: .infinity)
+                .navigationTitle("Static ID Example")
+                .navigationBarTitleDisplayMode(.inline)
+                .background(Color(.systemGroupedBackground).ignoresSafeArea())
+            }
+            .sheet(isPresented: $showDetail) {
+                PortalExample_StaticIDDetail()
+            }
+            .portalTransition(
+                id: "codeBlock",
+                config: .init(animation: PortalAnimation(.spring(response: 0.4, dampingFraction: 0.8))),
+                isActive: $showDetail
+            ) {
+                AnimatedLayer(portalID: "codeBlock") {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Circle()
+                                .fill(.red)
+                                .frame(width: 12, height: 12)
+                            Circle()
+                                .fill(.yellow)
+                                .frame(width: 12, height: 12)
+                            Circle()
+                                .fill(.green)
+                                .frame(width: 12, height: 12)
+                            Spacer()
+                            Text("Portal.swift")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.top, 12)
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(".portal(id: \"hero\", .source)")
+                                .font(.system(.body, design: .monospaced))
+                                .foregroundColor(.blue)
+                            Text(".portalTransition(")
+                                .font(.system(.body, design: .monospaced))
+                                .foregroundColor(.purple)
+                            Text("  id: \"hero\",")
+                                .font(.system(.body, design: .monospaced))
+                                .foregroundColor(.primary)
+                            Text("  isActive: $showDetail")
+                                .font(.system(.body, design: .monospaced))
+                                .foregroundColor(.primary)
+                            Text(")")
+                                .font(.system(.body, design: .monospaced))
+                                .foregroundColor(.purple)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 16)
+                    }
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(.systemBackground))
+                    )
+                }
             }
         }
-        .portalContainer()
     }
 }
 
@@ -216,11 +216,11 @@ private struct PortalExample_StaticIDDetail: View {
                     Spacer()
                 }
             }
-            .navigationTitle(("Code Block Detail"))
+            .navigationTitle("Code Block Detail")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar{
-                ToolbarItem() {
-                    Button("Done"){
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
                         dismiss()
                     }
                 }
@@ -234,9 +234,8 @@ private struct PortalExample_StaticIDDetail: View {
     PortalExample_StaticID()
 }
 
-#Preview("Static ID Example Detail"){
+#Preview("Static ID Example Detail") {
     PortalExample_StaticIDDetail()
-        .portalContainer()
 }
 
 #endif

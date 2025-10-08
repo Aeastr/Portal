@@ -10,98 +10,99 @@ public struct PortalExample_List: View {
     public init() {}
     
     public var body: some View {
-        NavigationView {
-            List {
-                // Explanation section
-                Section {
-                    VStack(alignment: .center, spacing: 12) {
-                        Text("This list contains 1000 items to test Portal's performance with large datasets. Each photo uses Portal for seamless transitions. Tap any photo to see it smoothly animate to the detail view.")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
+        PortalContainer {
+            NavigationView {
+                List {
+                    // Explanation section
+                    Section {
+                        VStack(alignment: .center, spacing: 12) {
+                            Text("This list contains 1000 items to test Portal's performance with large datasets. Each photo uses Portal for seamless transitions. Tap any photo to see it smoothly animate to the detail view.")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.center)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
                     }
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
-                }
-                
-                // List items
-                Section("Scenic Views") {
-                    ForEach(listItems) { item in
-                        HStack(spacing: 16) {
-                            // Photo - Portal Source
-                            
-                            Group {
-                                if #available(iOS 16.0, *) {
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(item.color.gradient)
-                                } else {
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(item.color)
+
+                    // List items
+                    Section("Scenic Views") {
+                        ForEach(listItems) { item in
+                            HStack(spacing: 16) {
+                                // Photo - Portal Source
+
+                                Group {
+                                    if #available(iOS 16.0, *) {
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .fill(item.color.gradient)
+                                    } else {
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .fill(item.color)
+                                    }
                                 }
+                                .overlay(
+                                    Image(systemName: item.icon)
+                                        .font(.system(size: 24, weight: .medium))
+                                        .foregroundColor(.white)
+                                )
+
+                                .frame(width: 60, height: 60)
+                                .portal(item: item, .source)
+
+                                // Content
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(item.title)
+                                        .font(.headline)
+                                        .fontWeight(.medium)
+                                        .foregroundColor(.primary)
+
+                                    Text(item.description)
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                        .lineLimit(2)
+                                }
+
+                                Spacer()
                             }
-                            .overlay(
-                                Image(systemName: item.icon)
-                                    .font(.system(size: 24, weight: .medium))
-                                    .foregroundColor(.white)
-                            )
-                            
-                            .frame(width: 60, height: 60)
-                            .portal(item: item, .source)
-                            
-                            // Content
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(item.title)
-                                    .font(.headline)
-                                    .fontWeight(.medium)
-                                    .foregroundColor(.primary)
-                                
-                                Text(item.description)
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                                    .lineLimit(2)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                selectedItem = item
                             }
-                            
-                            Spacer()
-                        }
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            selectedItem = item
                         }
                     }
                 }
+                .navigationTitle("Portal Performance Test")
+                .navigationBarTitleDisplayMode(.inline)
+                .background(Color(.systemGroupedBackground).ignoresSafeArea())
             }
-            .navigationTitle("Portal Performance Test")
-            .navigationBarTitleDisplayMode(.inline)
-            .background(Color(.systemGroupedBackground).ignoresSafeArea())
-        }
-        .sheet(item: $selectedItem) { item in
-            PortalExample_ListDetail(item: item)
-        }
-        .portalTransition(
-            item: $selectedItem,
-            config: .init(
-                animation: PortalAnimation(portal_animationExample)
-            )
-        ) { item in
-            
-            Group {
-                if #available(iOS 16.0, *) {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(item.color.gradient)
-                } else {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(item.color)
+            .sheet(item: $selectedItem) { item in
+                PortalExample_ListDetail(item: item)
+            }
+            .portalTransition(
+                item: $selectedItem,
+                config: .init(
+                    animation: PortalAnimation(portal_animationExample)
+                )
+            ) { item in
+
+                Group {
+                    if #available(iOS 16.0, *) {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(item.color.gradient)
+                    } else {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(item.color)
+                    }
                 }
+                .overlay(
+                    Image(systemName: item.icon)
+                        .font(.system(size: 24, weight: .medium))
+                        .foregroundColor(.white)
+                )
+
             }
-            .overlay(
-                Image(systemName: item.icon)
-                    .font(.system(size: 24, weight: .medium))
-                    .foregroundColor(.white)
-            )
-            
         }
-        .portalContainer()
     }
     
     private static func generateLargeDataSet() -> [PortalExample_ListItem] {
@@ -255,7 +256,6 @@ private struct PortalExample_ListDetail: View {
             icon: "mountain.2.fill"
         )
     )
-    .portalContainer()
 }
 
 

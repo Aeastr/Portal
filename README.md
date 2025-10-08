@@ -53,7 +53,7 @@ For full installation steps, usage guides, examples, and animation deep-dives, v
   Mark any view as a portal source or destination, keyed by static IDs or `Identifiable` items.
 
 - **Easy Integration**  
-  Add portal support to any view hierarchy with a single modifier or wrapper, no custom presentation code required.
+  Install `PortalContainer` once at your root view and every sheet/navigation stack automatically gains portal support—no custom presentation code required.
 
 - **Customizable Animations**  
   Fine-tune transitions with `PortalTransitionConfig` for control over timing, easing, and corner styling.

@@ -40,117 +40,110 @@ public struct PortalExample_CardGrid: View {
     }
     
     public var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(spacing: 20) {
-                    // Explanation text
-                    VStack(spacing: 12) {
-                        Text("Item-Based Portal Transitions")
-                            .font(.title2)
-                            .fontWeight(.semibold)
-                        
-                        Text("Portal automatically manages transitions using Identifiable items. Each card uses its unique ID for seamless animations between grid and detail views.")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
-                    }
-                    .padding(.top)
-                    
-                    LazyVGrid(columns: columns, spacing: 12) {
-                    ForEach(cards) { card in
+        PortalContainer {
+            NavigationView {
+                ScrollView {
+                    VStack(spacing: 20) {
+                        // Explanation text
                         VStack(spacing: 12) {
-                            AnimatedLayer(portalID: "\(card.id)") {
-                                Group{
-                                    if #available(iOS 16.0, *) {
-                                        RoundedRectangle(cornerRadius: 16)
-                                            .fill(
-                                                card.color.gradient
-                                            )
-                                    } else {
-                                        RoundedRectangle(cornerRadius: 16)
-                                            .fill(
-                                                card.color
-                                            )
+                            Text("Item-Based Portal Transitions")
+                                .font(.title2)
+                                .fontWeight(.semibold)
+
+                            Text("Portal automatically manages transitions using Identifiable items. Each card uses its unique ID for seamless animations between grid and detail views.")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                        }
+                        .padding(.top)
+
+                        LazyVGrid(columns: columns, spacing: 12) {
+                            ForEach(cards) { card in
+                                VStack(spacing: 12) {
+                                    AnimatedLayer(portalID: "\(card.id)") {
+                                        Group {
+                                            if #available(iOS 16.0, *) {
+                                                RoundedRectangle(cornerRadius: 16)
+                                                    .fill(card.color.gradient)
+                                            } else {
+                                                RoundedRectangle(cornerRadius: 16)
+                                                    .fill(card.color)
+                                            }
+                                        }
+                                        .overlay(
+                                            VStack(spacing: 8) {
+                                                Image(systemName: card.icon)
+                                                    .font(.system(size: 32, weight: .medium))
+                                                    .foregroundColor(.white)
+
+                                                Text(card.title)
+                                                    .font(.headline)
+                                                    .fontWeight(.semibold)
+                                                    .foregroundColor(.white)
+                                            }
+                                        )
                                     }
+                                    .frame(height: 120)
+                                    .portal(item: card, .source)
                                 }
-                                .overlay(
-                                    VStack(spacing: 8) {
-                                        Image(systemName: card.icon)
-                                            .font(.system(size: 32, weight: .medium))
-                                            .foregroundColor(.white)
-                                        
-                                        Text(card.title)
-                                            .font(.headline)
-                                            .fontWeight(.semibold)
-                                            .foregroundColor(.white)
-                                    }
+                                .background(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .fill(Color(.secondarySystemBackground))
                                 )
+                                .onTapGesture {
+                                    selectedCard = card
+                                }
                             }
-                            .frame(height: 120)
-                            .portal(item: card, .source)
                         }
-                        .background(
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(Color(.secondarySystemBackground))
-                        )
-                        .onTapGesture {
-                                selectedCard = card
+                        .padding()
+                    }
+                }
+                .navigationTitle("Portal Card Grid")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .bottomBar) {
+                        Button("Add Card") {
+                            addRandomCard()
                         }
                     }
                 }
-                .padding()
-                }
+                .background(Color(.systemGroupedBackground).ignoresSafeArea())
             }
-            .navigationTitle("Portal Card Grid")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .bottomBar) {
-                    Button("Add Card") {
-                        addRandomCard()
-                    }
-                }
+            .sheet(item: $selectedCard) { card in
+                PortalExample_CardDetail(card: card)
             }
-            .background(Color(.systemGroupedBackground).ignoresSafeArea())
-        }
-        .sheet(item: $selectedCard) { card in
-            PortalExample_CardDetail(card: card)
-        }
-        .portalTransition(
-            item: $selectedCard,
-            config: .init(
-                animation: PortalAnimation(portal_animationExample)
-            )
-        ) { card in
-            AnimatedLayer(portalID: "\(card.id)") {
-                Group{
-                    if #available(iOS 16.0, *) {
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(
-                                card.color.gradient
-                            )
-                    } else {
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(
-                                card.color
-                            )
-                    }
-                }
-                .overlay(
-                    VStack(spacing: 8) {
-                        Image(systemName: card.icon)
-                            .font(.system(size: 32, weight: .medium))
-                            .foregroundColor(.white)
-                        
-                        Text(card.title)
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.white)
-                    }
+            .portalTransition(
+                item: $selectedCard,
+                config: .init(
+                    animation: PortalAnimation(portal_animationExample)
                 )
+            ) { card in
+                AnimatedLayer(portalID: "\(card.id)") {
+                    Group {
+                        if #available(iOS 16.0, *) {
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(card.color.gradient)
+                        } else {
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(card.color)
+                        }
+                    }
+                    .overlay(
+                        VStack(spacing: 8) {
+                            Image(systemName: card.icon)
+                                .font(.system(size: 32, weight: .medium))
+                                .foregroundColor(.white)
+
+                            Text(card.title)
+                                .font(.headline)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.white)
+                        }
+                    )
+                }
             }
         }
-        .portalContainer()
     }
 }
 
@@ -218,8 +211,8 @@ private struct PortalExample_CardDetail: View {
             .background(Color(.systemGroupedBackground).ignoresSafeArea())
             .navigationTitle(card.title)
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar{
-                ToolbarItem() {
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
                         dismiss()
                     }
@@ -234,11 +227,10 @@ private struct PortalExample_CardDetail: View {
     PortalExample_CardGrid()
 }
 
-#Preview("Detail View"){
+#Preview("Detail View") {
     PortalExample_CardDetail(
         card: PortalExample_Card(title: "Portal", subtitle: "Seamless Transitions", color: .purple, icon: "arrow.triangle.2.circlepath")
     )
-    .portalContainer()
 }
 
 #endif
