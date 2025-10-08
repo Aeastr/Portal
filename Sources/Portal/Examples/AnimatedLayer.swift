@@ -10,7 +10,6 @@ let portal_animationExampleExtraBounce: Animation = Animation.smooth(duration: p
 ///
 /// This is an example implementation using the `AnimatedPortalLayer` protocol.
 /// Users can copy and modify this to create their own custom animations.
-@available(iOS 15.0, *)
 struct AnimatedLayer<Content: View>: AnimatedPortalLayer {
     let portalID: String
     var scale: CGFloat = 1.25
@@ -20,25 +19,14 @@ struct AnimatedLayer<Content: View>: AnimatedPortalLayer {
 
     @ViewBuilder
     func animatedContent(isActive: Bool) -> some View {
-        if #available(iOS 17.0, *) {
-            content()
-                .scaleEffect(layerScale)
-                .onAppear {
-                    layerScale = 1
-                }
-                .onChange(of: isActive) { oldValue, newValue in
-                    handleActiveChange(oldValue: oldValue, newValue: newValue)
-                }
-        } else {
-            content()
-                .scaleEffect(layerScale)
-                .onAppear {
-                    layerScale = 1
-                }
-                .onChange(of: isActive) { newValue in
-                    handleActiveChangeLegacy(newValue: newValue)
-                }
-        }
+        content()
+            .scaleEffect(layerScale)
+            .onAppear {
+                layerScale = 1
+            }
+            .onChange(of: isActive) { oldValue, newValue in
+                handleActiveChange(oldValue: oldValue, newValue: newValue)
+            }
     }
 
     private func handleActiveChange(oldValue: Bool, newValue: Bool) {
@@ -57,28 +45,6 @@ struct AnimatedLayer<Content: View>: AnimatedPortalLayer {
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + (portal_animationDuration / 2) - 0.1) {
                 withAnimation(portal_animationExampleExtraBounce) {
-                    layerScale = 1
-                }
-            }
-        }
-    }
-
-    private func handleActiveChangeLegacy(newValue: Bool) {
-        if newValue {
-            withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-                layerScale = scale
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
-                    layerScale = 1
-                }
-            }
-        } else {
-            withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-                layerScale = scale
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
                     layerScale = 1
                 }
             }

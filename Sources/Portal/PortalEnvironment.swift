@@ -7,12 +7,10 @@ import SwiftUI
 /// Debug overlays show visual indicators for portal sources (blue) and destinations (orange)
 /// with labels. By default, overlays are shown in DEBUG builds but can be disabled
 /// using the `.portalDebugOverlays(enabled:)` modifier.
-@available(iOS 15.0, *)
 private struct PortalDebugOverlaysKey: EnvironmentKey {
     static let defaultValue: Bool = true
 }
 
-@available(iOS 15.0, *)
 public extension EnvironmentValues {
     /// Controls whether portal debug overlays are shown.
     ///
@@ -32,7 +30,6 @@ public extension EnvironmentValues {
     }
 }
 
-@available(iOS 15.0, *)
 public extension View {
     /// Controls whether portal debug overlays are shown.
     ///

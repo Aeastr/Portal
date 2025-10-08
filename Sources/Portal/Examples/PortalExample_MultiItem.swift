@@ -2,7 +2,6 @@
 import SwiftUI
 
 /// Portal multi-item example showing coordinated transitions for multiple elements
-@available(iOS 15.0, *)
 public struct PortalExample_MultiItem: View {
     @State private var selectedPhotos: [MultiItemPhoto] = []
     @State private var allPhotos: [MultiItemPhoto] = MultiItemPhoto.samplePhotos
@@ -70,7 +69,6 @@ public struct PortalExample_MultiItem: View {
 }
 
 /// Detail view showing the coordinated destination views
-@available(iOS 15.0, *)
 struct MultiItemDetailView: View {
     let photos: [MultiItemPhoto]
     let onDismiss: () -> Void

@@ -2,7 +2,6 @@
 import SwiftUI
 
 /// Portal list example showing photo transitions in a native SwiftUI List
-@available(iOS 15.0, *)
 public struct PortalExample_List: View {
     @State private var selectedItem: PortalExample_ListItem? = nil
     @State private var listItems: [PortalExample_ListItem] = PortalExample_List.generateLargeDataSet()
@@ -33,13 +32,8 @@ public struct PortalExample_List: View {
                                 // Photo - Portal Source
 
                                 Group {
-                                    if #available(iOS 16.0, *) {
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .fill(item.color.gradient)
-                                    } else {
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .fill(item.color)
-                                    }
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(item.color.gradient)
                                 }
                                 .overlay(
                                     Image(systemName: item.icon)
@@ -87,13 +81,8 @@ public struct PortalExample_List: View {
             ) { item in
 
                 Group {
-                    if #available(iOS 16.0, *) {
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(item.color.gradient)
-                    } else {
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(item.color)
-                    }
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(item.color.gradient)
                 }
                 .overlay(
                     Image(systemName: item.icon)
@@ -157,7 +146,6 @@ public struct PortalExample_List: View {
 }
 
 /// List item model for the Portal example
-@available(iOS 15.0, *)
 public struct PortalExample_ListItem: Identifiable {
     public let id = UUID()
     public let title: String
@@ -173,7 +161,6 @@ public struct PortalExample_ListItem: Identifiable {
     }
 }
 
-@available(iOS 15.0, *)
 private struct PortalExample_ListDetail: View {
     let item: PortalExample_ListItem
     @Environment(\.dismiss) var dismiss
@@ -185,13 +172,8 @@ private struct PortalExample_ListDetail: View {
                     // MARK: Destination Photo
                     
                     Group {
-                        if #available(iOS 16.0, *) {
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(item.color.gradient)
-                        } else {
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(item.color)
-                        }
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(item.color.gradient)
                     }
                     .overlay(
                         Image(systemName: item.icon)
