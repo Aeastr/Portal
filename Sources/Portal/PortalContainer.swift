@@ -53,10 +53,20 @@ public struct PortalContainerModern<Content: View>: View {
     private func setupWindow(_ scenePhase: ScenePhase) {
 #if canImport(UIKit)
         if scenePhase == .active {
-            //            print("add overlay")
+            PortalLogs.logger.log(
+                "Activating portal overlay window",
+                level: .notice,
+                tags: [PortalLogs.Tags.container],
+                metadata: ["scenePhase": "active"]
+            )
             OverlayWindowManager.shared.addOverlayWindow(with: portalModel, hideStatusBar: hideStatusBar, debugOverlaysEnabled: debugOverlaysEnabled)
         } else {
-            //            print("remove overlay")
+            PortalLogs.logger.log(
+                "Scene no longer active; removing portal overlay window",
+                level: .notice,
+                tags: [PortalLogs.Tags.container],
+                metadata: ["scenePhase": "\(scenePhase)"]
+            )
             OverlayWindowManager.shared.removeOverlayWindow()
         }
 #endif
@@ -122,12 +132,30 @@ final class OverlayWindowManager {
         hideStatusBar: Bool,
         debugOverlaysEnabled: Bool
     ) {
-        guard overlayWindow == nil else { return }
+        guard overlayWindow == nil else {
+            PortalLogs.logger.log(
+                "Overlay window already installed; skipping duplicate add",
+                level: .notice,
+                tags: [PortalLogs.Tags.overlay]
+            )
+            return
+        }
         DispatchQueue.main.async {
             for scene in UIApplication.shared.connectedScenes {
                 guard let windowScene = scene as? UIWindowScene,
                       scene.activationState == .foregroundActive else { continue }
-                
+
+                PortalLogs.logger.log(
+                    "Installing overlay window",
+                    level: .info,
+                    tags: [PortalLogs.Tags.overlay],
+                    metadata: [
+                        "hideStatusBar": hideStatusBar,
+                        "debugOverlays": debugOverlaysEnabled,
+                        "scene": windowScene.session.persistentIdentifier
+                    ]
+                )
+
                 let window = PassThroughWindow(windowScene: windowScene)
                 window.backgroundColor = .clear
                 window.isUserInteractionEnabled = false
@@ -148,11 +176,27 @@ final class OverlayWindowManager {
                 
                 window.rootViewController = root
                 guard self.overlayWindow == nil else {
-                    
-                    //                        print("overlayWindow populated, return")
+                    PortalLogs.logger.log(
+                        "Overlay window became populated while configuring; aborting new instance",
+                        level: .warning,
+                        tags: [PortalLogs.Tags.overlay]
+                    )
                     return }
                 self.overlayWindow = window
+                PortalLogs.logger.log(
+                    "Overlay window installed",
+                    level: .notice,
+                    tags: [PortalLogs.Tags.overlay]
+                )
                 break
+            }
+
+            if self.overlayWindow == nil {
+                PortalLogs.logger.log(
+                    "Unable to find active foreground scene for portal overlay",
+                    level: .warning,
+                    tags: [PortalLogs.Tags.overlay]
+                )
             }
         }
     }
@@ -160,7 +204,22 @@ final class OverlayWindowManager {
     /// Removes the overlay window from the scene.
     func removeOverlayWindow() {
         DispatchQueue.main.async {
-            self.overlayWindow?.isHidden = true
+            guard let overlayWindow = self.overlayWindow else {
+                PortalLogs.logger.log(
+                    "Requested overlay removal but no window was active",
+                    level: .debug,
+                    tags: [PortalLogs.Tags.overlay]
+                )
+                return
+            }
+
+            PortalLogs.logger.log(
+                "Removing overlay window",
+                level: .info,
+                tags: [PortalLogs.Tags.overlay]
+            )
+
+            overlayWindow.isHidden = true
             self.overlayWindow = nil
         }
     }

@@ -56,6 +56,9 @@ For full installation steps, usage guides, examples, and animation deep-dives, v
 - **Modern SwiftUI Support**  
   Built for iOS 17+ with the latest SwiftUI APIs and animation completion criteria
 
+- **Structured Logging**  
+  Diagnose portal lifecycle events via the bundled `PortalLogs` integration powered by [LogOutLoud](https://github.com/Aeastr/LogOutLoud).
+
 ---
 
 ## Debugging & Development
@@ -70,6 +73,43 @@ Portal includes comprehensive visual debug indicators (only in DEBUG builds) to 
 - **Production**: Automatically hidden in Release builds—zero performance impact
 
 These visual indicators help troubleshoot portal transitions, anchor positioning, and overlay lifecycle issues. For more details, see the [Debugging Guide](https://github.com/Aeastr/Portal/wiki/Debugging).
+
+### Logging & Diagnostics
+
+Portal now ships with a dedicated [LogOutLoud](https://github.com/Aeastr/LogOutLoud) logger instance. Fetch it anywhere inside your app or tests:
+
+```swift
+import Portal
+
+PortalLogs.logger.log("Overlay installed", level: .info, tags: [PortalLogs.Tags.overlay])
+```
+
+- `PortalLogs` is preconfigured to allow all log levels in DEBUG and notice+ in RELEASE.
+- Call `PortalLogs.configure(allowedLevels:)` early in your app if you need custom filtering.
+- Need an in-app console? Add the `LogOutLoudConsole` product to your app target and enable it:
+
+```swift
+import Portal
+import LogOutLoudConsole
+import SwiftUI
+
+@main
+struct PortalDemoApp: App {
+    @State private var showConsole = false
+
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+                .toolbar { Button("Console") { showConsole = true } }
+                .sheet(isPresented: $showConsole) { LogConsolePanel() }
+                .logConsole(enabled: true, logger: PortalLogs.logger, maxEntries: 1_000)
+                .task { PortalLogs.logger.log("Portal ready", level: .debug) }
+        }
+    }
+}
+```
+
+Present `LogConsolePanel()` (or your own console UI) wherever you need to surface the live log stream in app, or check the Xcode debug output. The `.logConsole` modifier wires the shared Portal logger into the console automatically.
 
 ---
 

@@ -120,24 +120,48 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
         if hasValue {
             // Forward transition: item became non-nil
             guard let key = self.key, let unwrapped = item else { return }
-            
+
             // Store key for potential cleanup
             lastKey = key
-            
+
             // Ensure portal info exists in the model
             if portalModel.info.firstIndex(where: { $0.infoID == key }) == nil {
                 portalModel.info.append(PortalInfo(id: key))
+                PortalLogs.logger.log(
+                    "Registered new portal info",
+                    level: .debug,
+                    tags: [PortalLogs.Tags.transition],
+                    metadata: ["id": key]
+                )
             }
-            
-            guard let idx = portalModel.info.firstIndex(where: { $0.infoID == key }) else { return }
-            
+
+            guard let idx = portalModel.info.firstIndex(where: { $0.infoID == key }) else {
+                PortalLogs.logger.log(
+                    "Portal info lookup failed after registration",
+                    level: .error,
+                    tags: [PortalLogs.Tags.transition],
+                    metadata: ["id": key]
+                )
+                return
+            }
+
             // Configure portal for forward animation
             portalModel.info[idx].initalized = true
             portalModel.info[idx].animation = config.animation
             portalModel.info[idx].corners = config.corners
             portalModel.info[idx].completion = completion
             portalModel.info[idx].layerView = AnyView(layerView(unwrapped))
-            
+
+            PortalLogs.logger.log(
+                "Starting forward portal transition",
+                level: .notice,
+                tags: [PortalLogs.Tags.transition],
+                metadata: [
+                    "id": key,
+                    "delay_ms": Int(config.animation.delay * 1_000)
+                ]
+            )
+
             // Start animation after configured delay
             DispatchQueue.main.asyncAfter(deadline: .now() + config.animation.delay) {
                 config.animation.performAnimation({
@@ -154,10 +178,17 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
             guard let key = lastKey,
                   let idx = portalModel.info.firstIndex(where: { $0.infoID == key })
             else { return }
-            
+
             // Prepare for reverse animation
             portalModel.info[idx].hideView = false
-            
+
+            PortalLogs.logger.log(
+                "Reversing portal transition",
+                level: .notice,
+                tags: [PortalLogs.Tags.transition],
+                metadata: ["id": key]
+            )
+
             // Start reverse animation
             config.animation.performAnimation({
                 portalModel.info[idx].animateView = false
@@ -169,9 +200,16 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
                 portalModel.info[idx].destinationAnchor = nil
                 portalModel.info[idx].completion(false)
             }
-            
+
             // Clear stored key
             lastKey = nil
+
+            PortalLogs.logger.log(
+                "Completed reverse portal transition cleanup",
+                level: .debug,
+                tags: [PortalLogs.Tags.transition],
+                metadata: ["id": key]
+            )
         }
     }
     

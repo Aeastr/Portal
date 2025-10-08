@@ -1,10 +1,12 @@
 #if DEBUG
 import SwiftUI
+import LogOutLoudConsole
 
 /// Portal list example showing photo transitions in a native SwiftUI List
 public struct PortalExample_List: View {
     @State private var selectedItem: PortalExample_ListItem? = nil
     @State private var listItems: [PortalExample_ListItem] = PortalExample_List.generateLargeDataSet()
+    @State private var showConsole = false
     
     public init() {}
     
@@ -61,6 +63,11 @@ public struct PortalExample_List: View {
                             }
                             .contentShape(Rectangle())
                             .onTapGesture {
+                                PortalLogs.logger.log(
+                                    "Selected item \(item.title)",
+                                    level: .info,
+                                    tags: [PortalLogs.Tags.transition]
+                                )
                                 selectedItem = item
                             }
                         }
@@ -69,6 +76,18 @@ public struct PortalExample_List: View {
                 .navigationTitle("Portal Performance Test")
                 .navigationBarTitleDisplayMode(.inline)
                 .background(Color(.systemGroupedBackground).ignoresSafeArea())
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Console") {
+                            PortalLogs.logger.log(
+                                "Presenting log console",
+                                level: .notice,
+                                tags: [PortalLogs.Tags.diagnostics]
+                            )
+                            showConsole = true
+                        }
+                    }
+                }
             }
             .sheet(item: $selectedItem) { item in
                 PortalExample_ListDetail(item: item)
@@ -91,6 +110,17 @@ public struct PortalExample_List: View {
                 )
 
             }
+        }
+        .sheet(isPresented: $showConsole) {
+            LogConsolePanel()
+        }
+        .logConsole(enabled: true, logger: PortalLogs.logger, maxEntries: 1_000)
+        .task {
+            PortalLogs.logger.log(
+                "Portal list example ready",
+                level: .debug,
+                tags: [PortalLogs.Tags.diagnostics]
+            )
         }
     }
     
