@@ -51,7 +51,7 @@ For full installation steps, usage guides, examples, and animation deep-dives, v
   Install `PortalContainer` once at your root view and every sheet/navigation stack automatically gains portal support—no custom presentation code required.
 
 - **Customizable Animations**  
-  Fine-tune transitions with `PortalTransitionConfig` for control over timing, easing, and corner styling.
+  Fine-tune transitions with `PortalTransitionConfig` and drive bespoke transition layers via the `AnimatedPortalLayer` protocol.
 
 - **Modern SwiftUI Support**  
   Built for iOS 17+ with the latest SwiftUI APIs and animation completion criteria
