@@ -2,7 +2,6 @@
 import SwiftUI
 
 /// Portal static ID example showing code block transitions
-@available(iOS 15.0, *)
 public struct PortalExample_StaticID: View {
     @State private var showDetail = false
     
@@ -147,7 +146,6 @@ public struct PortalExample_StaticID: View {
     }
 }
 
-@available(iOS 15.0, *)
 private struct PortalExample_StaticIDDetail: View {
     @Environment(\.dismiss) var dismiss
     

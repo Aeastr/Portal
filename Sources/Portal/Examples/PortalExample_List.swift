@@ -1,11 +1,12 @@
 #if DEBUG
 import SwiftUI
+import LogOutLoudConsole
 
 /// Portal list example showing photo transitions in a native SwiftUI List
-@available(iOS 15.0, *)
 public struct PortalExample_List: View {
     @State private var selectedItem: PortalExample_ListItem? = nil
     @State private var listItems: [PortalExample_ListItem] = PortalExample_List.generateLargeDataSet()
+    @State private var showConsole = false
     
     public init() {}
     
@@ -33,13 +34,8 @@ public struct PortalExample_List: View {
                                 // Photo - Portal Source
 
                                 Group {
-                                    if #available(iOS 16.0, *) {
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .fill(item.color.gradient)
-                                    } else {
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .fill(item.color)
-                                    }
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(item.color.gradient)
                                 }
                                 .overlay(
                                     Image(systemName: item.icon)
@@ -67,6 +63,11 @@ public struct PortalExample_List: View {
                             }
                             .contentShape(Rectangle())
                             .onTapGesture {
+                                PortalLogs.logger.log(
+                                    "Selected item \(item.title)",
+                                    level: .info,
+                                    tags: [PortalLogs.Tags.transition]
+                                )
                                 selectedItem = item
                             }
                         }
@@ -75,6 +76,18 @@ public struct PortalExample_List: View {
                 .navigationTitle("Portal Performance Test")
                 .navigationBarTitleDisplayMode(.inline)
                 .background(Color(.systemGroupedBackground).ignoresSafeArea())
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Console") {
+                            PortalLogs.logger.log(
+                                "Presenting log console",
+                                level: .notice,
+                                tags: [PortalLogs.Tags.diagnostics]
+                            )
+                            showConsole = true
+                        }
+                    }
+                }
             }
             .sheet(item: $selectedItem) { item in
                 PortalExample_ListDetail(item: item)
@@ -87,13 +100,8 @@ public struct PortalExample_List: View {
             ) { item in
 
                 Group {
-                    if #available(iOS 16.0, *) {
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(item.color.gradient)
-                    } else {
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(item.color)
-                    }
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(item.color.gradient)
                 }
                 .overlay(
                     Image(systemName: item.icon)
@@ -102,6 +110,17 @@ public struct PortalExample_List: View {
                 )
 
             }
+        }
+        .sheet(isPresented: $showConsole) {
+            LogConsolePanel()
+        }
+        .logConsole(enabled: true, logger: PortalLogs.logger, maxEntries: 1_000)
+        .task {
+            PortalLogs.logger.log(
+                "Portal list example ready",
+                level: .debug,
+                tags: [PortalLogs.Tags.diagnostics]
+            )
         }
     }
     
@@ -157,7 +176,6 @@ public struct PortalExample_List: View {
 }
 
 /// List item model for the Portal example
-@available(iOS 15.0, *)
 public struct PortalExample_ListItem: Identifiable {
     public let id = UUID()
     public let title: String
@@ -173,7 +191,6 @@ public struct PortalExample_ListItem: Identifiable {
     }
 }
 
-@available(iOS 15.0, *)
 private struct PortalExample_ListDetail: View {
     let item: PortalExample_ListItem
     @Environment(\.dismiss) var dismiss
@@ -185,13 +202,8 @@ private struct PortalExample_ListDetail: View {
                     // MARK: Destination Photo
                     
                     Group {
-                        if #available(iOS 16.0, *) {
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(item.color.gradient)
-                        } else {
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(item.color)
-                        }
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(item.color.gradient)
                     }
                     .overlay(
                         Image(systemName: item.icon)

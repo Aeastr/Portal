@@ -2,7 +2,6 @@
 import SwiftUI
 
 /// Portal card grid example showing dynamic item parameter usage
-@available(iOS 15.0, *)
 public struct PortalExample_CardGrid: View {
     @State private var selectedCard: PortalExample_Card? = nil
     @State private var cards: [PortalExample_Card] = [
@@ -63,13 +62,8 @@ public struct PortalExample_CardGrid: View {
                                 VStack(spacing: 12) {
                                     AnimatedLayer(portalID: "\(card.id)") {
                                         Group {
-                                            if #available(iOS 16.0, *) {
-                                                RoundedRectangle(cornerRadius: 16)
-                                                    .fill(card.color.gradient)
-                                            } else {
-                                                RoundedRectangle(cornerRadius: 16)
-                                                    .fill(card.color)
-                                            }
+                                            RoundedRectangle(cornerRadius: 16)
+                                                .fill(card.color.gradient)
                                         }
                                         .overlay(
                                             VStack(spacing: 8) {
@@ -121,13 +115,8 @@ public struct PortalExample_CardGrid: View {
             ) { card in
                 AnimatedLayer(portalID: "\(card.id)") {
                     Group {
-                        if #available(iOS 16.0, *) {
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(card.color.gradient)
-                        } else {
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(card.color)
-                        }
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(card.color.gradient)
                     }
                     .overlay(
                         VStack(spacing: 8) {
@@ -148,7 +137,6 @@ public struct PortalExample_CardGrid: View {
 }
 
 /// Card model for the Portal example
-@available(iOS 15.0, *)
 public struct PortalExample_Card: Identifiable {
     public let id = UUID()
     public let title: String
@@ -164,7 +152,6 @@ public struct PortalExample_Card: Identifiable {
     }
 }
 
-@available(iOS 15.0, *)
 private struct PortalExample_CardDetail: View {
     let card: PortalExample_Card
     @Environment(\.dismiss) var dismiss
@@ -176,17 +163,10 @@ private struct PortalExample_CardDetail: View {
                     // MARK: Destination Card
                     AnimatedLayer(portalID: "\(card.id)") {
                         Group{
-                            if #available(iOS 16.0, *) {
-                                RoundedRectangle(cornerRadius: 16)
-                                    .fill(
-                                        card.color.gradient
-                                    )
-                            } else {
-                                RoundedRectangle(cornerRadius: 16)
-                                    .fill(
-                                        card.color
-                                    )
-                            }
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(
+                                    card.color.gradient
+                                )
                         }
                         .overlay(
                             VStack(spacing: 8) {

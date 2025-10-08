@@ -3,7 +3,6 @@ import SwiftUI
 
 /// Comparison example showing Portal vs native iOS transitions
 /// Shows Portal vs native iOS transition features
-@available(iOS 15.0, *)
 public struct PortalExample_Comparison: View {
     @State private var showPortalSheet = false
     @State private var showNativeSheet = false
@@ -193,7 +192,6 @@ public struct PortalExample_Comparison: View {
     }
 }
 
-@available(iOS 15.0, *)
 private struct PortalExample_PortalComparisonSheet: View {
     @Environment(\.dismiss) var dismiss
     
@@ -246,7 +244,6 @@ private struct PortalExample_PortalComparisonSheet: View {
     }
 }
 
-@available(iOS 15.0, *)
 private struct PortalExample_NativeComparisonSheet: View {
     @Environment(\.dismiss) var dismiss
     

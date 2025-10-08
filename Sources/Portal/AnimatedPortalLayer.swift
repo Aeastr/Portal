@@ -20,7 +20,6 @@ import SwiftUI
 ///     }
 /// }
 /// ```
-@available(iOS 15.0, *)
 public protocol AnimatedPortalLayer: View {
     associatedtype Content: View
     associatedtype AnimatedContent: View
@@ -37,21 +36,13 @@ public protocol AnimatedPortalLayer: View {
     @ViewBuilder func animatedContent(isActive: Bool) -> AnimatedContent
 }
 
-@available(iOS 15.0, *)
 public extension AnimatedPortalLayer {
     @ViewBuilder
     var body: some View {
-        if #available(iOS 17.0, *) {
-            AnimatedPortalLayerHost(layer: self)
-        } else {
-            AnimatedPortalLayerHostLegacy(layer: self)
-        }
+        AnimatedPortalLayerHost(layer: self)
     }
 }
 
-// MARK: - iOS 17+ Implementation
-
-@available(iOS 17.0, *)
 private struct AnimatedPortalLayerHost<Layer: AnimatedPortalLayer>: View {
     @Environment(CrossModel.self) private var portalModel
     let layer: Layer
@@ -64,17 +55,3 @@ private struct AnimatedPortalLayerHost<Layer: AnimatedPortalLayer>: View {
     }
 }
 
-// MARK: - iOS 15+ Legacy Implementation
-
-@available(iOS, introduced: 15.0, deprecated: 17.0, message: "Use the iOS 17+ version when possible")
-private struct AnimatedPortalLayerHostLegacy<Layer: AnimatedPortalLayer>: View {
-    @EnvironmentObject private var portalModel: CrossModelLegacy
-    let layer: Layer
-
-    var body: some View {
-        let idx = portalModel.info.firstIndex { $0.infoID == layer.portalID }
-        let isActive = idx.flatMap { portalModel.info[$0].animateView } ?? false
-
-        layer.animatedContent(isActive: isActive)
-    }
-}
