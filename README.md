@@ -4,7 +4,7 @@
   <p>
     Portal is a SwiftUI package for seamless element transitions between views—including across sheets and navigation pushes (NavigationStack, .navigationDestination, etc)—using a portal metaphor for maximum flexibility.
     <br>
-    <i>Compatible with iOS 15.0 and later</i>
+    <i>Compatible with iOS 17.0 and later*</i>
   </p>
 </div>
 
@@ -14,7 +14,7 @@
     <img src="https://img.shields.io/badge/Swift-6.0-orange.svg" alt="Swift Version">
   </a>
   <a href="https://www.apple.com/ios/">
-    <img src="https://img.shields.io/badge/iOS-15%2B-blue.svg" alt="iOS">
+    <img src="https://img.shields.io/badge/iOS-17%2B-blue.svg" alt="iOS">
   </a>
   <a href="LICENSE">
     <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT">
@@ -39,6 +39,8 @@
 
 For full installation steps, usage guides, examples, and animation deep-dives, visit the [Portal Wiki](https://github.com/Aeastr/Portal/wiki): 
 
+> Targeting iOS 15/16? Pin your dependency to `v2.1.0` or the `legacy/ios15` branch.
+
 ---
 
 ## Features
@@ -59,7 +61,7 @@ For full installation steps, usage guides, examples, and animation deep-dives, v
   Fine-tune transitions with `PortalTransitionConfig` for control over timing, easing, and corner styling.
 
 - **Modern SwiftUI Support**  
-  Optimized for iOS 17+ with backward compatibility for iOS 15 and 16. 
+  Built for iOS 17+ with the latest SwiftUI APIs and animation completion criteria
 
 ---
 
