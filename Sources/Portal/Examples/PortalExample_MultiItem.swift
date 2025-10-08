@@ -53,18 +53,14 @@ public struct PortalExample_MultiItem: View {
                     selectedPhotos.removeAll()
                 }
             }
-            .portalTransition(
-                items: $selectedPhotos,
-                groupID: "photoStack",
-                config: .init(
-                    animation: PortalAnimation(portal_animationExample)
-                )
-            ) { photo in
+            .portalTransition(items: $selectedPhotos, groupID: "photoStack") { photo in
                 AnimatedLayer(portalID: photo.id.uuidString, scale: 1.15) {
                     PhotoView(photo: photo)
                 }
             }
+            
         }
+        .portalDebugOverlays(enabled: false)
     }
 }
 

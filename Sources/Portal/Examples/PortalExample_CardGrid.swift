@@ -48,7 +48,7 @@ public struct PortalExample_CardGrid: View {
                             Text("Item-Based Portal Transitions")
                                 .font(.title2)
                                 .fontWeight(.semibold)
-
+                            
                             Text("Portal automatically manages transitions using Identifiable items. Each card uses its unique ID for seamless animations between grid and detail views.")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
@@ -56,7 +56,7 @@ public struct PortalExample_CardGrid: View {
                                 .padding(.horizontal)
                         }
                         .padding(.top)
-
+                        
                         LazyVGrid(columns: columns, spacing: 12) {
                             ForEach(cards) { card in
                                 VStack(spacing: 12) {
@@ -70,7 +70,7 @@ public struct PortalExample_CardGrid: View {
                                                 Image(systemName: card.icon)
                                                     .font(.system(size: 32, weight: .medium))
                                                     .foregroundColor(.white)
-
+                                                
                                                 Text(card.title)
                                                     .font(.headline)
                                                     .fontWeight(.semibold)
@@ -107,12 +107,7 @@ public struct PortalExample_CardGrid: View {
             .sheet(item: $selectedCard) { card in
                 PortalExample_CardDetail(card: card)
             }
-            .portalTransition(
-                item: $selectedCard,
-                config: .init(
-                    animation: PortalAnimation(portal_animationExample)
-                )
-            ) { card in
+            .portalTransition(item: $selectedCard, animation: portal_animationExample) { card in
                 AnimatedLayer(portalID: "\(card.id)") {
                     Group {
                         RoundedRectangle(cornerRadius: 16)
@@ -123,7 +118,7 @@ public struct PortalExample_CardGrid: View {
                             Image(systemName: card.icon)
                                 .font(.system(size: 32, weight: .medium))
                                 .foregroundColor(.white)
-
+                            
                             Text(card.title)
                                 .font(.headline)
                                 .fontWeight(.semibold)
@@ -133,6 +128,7 @@ public struct PortalExample_CardGrid: View {
                 }
             }
         }
+        .portalDebugOverlays(enabled: false)
     }
 }
 

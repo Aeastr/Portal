@@ -62,10 +62,9 @@ public struct PortalExample_StaticID: View {
                                 .padding(.horizontal, 16)
                                 .padding(.bottom, 16)
                             }
-                            .background(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(Color(.systemBackground))
-                            )
+                            
+                            .background(Color(.systemBackground))
+                            .clipShape(.rect(cornerRadius: 12))
                         }
                         .frame(width: 280, height: 140)
                         .portal(id: "codeBlock", .source)
@@ -91,11 +90,7 @@ public struct PortalExample_StaticID: View {
             .sheet(isPresented: $showDetail) {
                 PortalExample_StaticIDDetail()
             }
-            .portalTransition(
-                id: "codeBlock",
-                config: .init(animation: PortalAnimation(.spring(response: 0.4, dampingFraction: 0.8))),
-                isActive: $showDetail
-            ) {
+            .portalTransition(id: "codeBlock", isActive: $showDetail, animation: .spring(response: 0.4, dampingFraction: 0.8)){
                 AnimatedLayer(portalID: "codeBlock") {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
@@ -136,13 +131,18 @@ public struct PortalExample_StaticID: View {
                         .padding(.horizontal, 16)
                         .padding(.bottom, 16)
                     }
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color(.systemBackground))
-                    )
+                    .background(Color(.systemBackground))
+                    .clipShape(.rect(cornerRadius: 12))
                 }
             }
+            
+//            .portalTransition(
+//                id: "codeBlock",
+//                config: .init(animation: PortalAnimation(.spring(response: 0.4, dampingFraction: 0.8))),
+//                isActive: $showDetail
+//            )
         }
+        .portalDebugOverlays(enabled: false)
     }
 }
 
@@ -194,10 +194,8 @@ private struct PortalExample_StaticIDDetail: View {
                             .padding(.horizontal, 16)
                             .padding(.bottom, 16)
                         }
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(Color(.systemBackground))
-                        )
+                        .background(Color(.systemBackground))
+                        .clipShape(.rect(cornerRadius: 12))
                     }
                     .portal(id: "codeBlock", .destination)
                     .padding(.top, 20)

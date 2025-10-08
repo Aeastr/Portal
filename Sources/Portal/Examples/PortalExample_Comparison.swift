@@ -160,33 +160,33 @@ public struct PortalExample_Comparison: View {
                         .navigationTransition(.zoom(sourceID: "zoomDemo", in: namespace))
                 }
             }
-            .portalTransition(
-            id: "portalDemo",
-            config: .init(animation: PortalAnimation(portal_animationExample)),
-            isActive: $showPortalSheet
-        ) {
-            AnimatedLayer(portalID: "portalDemo") {
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(
-                        LinearGradient(
-                            colors: [Color.blue, Color.cyan],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .overlay(
-                        VStack(spacing: 8) {
-                            Image(systemName: "arrow.up.right")
-                                .font(.system(size: 28, weight: .semibold))
-                                .foregroundColor(.white)
-                            Text("Portal")
-                                .font(.title3)
-                                .foregroundColor(.white)
-                                .fontWeight(.bold)
-                        }
-                    )
-            }
-        }
+//            .portalTransition(
+//            id: "portalDemo",
+//            config: .init(animation: PortalAnimation(portal_animationExample)),
+//            isActive: $showPortalSheet
+//        ) {
+//            AnimatedLayer(portalID: "portalDemo") {
+//                RoundedRectangle(cornerRadius: 16)
+//                    .fill(
+//                        LinearGradient(
+//                            colors: [Color.blue, Color.cyan],
+//                            startPoint: .topLeading,
+//                            endPoint: .bottomTrailing
+//                        )
+//                    )
+//                    .overlay(
+//                        VStack(spacing: 8) {
+//                            Image(systemName: "arrow.up.right")
+//                                .font(.system(size: 28, weight: .semibold))
+//                                .foregroundColor(.white)
+//                            Text("Portal")
+//                                .font(.title3)
+//                                .foregroundColor(.white)
+//                                .fontWeight(.bold)
+//                        }
+//                    )
+//            }
+//        }
         }
         .portalDebugOverlays(enabled: false)
     }

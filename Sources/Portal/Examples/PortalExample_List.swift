@@ -92,24 +92,24 @@ public struct PortalExample_List: View {
             .sheet(item: $selectedItem) { item in
                 PortalExample_ListDetail(item: item)
             }
-            .portalTransition(
-                item: $selectedItem,
-                config: .init(
-                    animation: PortalAnimation(portal_animationExample)
-                )
-            ) { item in
-
-                Group {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(item.color.gradient)
-                }
-                .overlay(
-                    Image(systemName: item.icon)
-                        .font(.system(size: 24, weight: .medium))
-                        .foregroundColor(.white)
-                )
-
-            }
+//            .portalTransition(
+//                item: $selectedItem,
+//                config: .init(
+//                    animation: PortalAnimation(portal_animationExample)
+//                )
+//            ) { item in
+//
+//                Group {
+//                    RoundedRectangle(cornerRadius: 12)
+//                        .fill(item.color.gradient)
+//                }
+//                .overlay(
+//                    Image(systemName: item.icon)
+//                        .font(.system(size: 24, weight: .medium))
+//                        .foregroundColor(.white)
+//                )
+//
+//            }
         }
         .sheet(isPresented: $showConsole) {
             LogConsolePanel()
