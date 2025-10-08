@@ -52,8 +52,13 @@ struct AnimatedLayer<Content: View>: AnimatedPortalLayer {
                 }
             }
         } else {
-            withAnimation {
-                layerScale = 1
+            withAnimation(portal_animationExample) {
+                layerScale = scale
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + (portal_animationDuration / 2) - 0.1) {
+                withAnimation(portal_animationExampleExtraBounce) {
+                    layerScale = 1
+                }
             }
         }
     }
@@ -69,8 +74,13 @@ struct AnimatedLayer<Content: View>: AnimatedPortalLayer {
                 }
             }
         } else {
-            withAnimation {
-                layerScale = 1
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                layerScale = scale
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                    layerScale = 1
+                }
             }
         }
     }
