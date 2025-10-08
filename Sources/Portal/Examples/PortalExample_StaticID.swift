@@ -23,7 +23,7 @@ public struct PortalExample_StaticID: View {
                     
                     // MARK: Source Code Block
                     VStack(spacing: 32) {
-                        AnimatedLayer(id: "codeBlock") {
+                        AnimatedLayer(portalID: "codeBlock") {
                             VStack(alignment: .leading, spacing: 8) {
                                 HStack {
                                     Circle()
@@ -97,7 +97,7 @@ public struct PortalExample_StaticID: View {
             config: .init(animation: PortalAnimation(.spring(response: 0.4, dampingFraction: 0.8))),
             isActive: $showDetail
         ) {
-            AnimatedLayer(id: "codeBlock") {
+            AnimatedLayer(portalID: "codeBlock") {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         Circle()
@@ -156,7 +156,7 @@ private struct PortalExample_StaticIDDetail: View {
             ScrollView {
                 VStack(spacing: 12) {
                     // MARK: Destination Code Block
-                    AnimatedLayer(id: "codeBlock") {
+                    AnimatedLayer(portalID: "codeBlock") {
                         VStack(alignment: .leading, spacing: 8) {
                             HStack {
                                 Circle()

@@ -60,7 +60,7 @@ public struct PortalExample_CardGrid: View {
                     LazyVGrid(columns: columns, spacing: 12) {
                     ForEach(cards) { card in
                         VStack(spacing: 12) {
-                            AnimatedLayer(id: "\(card.id)") {
+                            AnimatedLayer(portalID: "\(card.id)") {
                                 Group{
                                     if #available(iOS 16.0, *) {
                                         RoundedRectangle(cornerRadius: 16)
@@ -122,7 +122,7 @@ public struct PortalExample_CardGrid: View {
                 animation: PortalAnimation(portal_animationExample)
             )
         ) { card in
-            AnimatedLayer(id: "\(card.id)") {
+            AnimatedLayer(portalID: "\(card.id)") {
                 Group{
                     if #available(iOS 16.0, *) {
                         RoundedRectangle(cornerRadius: 16)
@@ -181,7 +181,7 @@ private struct PortalExample_CardDetail: View {
             ScrollView {
                 VStack(spacing: 32) {
                     // MARK: Destination Card
-                    AnimatedLayer(id: "\(card.id)") {
+                    AnimatedLayer(portalID: "\(card.id)") {
                         Group{
                             if #available(iOS 16.0, *) {
                                 RoundedRectangle(cornerRadius: 16)

@@ -24,7 +24,7 @@ public struct PortalExample_MultiItem: View {
                 // Photo grid - Sources
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3), spacing: 8) {
                     ForEach(allPhotos) { photo in
-                        AnimatedLayer(id: photo.id.uuidString, scale: 1.15) {
+                        AnimatedLayer(portalID: photo.id.uuidString, scale: 1.15) {
                             PhotoThumbnailView(photo: photo)
                         }
                             .portal(item: photo, .source, groupID: "photoStack")
@@ -50,7 +50,7 @@ public struct PortalExample_MultiItem: View {
                 animation: PortalAnimation(portal_animationExample)
             )
         ) { photo in
-            AnimatedLayer(id: photo.id.uuidString, scale: 1.15) {
+            AnimatedLayer(portalID: photo.id.uuidString, scale: 1.15) {
                 PhotoView(photo: photo)
             }
         }
@@ -79,7 +79,7 @@ struct MultiItemDetailView: View {
             ScrollView {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 2), spacing: 12) {
                     ForEach(photos) { photo in
-                        AnimatedLayer(id: photo.id.uuidString, scale: 1.15) {
+                        AnimatedLayer(portalID: photo.id.uuidString, scale: 1.15) {
                             PhotoDetailView(photo: photo)
                                 .portal(item: photo, .destination, groupID: "photoStack")
                         }

@@ -140,7 +140,7 @@ public struct PortalAnimation: PortalAnimationProtocol {
     ///   - duration: Animation duration in seconds. Defaults to 0.35s.
     public init(
         _ animation: Animation,
-        delay: TimeInterval = 0.06,
+        delay: TimeInterval = 0.1,
         duration: TimeInterval = 0.35
     ) {
         self.value = animation
