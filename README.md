@@ -90,7 +90,7 @@ Each target includes example implementations:
 
 Contributions are welcome! Please feel free to submit a Pull Request. See the [Contributing Guide](CONTRIBUTING.md) for details.
 
-This project is released under the [MIT License](LICENSE.md). If you like Portal, please give it a ⭐️
+This project is released under the [MIT License](LICENSE.md). If you like Portal, please give it a ⭐️.
 
 ## Where to find me:  
 - here, obviously.  
