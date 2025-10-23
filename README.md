@@ -17,7 +17,7 @@
 ## **Demo**
 
 <div align="center">
-  <img width="400" src="/assets/example1.gif" alt="Portal Demo">
+  <img style="max-width: 600px; width: 100%;" src="/assets/example1.gif" alt="Portal Demo">
 </div>
 
 ---
