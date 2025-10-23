@@ -1,5 +1,5 @@
 <div align="center">
-  <img width="270" height="270" src="/assets/icon.png" alt="Portal Logo">
+  <img width="200" height="200" src="/assets/icon.png" alt="Portal Logo">
   <h1><b>Portal</b></h1>
   <p>
     Portal is a SwiftUI package for seamless element transitions between views—including across sheets and navigation pushes (NavigationStack, .navigationDestination, etc)—using a portal metaphor for maximum flexibility.
@@ -36,9 +36,10 @@ For full installation steps, usage guides, and examples, visit the [Portal Wiki]
 
 ### Package Targets
 
-| **Portal** | **PortalPrivate** | **PortalView** |
+| ![Portal](assets/portalExample.png) | ![PortalPrivate](assets/portalPrivateExample.png) | ![PortalView](assets/portalViewExample.png) |
 |:---:|:---:|:---:|
-| **Core transition system** | **Portal + PortalView hybrid** | **`_UIPortalView` wrapper** |
+| **Portal** | **PortalPrivate** | **PortalView** |
+| Core transition system | Portal + PortalView hybrid | `_UIPortalView` wrapper |
 | Standard SwiftUI APIs | Transitions with view mirroring | Low-level view mirroring |
 | ✅ **App Store safe** | ⚠️ **Private API** | ⚠️ **Private API** |
 | • Separate view instances<br>• Different sizes at source/destination<br>• Works with all SwiftUI views<br>• Standard animation system | • Single shared instance<br>• Same size constraint<br>• Perfect state preservation<br>• Frame modifiers inside AnimatedLayer | • Direct `_UIPortalView` access<br>• True view instance sharing<br>• Manual UIKit integration<br>• Low-level control |
