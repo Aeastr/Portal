@@ -68,14 +68,16 @@ For full installation steps, usage guides, and examples, visit the [Portal Wiki]
 
 ## Examples
 
-Portal includes several sample projects to help you get started:
+Each target includes example implementations:
 
-- [Static ID](Sources/Portal/Examples/PortalExample_StaticID.swift)
-- [Card Grid](Sources/Portal/Examples/PortalExample_CardGrid.swift)
-- [List](Sources/Portal/Examples/PortalExample_List.swift)
-- [Comparison](Sources/Portal/Examples/PortalExample_Comparison.swift)
+| **Portal** | **PortalPrivate** | **PortalView** |
+|:---|:---|:---|
+| [Static ID](Sources/Portal/Examples/PortalExample_StaticID.swift) | [Static ID](Sources/PortalPrivate/Examples/PortalExample_StaticID.swift) | [UIPortalView Example](Sources/PortalView/UIPortalViewExample.swift) |
+| [Card Grid](Sources/Portal/Examples/PortalExample_CardGrid.swift) | [Card Grid](Sources/PortalPrivate/Examples/PortalExample_CardGrid.swift) | |
+| [List](Sources/Portal/Examples/PortalExample_List.swift) | [List](Sources/PortalPrivate/Examples/PortalExample_List.swift) | |
+| [Comparison](Sources/Portal/Examples/PortalExample_Comparison.swift) | [Comparison](Sources/PortalPrivate/Examples/PortalExample_Comparison.swift) | |
 
-You can find these in the [`Sources/Portal/Examples`](Sources/Portal/Examples) directory, or visit the [Examples documentation](https://github.com/Aeastr/Portal/wiki/Examples) for more details.
+See the [Examples documentation](https://github.com/Aeastr/Portal/wiki/Examples) for detailed walkthroughs.
 
 ---
 
