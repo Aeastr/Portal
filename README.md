@@ -36,13 +36,12 @@ For full installation steps, usage guides, and examples, visit the [Portal Wiki]
 
 ### Package Targets
 
-| **Portal** | **PortalView** | **PortalPrivate** |
+| **Portal** | **PortalPrivate** | **PortalView** |
 |:---:|:---:|:---:|
-| **Core transition system** | **`_UIPortalView` wrapper** | **Portal + PortalView hybrid** |
-| Standard SwiftUI APIs | Low-level view mirroring | Transitions with view mirroring |
+| **Core transition system** | **Portal + PortalView hybrid** | **`_UIPortalView` wrapper** |
+| Standard SwiftUI APIs | Transitions with view mirroring | Low-level view mirroring |
 | ✅ **App Store safe** | ⚠️ **Private API** | ⚠️ **Private API** |
-| **Capabilities & Limitations** | **Capabilities & Limitations** | **Capabilities & Limitations** |
-| • Separate view instances<br>• Different sizes at source/destination<br>• Works with all SwiftUI views<br>• Standard animation system | • Direct `_UIPortalView` access<br>• True view instance sharing<br>• Manual UIKit integration<br>• Low-level control | • Single shared instance<br>• Same size constraint<br>• Perfect state preservation<br>• Frame modifiers inside AnimatedLayer |
+| • Separate view instances<br>• Different sizes at source/destination<br>• Works with all SwiftUI views<br>• Standard animation system | • Single shared instance<br>• Same size constraint<br>• Perfect state preservation<br>• Frame modifiers inside AnimatedLayer | • Direct `_UIPortalView` access<br>• True view instance sharing<br>• Manual UIKit integration<br>• Low-level control |
 
 **For most users:** Just `import Portal`. The other targets are experimental and intended for advanced scenarios requiring view instance sharing.
 
