@@ -22,7 +22,16 @@ public class PortalViewWrapper: UIView {
     }
 
     public override var intrinsicContentSize: CGSize {
-        sourceView?.intrinsicContentSize ?? CGSize(width: UIView.noIntrinsicMetric, height: UIView.noIntrinsicMetric)
+        // Try to get the actual size of the source view first
+        if let sourceView = sourceView {
+            // If the source has a valid frame size, use that
+            if sourceView.frame.size.width > 0 && sourceView.frame.size.height > 0 {
+                return sourceView.frame.size
+            }
+            // Otherwise fall back to intrinsic content size
+            return sourceView.intrinsicContentSize
+        }
+        return CGSize(width: UIView.noIntrinsicMetric, height: UIView.noIntrinsicMetric)
     }
 
     public var hidesSourceView: Bool = false {
@@ -126,19 +135,17 @@ public class SourceViewContainer<Content: View> {
     public init(content: Content) {
         self.hostingController = UIHostingController(rootView: content)
         self.hostingController.view.backgroundColor = .clear
-        self.hostingController.sizingOptions = .intrinsicContentSize
+        // Use preferredContentSize instead of intrinsicContentSize for more flexible sizing
+        self.hostingController.sizingOptions = .preferredContentSize
 
-        // Force layout to get proper size
-        let targetSize = hostingController.view.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize)
-        hostingController.view.frame.size = targetSize
+        // Don't lock the frame size here - let it be determined by the layout system
+        hostingController.view.setNeedsLayout()
     }
 
     public func update(content: Content) {
         hostingController.rootView = content
-
-        // Update size after content changes
-        let targetSize = hostingController.view.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize)
-        hostingController.view.frame.size = targetSize
+        // Let the layout system determine the size
+        hostingController.view.setNeedsLayout()
     }
 }
 
@@ -165,7 +172,17 @@ public class SourceViewWrapper: UIView {
     }
 
     public override var intrinsicContentSize: CGSize {
-        sourceView.intrinsicContentSize
+        // Use the source view's actual bounds if available
+        if sourceView.bounds.size.width > 0 && sourceView.bounds.size.height > 0 {
+            return sourceView.bounds.size
+        }
+        return sourceView.intrinsicContentSize
+    }
+
+    public override func layoutSubviews() {
+        super.layoutSubviews()
+        // Ensure the portal knows about size changes
+        invalidateIntrinsicContentSize()
     }
 }
 

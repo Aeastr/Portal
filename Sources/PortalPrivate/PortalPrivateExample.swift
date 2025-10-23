@@ -51,10 +51,13 @@ public struct PortalPrivateExampleView: View {
                                     CardView(item: item)
                                         .portalPrivate(id: item.id.uuidString)
                                         .onTapGesture {
-                                            selectedItem = item
+                                            withAnimation(.smooth){
+                                                selectedItem = item
+                                            }
                                         }
                                         
                                 }
+                                .rotationEffect(.degrees(selectedItem == item ? 0 : 40))
                             }
                         }
                         .padding()
@@ -128,7 +131,9 @@ struct DetailView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
-                        selectedItem = nil
+                        withAnimation(.smooth){
+                            selectedItem = nil
+                        }
                     }
                 }
             }
@@ -138,7 +143,7 @@ struct DetailView: View {
 
 // MARK: - Data Model
 
-struct Item: Identifiable {
+struct Item: Identifiable, Equatable {
     let id = UUID()
     let name: String
     let symbol: String
@@ -162,65 +167,4 @@ struct PortalPrivateExampleView_Previews: PreviewProvider {
         PortalPrivateExampleView()
     }
 }
-#endif
-
-#if DEBUG
-import SwiftUI
-
-let portal_animationDuration: TimeInterval = 0.4
-let portal_animationExample: Animation = Animation.smooth(duration: portal_animationDuration, extraBounce: 0.65)
-let portal_animationExampleExtraBounce: Animation = Animation.smooth(duration: portal_animationDuration + 0.12, extraBounce: 0.55)
-
-/// A reusable animated layer component for Portal examples.
-/// Provides visual feedback during portal transitions with a scale animation.
-///
-/// This is an example implementation using the `AnimatedPortalLayer` protocol.
-/// Users can copy and modify this to create their own custom animations.
-struct AnimatedLayer<Content: View>: AnimatedPortalLayer {
-    let portalID: String
-    var scale: CGFloat = 3.6
-    @ViewBuilder let content: () -> Content
-
-    @State private var layerScale: CGFloat = 1
-
-    @ViewBuilder
-    func animatedContent(isActive: Bool) -> some View {
-        content()
-//            .background(.red.opacity(0.2))
-            .scaleEffect(layerScale)
-            .onAppear {
-                layerScale = 1
-            }
-            .onChange(of: isActive) { oldValue, newValue in
-                handleActiveChange(oldValue: oldValue, newValue: newValue)
-            }
-    }
-
-    private func handleActiveChange(oldValue: Bool, newValue: Bool) {
-        if newValue {
-            withAnimation(portal_animationExample) {
-                layerScale = scale
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + (portal_animationDuration / 2) - 0.1) {
-                withAnimation(portal_animationExampleExtraBounce) {
-                    layerScale = 1
-                }
-            }
-        } else {
-            withAnimation(portal_animationExample) {
-                layerScale = 1.78
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + (portal_animationDuration / 2) - 0.1) {
-                withAnimation(portal_animationExampleExtraBounce) {
-                    layerScale = 1
-                }
-            }
-        }
-    }
-}
-
-#Preview("Card Grid Example") {
-    PortalExample_CardGrid()
-}
-
 #endif

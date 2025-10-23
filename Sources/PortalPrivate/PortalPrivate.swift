@@ -36,13 +36,15 @@ private class PortalPrivateStorage {
 /// A view that manages a single SwiftUI view instance that can be shown in multiple places
 public struct PortalPrivate<Content: View>: View {
     private let id: String
+    private let groupID: String?
     @ViewBuilder private let content: () -> Content
     @State private var sourceContainer: SourceViewContainer<AnyView>?
     @Environment(CrossModel.self) private var portalModel
     @Environment(\.portalDebugOverlays) private var debugOverlaysEnabled
 
-    public init(id: String, @ViewBuilder content: @escaping () -> Content) {
+    public init(id: String, groupID: String? = nil, @ViewBuilder content: @escaping () -> Content) {
         self.id = id
+        self.groupID = groupID
         self.content = content
     }
 
@@ -51,6 +53,7 @@ public struct PortalPrivate<Content: View>: View {
             // Create and store the source container on appear
             Color.clear
                 .frame(width: 0, height: 0)
+                
                 .onAppear {
                     if sourceContainer == nil {
                         // Create type-erased container that can be shared
@@ -65,7 +68,10 @@ public struct PortalPrivate<Content: View>: View {
 
                         // Ensure portal info exists in model
                         if !portalModel.info.contains(where: { $0.infoID == id }) {
-                            portalModel.info.append(PortalInfo(id: id))
+                            portalModel.info.append(PortalInfo(id: id, groupID: groupID))
+                        } else if let idx = portalModel.info.firstIndex(where: { $0.infoID == id }), let groupID = groupID {
+                            // Update groupID if provided
+                            portalModel.info[idx].groupID = groupID
                         }
                     }
                 }
@@ -148,6 +154,19 @@ public extension View {
         }
     }
 
+    /// Marks this view as a private portal with a groupID for coordinated animations
+    ///
+    /// Example:
+    /// ```swift
+    /// MyComplexView()
+    ///     .portalPrivate(id: "myView", groupID: "viewGroup")
+    /// ```
+    func portalPrivate(id: String, groupID: String) -> some View {
+        PortalPrivate(id: id, groupID: groupID) {
+            self
+        }
+    }
+
     /// Marks this view as a private portal using an `Identifiable` item's ID
     ///
     /// This creates a single view instance that can be displayed in multiple places
@@ -167,6 +186,28 @@ public extension View {
             key = "\(item.id)"
         }
         return PortalPrivate(id: key) {
+            self
+        }
+    }
+
+    /// Marks this view as a private portal using an `Identifiable` item's ID and group
+    ///
+    /// This creates a single view instance that can be displayed in multiple places
+    /// using _UIPortalView, with support for coordinated group animations.
+    ///
+    /// Example:
+    /// ```swift
+    /// PhotoView(photo: photo)
+    ///     .portalPrivate(item: photo, groupID: "photoStack")
+    /// ```
+    func portalPrivate<Item: Identifiable>(item: Item, groupID: String) -> some View {
+        let key: String
+        if let uuid = item.id as? UUID {
+            key = uuid.uuidString
+        } else {
+            key = "\(item.id)"
+        }
+        return PortalPrivate(id: key, groupID: groupID) {
             self
         }
     }
@@ -297,7 +338,19 @@ struct PortalPrivateTransitionModifier: ViewModifier {
                 portalModel.info[idx].corners = config.corners
                 portalModel.info[idx].completion = completion
 
-                // For PortalPrivate, we don't set layerView - the layer uses the stored container
+                // Set the layer view to use the PortalView of the stored container
+                if let privateInfo = PortalPrivateStorage.shared.privateInfo[id],
+                   let container = privateInfo.sourceContainer as? SourceViewContainer<AnyView> {
+                    portalModel.info[idx].layerView = AnyView(
+                        PortalView(
+                            source: container,
+                            hidesSource: false,
+                            matchesAlpha: true,
+                            matchesTransform: true,
+                            matchesPosition: false
+                        )
+                    )
+                }
 
                 if newValue {
                     // Forward transition
@@ -317,6 +370,7 @@ struct PortalPrivateTransitionModifier: ViewModifier {
                         portalModel.info[idx].animateView = false
                     }) {
                         portalModel.info[idx].initalized = false
+                        portalModel.info[idx].layerView = nil
                         portalModel.info[idx].sourceAnchor = nil
                         portalModel.info[idx].destinationAnchor = nil
                         portalModel.info[idx].completion(false)
@@ -653,6 +707,17 @@ public struct PortalPrivateDestination: View {
 
     public init(id: String) {
         self.id = id
+    }
+
+    /// Creates a destination for a private portal using an Identifiable item's ID
+    public init<Item: Identifiable>(item: Item) {
+        let key: String
+        if let uuid = item.id as? UUID {
+            key = uuid.uuidString
+        } else {
+            key = "\(item.id)"
+        }
+        self.id = key
     }
 
     public var body: some View {
