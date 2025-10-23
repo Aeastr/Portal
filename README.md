@@ -58,60 +58,11 @@ For full installation steps, usage guides, and examples, visit the [Portal Wiki]
 - **Modern SwiftUI Support**  
   Built for iOS 17+ with the latest SwiftUI APIs and animation completion criteria
 
-- **Structured Logging**  
-  Diagnose portal lifecycle events via the bundled `PortalLogs` integration powered by [LogOutLoud](https://github.com/Aeastr/LogOutLoud).
+- **Debug Overlays**
+  Visual indicators in DEBUG builds showing portal sources, destinations, and animation states. Zero overhead in Release builds.
 
----
-
-## Debugging & Development
-
-Portal includes comprehensive visual debug indicators (only in DEBUG builds) to help you verify the portal system is working correctly:
-
-- 🩷 **Container Overlay**: Pink badge at bottom-right showing overlay window is installed
-- 🟦 **Source Views**: Blue border + badge on portal source views
-- 🟧 **Destination Views**: Orange border + badge on portal destination views
-- 🟩 **Portal Layers**: Green badge on animating layers during transitions
-- **Automatic**: Enabled in DEBUG builds (Xcode Previews, Debug configurations)
-- **Production**: Automatically hidden in Release builds—zero performance impact
-
-These visual indicators help troubleshoot portal transitions, anchor positioning, and overlay lifecycle issues. For more details, see the [Debugging Guide](https://github.com/Aeastr/Portal/wiki/Debugging).
-
-### Logging & Diagnostics
-
-Portal ships with a dedicated [LogOutLoud](https://github.com/Aeastr/LogOutLoud) logger instance. Fetch it anywhere inside your app or tests:
-
-```swift
-import Portal
-
-PortalLogs.logger.log("Overlay installed", level: .info, tags: [PortalLogs.Tags.overlay])
-```
-
-- `PortalLogs` is preconfigured to allow all log levels in DEBUG and notice+ in RELEASE.
-- Call `PortalLogs.configure(allowedLevels:)` early in your app if you need custom filtering.
-- Need an in-app console? Add the `LogOutLoudConsole` product to your app target and enable it:
-
-```swift
-import Portal
-import LogOutLoudConsole
-import SwiftUI
-
-@main
-struct PortalDemoApp: App {
-    @State private var showConsole = false
-
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-                .toolbar { Button("Console") { showConsole = true } }
-                .sheet(isPresented: $showConsole) { LogConsolePanel() }
-                .logConsole(enabled: true, logger: PortalLogs.logger, maxEntries: 1_000)
-                .task { PortalLogs.logger.log("Portal ready", level: .debug) }
-        }
-    }
-}
-```
-
-Present `LogConsolePanel()` (or your own console UI) wherever you need to surface the live log stream in app, or check the Xcode debug output. The `.logConsole` modifier wires the shared Portal logger into the console automatically.
+- **Structured Logging**
+  Built-in diagnostics via [LogOutLoud](https://github.com/Aeastr/LogOutLoud) integration. See the [Debugging Guide](https://github.com/Aeastr/Portal/wiki/Debugging) for details.
 
 ---
 
