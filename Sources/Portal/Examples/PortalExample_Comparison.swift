@@ -188,7 +188,6 @@ public struct PortalExample_Comparison: View {
             }
         }
         }
-        .portalDebugOverlays(enabled: false)
     }
 }
 

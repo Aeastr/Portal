@@ -233,8 +233,8 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
 ///   - isActive: A binding that triggers the transition when set to `true`.
 ///   - sourceProgress: The progress value for the source view (default: 0).
 ///   - destinationProgress: The progress value for the destination view (default: 0).
-///   - animation: The animation to use for the transition (default: `.bouncy(duration: 0.3)`).
-///   - animationDuration: The duration of the transition animation (default: 0.3).
+///   - animation: The animation to use for the transition (default: `.bouncy(duration: 0.38)`).
+///   - animationDuration: The duration of the transition animation (default: 0.38).
 ///   - delay: The delay before starting the animation (default: 0.06).
 ///   - layer: A closure that returns the floating overlay view to animate.
 ///   - completion: A closure called when the transition completes, with a `Bool` indicating success.
