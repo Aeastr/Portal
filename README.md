@@ -18,25 +18,25 @@
   <img width="600" src="/assets/example1.gif" alt="Portal Demo">
 </div>
 
----
 
-## Documentation
+## Installation
 
-For full installation steps, usage guides, and examples, visit the [Portal Wiki](https://github.com/Aeastr/Portal/wiki):
+Add Portal to your project using Swift Package Manager:
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/Aeastr/Portal", from: "3.0.0")
+]
+```
 
 > Targeting iOS 15/16? Pin your dependency to `v2.1.0` or the `legacy/ios15` branch.
 
-### Package Targets
+## Documentation & Wiki
 
-- **`Portal`** – Core transition system using standard SwiftUI APIs. Separate view instances allow different sizes at source/destination. **✅ App Store safe.**
+The [Portal Wiki](https://github.com/Aeastr/Portal/wiki) has the detailed docs - full API references, guides, and explanations.
 
-- **`PortalPrivate`** – Portal transitions powered by view mirroring. Single shared instance with perfect state preservation but same-size constraint. **⚠️ Private API (obfuscated).**
+The wiki is included as a git submodule at `/wiki`, so you get all the docs when you clone. Great for offline reference and LLMs.
 
-- **`PortalView`** – Low-level `_UIPortalView` wrapper for direct UIKit integration. **⚠️ Private API (obfuscated).**
-
-**For most users:** Just `import Portal`. The other targets are experimental and intended for advanced scenarios requiring view instance sharing.
-
----
 
 ## Features
 
@@ -63,8 +63,17 @@ For full installation steps, usage guides, and examples, visit the [Portal Wiki]
 
 - **Structured Logging**
   Built-in diagnostics via [LogOutLoud](https://github.com/Aeastr/LogOutLoud) integration. See the [Debugging Guide](https://github.com/Aeastr/Portal/wiki/Debugging) for details.
+  
+## Package Targets
 
----
+- **`Portal`** – Core transition system using standard SwiftUI APIs. Separate view instances allow different sizes at source/destination. **✅ App Store safe.**
+
+- **`PortalPrivate`** – Portal transitions powered by view mirroring. Single shared instance with perfect state preservation but same-size constraint. **⚠️ Private API (obfuscated).**
+
+- **`PortalView`** – Low-level `_UIPortalView` wrapper for direct UIKit integration. **⚠️ Private API (obfuscated).**
+
+**For most users:** Just `import Portal`. The other targets are experimental and intended for advanced scenarios requiring view instance sharing.
+
 
 ## Examples
 
@@ -77,17 +86,11 @@ Each target includes example implementations:
 | [List](Sources/Portal/Examples/PortalExample_List.swift) | [List](Sources/PortalPrivate/Examples/PortalExample_List.swift) | |
 | [Comparison](Sources/Portal/Examples/PortalExample_Comparison.swift) | [Comparison](Sources/PortalPrivate/Examples/PortalExample_Comparison.swift) | |
 
-See the [Examples documentation](https://github.com/Aeastr/Portal/wiki/Examples) for detailed walkthroughs.
-
----
-
 ## Contributing & Support
 
 Contributions are welcome! Please feel free to submit a Pull Request. See the [Contributing Guide](CONTRIBUTING.md) for details.
 
 This project is released under the [MIT License](LICENSE.md). If you like Portal, please give it a ⭐️
-
----
 
 ## Where to find me:  
 - here, obviously.  
@@ -95,7 +98,5 @@ This project is released under the [MIT License](LICENSE.md). If you like Portal
 - [Threads](https://www.threads.net/@aetheraurelia)  
 - [Bluesky](https://bsky.app/profile/aethers.world)  
 - [LinkedIn](https://www.linkedin.com/in/willjones24)
-
----
 
 <p align="center">Built with 🍏🌀🚪 by Aether</p>
