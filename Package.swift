@@ -10,6 +10,12 @@ let package = Package(
         .library(
             name: "Portal",
             targets: ["Portal"]),
+        .library(
+            name: "PortalView",
+            targets: ["PortalView"]),
+        .library(
+            name: "PortalPrivate",
+            targets: ["PortalPrivate"]),
     ],
     dependencies: [
         .package(url: "https://github.com/Aeastr/LogOutLoud.git", from: "2.1.2")
@@ -22,6 +28,19 @@ let package = Package(
                 .product(name: "LogOutLoudConsole", package: "LogOutLoud")
             ],
             path: "Sources/Portal"
+        ),
+        .target(
+            name: "PortalView",
+            dependencies: [],
+            path: "Sources/PortalView"
+        ),
+        .target(
+            name: "PortalPrivate",
+            dependencies: [
+                "Portal",
+                "PortalView"
+            ],
+            path: "Sources/PortalPrivate"
         ),
         .testTarget(
             name: "PortalTests",
