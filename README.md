@@ -30,9 +30,9 @@ For full installation steps, usage guides, and examples, visit the [Portal Wiki]
 
 - **`Portal`** – Core transition system using standard SwiftUI APIs. Separate view instances allow different sizes at source/destination. **✅ App Store safe.**
 
-- **`PortalPrivate`** – Portal transitions powered by view mirroring. Single shared instance with perfect state preservation but same-size constraint. **⚠️ Private API.**
+- **`PortalPrivate`** – Portal transitions powered by view mirroring. Single shared instance with perfect state preservation but same-size constraint. **⚠️ Private API (obfuscated).**
 
-- **`PortalView`** – Low-level `_UIPortalView` wrapper for direct UIKit integration. **⚠️ Private API.**
+- **`PortalView`** – Low-level `_UIPortalView` wrapper for direct UIKit integration. **⚠️ Private API (obfuscated).**
 
 **For most users:** Just `import Portal`. The other targets are experimental and intended for advanced scenarios requiring view instance sharing.
 
