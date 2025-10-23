@@ -99,9 +99,16 @@ public protocol PortalAnimationProtocol {
 /// Animation configuration for portal transitions (iOS 15+).
 ///
 /// This struct encapsulates basic timing parameters for portal animations,
-/// including the SwiftUI animation curve and delay timing. It provides 
+/// including the SwiftUI animation curve and delay timing. It provides
 /// control over the temporal behavior of portal transitions while maintaining
 /// compatibility with iOS 15+.
+///
+/// **IMPORTANT - Sheet Timing Consideration:**
+/// When using portal transitions with sheets or other system presentations,
+/// the animation duration must be at least 0.35-0.4 seconds to match iOS
+/// sheet presentation timing. Shorter durations (like 0.1-0.3s) will cause
+/// visible shifts or flickers as the portal completes before the sheet
+/// finishes presenting. The default duration of 0.38s is calibrated for sheets.
 ///
 /// **Key Features:**
 /// - Wraps SwiftUI's `Animation` type for curve definitions

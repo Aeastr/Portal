@@ -54,7 +54,7 @@ public struct PortalPrivate<Content: View>: View {
                 .onAppear {
                     if sourceContainer == nil {
                         // Create type-erased container that can be shared
-                        let container = SourceViewContainer(content: AnyView(content()))
+                        let container = SourceViewContainer(content: AnyView(content().environment(portalModel)))
                         sourceContainer = container
 
                         // Store in private storage
@@ -78,7 +78,7 @@ public struct PortalPrivate<Content: View>: View {
             if let container = sourceContainer {
                 SourceViewRepresentable(
                     container: container,
-                    content: AnyView(content())
+                    content: AnyView(content().environment(portalModel))
                 )
                 .opacity(portalModel.info.first(where: { $0.infoID == id })?.destinationAnchor == nil ? 1 : 0)
                 .overlay(
@@ -191,6 +191,23 @@ public extension View {
             )
         )
     }
+
+    /// Triggers a portal transition for a private portal with a custom layer wrapper
+    func portalPrivateTransition<Item: Identifiable, LayerWrapper: View>(
+        item: Binding<Item?>,
+        config: PortalTransitionConfig = .init(),
+        @ViewBuilder layerWrapper: @escaping (AnyView) -> LayerWrapper,
+        completion: @escaping (Bool) -> Void = { _ in }
+    ) -> some View {
+        self.modifier(
+            PortalPrivateItemTransitionModifierWithWrapper(
+                item: item,
+                config: config,
+                layerWrapper: layerWrapper,
+                completion: completion
+            )
+        )
+    }
 }
 
 // MARK: - Transition Modifiers
@@ -289,10 +306,99 @@ struct PortalPrivateItemTransitionModifier<Item: Identifiable>: ViewModifier {
                                 source: container,
                                 hidesSource: false,  // Don't hide source during animation
                                 matchesAlpha: true,
-                                matchesTransform: false,
+                                matchesTransform: true,
                                 matchesPosition: false
                             )
                         )
+                    }
+
+                    // Forward transition
+                    DispatchQueue.main.asyncAfter(deadline: .now() + config.animation.delay) {
+                        config.animation.performAnimation({
+                            portalModel.info[idx].animateView = true
+                        }) {
+                            portalModel.info[idx].hideView = true
+                            portalModel.info[idx].completion(true)
+                        }
+                    }
+
+                } else {
+                    // Reverse transition
+                    guard let key = lastKey,
+                          let idx = portalModel.info.firstIndex(where: { $0.infoID == key })
+                    else {
+                        return
+                    }
+
+                    portalModel.info[idx].hideView = false
+
+                    config.animation.performAnimation({
+                        portalModel.info[idx].animateView = false
+                    }) {
+                        portalModel.info[idx].initalized = false
+                        portalModel.info[idx].sourceAnchor = nil
+                        portalModel.info[idx].destinationAnchor = nil
+                        portalModel.info[idx].completion(false)
+                    }
+
+                    lastKey = nil
+                }
+            }
+    }
+}
+
+/// Transition modifier for private portals with optional item and custom layer wrapper
+struct PortalPrivateItemTransitionModifierWithWrapper<Item: Identifiable, LayerWrapper: View>: ViewModifier {
+    @Binding var item: Item?
+    let config: PortalTransitionConfig
+    let layerWrapper: (AnyView) -> LayerWrapper
+    let completion: (Bool) -> Void
+    @Environment(CrossModel.self) private var portalModel
+    @State private var lastKey: String?
+
+    func body(content: Content) -> some View {
+        content
+            .onChange(of: item != nil) { _, hasValue in
+                if hasValue {
+                    guard let item = item else { return }
+                    // Use the same ID format as the source and destination
+                    let key: String
+                    if let uuid = item.id as? UUID {
+                        key = uuid.uuidString
+                    } else {
+                        key = "\(item.id)"
+                    }
+                    lastKey = key
+
+                    // Ensure portal info exists
+                    if portalModel.info.firstIndex(where: { $0.infoID == key }) == nil {
+                        portalModel.info.append(PortalInfo(id: key))
+                    }
+
+                    guard let idx = portalModel.info.firstIndex(where: { $0.infoID == key }) else {
+                        return
+                    }
+
+                    // Initialize portal info
+                    portalModel.info[idx].initalized = true
+                    portalModel.info[idx].animation = config.animation
+                    portalModel.info[idx].corners = config.corners
+                    portalModel.info[idx].completion = completion
+
+                    // Set the layer view with the wrapper applied to the PortalView
+                    if let privateInfo = PortalPrivateStorage.shared.privateInfo[key],
+                       let container = privateInfo.sourceContainer as? SourceViewContainer<AnyView> {
+                        // Create a portal view and wrap it
+                        let portalView = AnyView(
+                            PortalView(
+                                source: container,
+                                hidesSource: false,
+                                matchesAlpha: true,
+                                matchesTransform: true,
+                                matchesPosition: false
+                            )
+                        )
+                        portalModel.info[idx].layerView = AnyView(layerWrapper(portalView))
                     }
 
                     // Forward transition
