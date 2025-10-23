@@ -28,17 +28,13 @@ For full installation steps, usage guides, and examples, visit the [Portal Wiki]
 
 ### Package Targets
 
-| ![Portal](assets/portalExample.png) | ![PortalPrivate](assets/portalPrivateExample.png) | ![PortalView](assets/portalViewExample.png) |
-|:---:|:---:|:---:|
-| **Portal** | **PortalPrivate** | **PortalView** |
-| Core transition system | Portal + PortalView hybrid | `_UIPortalView` wrapper |
-| Standard SwiftUI APIs | Transitions with view mirroring | Low-level view mirroring |
-| ✅ **App Store safe** | ⚠️ **Private API** | ⚠️ **Private API** |
-| • Separate view instances<br>• Different sizes at source/destination<br>• Works with all SwiftUI views<br>• Standard animation system | • Single shared instance<br>• Same size constraint<br>• Perfect state preservation<br>• Frame modifiers inside AnimatedLayer | • Direct `_UIPortalView` access<br>• True view instance sharing<br>• Manual UIKit integration<br>• Low-level control |
+- **`Portal`** – Core transition system using standard SwiftUI APIs. Separate view instances allow different sizes at source/destination. **✅ App Store safe.**
+
+- **`PortalPrivate`** – Portal transitions powered by view mirroring. Single shared instance with perfect state preservation but same-size constraint. **⚠️ Private API.**
+
+- **`PortalView`** – Low-level `_UIPortalView` wrapper for direct UIKit integration. **⚠️ Private API.**
 
 **For most users:** Just `import Portal`. The other targets are experimental and intended for advanced scenarios requiring view instance sharing.
-
-**PortalPrivate Note:** Due to `_UIPortalView`'s pixel mirroring, source and destination are always the same size. Best suited for scenarios where identical sizing is desired (e.g., moving items between lists, picture-in-picture). If you need different sizes at source and destination, use the standard `Portal` API instead.
 
 ---
 
