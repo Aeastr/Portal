@@ -121,10 +121,6 @@ public struct PortalAnimation: PortalAnimationProtocol {
     /// Delay before the animation begins, in seconds.
     public let delay: TimeInterval
     
-    /// Duration of the animation, used for iOS 15-16 completion timing.
-    /// On iOS 17+, this is ignored in favor of completion criteria.
-    public let duration: TimeInterval
-    
     /// Initializes a new portal animation configuration.
     ///
     /// Creates an animation configuration with specified timing parameters.
@@ -137,11 +133,9 @@ public struct PortalAnimation: PortalAnimationProtocol {
     public init(
         _ animation: Animation,
         delay: TimeInterval = 0.1,
-        duration: TimeInterval = 0.35
     ) {
         self.value = animation
         self.delay = delay
-        self.duration = duration
     }
     
     /// Default initializer that works across all iOS versions.
@@ -149,7 +143,7 @@ public struct PortalAnimation: PortalAnimationProtocol {
     /// Creates a PortalAnimation with sensible defaults, automatically selecting
     /// the best animation type for the current iOS version.
     public init() {
-        self.init(.smooth(duration: 0.3, extraBounce: 0.1), delay: 0.06, duration: 0.3)
+        self.init(.smooth(duration: 0.3, extraBounce: 0.1), delay: 0.08)
     }
     
     /// Executes the animation with appropriate completion handling for the iOS version.

@@ -66,7 +66,7 @@ public struct PortalPrivateExampleView: View {
             // Trigger the portal transition for the selected item
             .portalPrivateTransition(item: $selectedItem)
         }
-        .environment(\.portalDebugOverlays, true)
+        .environment(\.portalDebugOverlays, false)
     }
 }
 

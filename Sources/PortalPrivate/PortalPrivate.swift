@@ -381,7 +381,8 @@ public struct PortalPrivateDestination: View {
                 }
                 .onPreferenceChange(AnchorKey.self) { prefs in
                     Task { @MainActor in
-                        // Don't require initialized - we need to set anchor even before transition
+                        // Wait for initialization like base Portal does
+                        guard portalModel.info[idx].initalized else { return }
                         guard let anchor = prefs["\(id)DEST"] else {
                             return
                         }
