@@ -133,6 +133,7 @@ public struct PortalExample_CardGrid: View {
                 }
             }
         }
+        .portalDebugOverlays(enabled: false)
     }
 }
 
