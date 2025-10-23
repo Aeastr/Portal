@@ -66,7 +66,7 @@ public struct PortalPrivateExampleView: View {
             // Trigger the portal transition for the selected item
             .portalPrivateTransition(item: $selectedItem)
         }
-        .environment(\.portalDebugOverlays, false)  // Enable debug overlays
+        .environment(\.portalDebugOverlays, true)
     }
 }
 
@@ -74,7 +74,6 @@ public struct PortalPrivateExampleView: View {
 
 struct CardView: View {
     let item: Item
-    @State private var isAnimating = false
 
     var body: some View {
         VStack(spacing: 8) {
@@ -92,8 +91,6 @@ struct CardView: View {
         }
         .frame(maxWidth: .infinity)
         .frame(height: 120)
-        
-        .cornerRadius(12)
     }
 }
 
@@ -109,8 +106,7 @@ struct DetailView: View {
                 // Use PortalPrivateDestination to show the mirrored view
                 PortalPrivateDestination(id: item.id.uuidString)
                     .frame(width: 200, height: 200)
-                    .background(Color.gray.opacity(0.1))
-                    .cornerRadius(20)
+                    .background(Color.gray.opacity(0.1), in: .rect(cornerRadius: 20))
                     .padding()
 
                 Text("Detail View")

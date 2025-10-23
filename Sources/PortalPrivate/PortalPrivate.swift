@@ -53,7 +53,6 @@ public struct PortalPrivate<Content: View>: View {
                 .frame(width: 0, height: 0)
                 .onAppear {
                     if sourceContainer == nil {
-                        print("🟣 PortalPrivate: Creating container for id: \(id)")
                         // Create type-erased container that can be shared
                         let container = SourceViewContainer(content: AnyView(content()))
                         sourceContainer = container
@@ -63,12 +62,10 @@ public struct PortalPrivate<Content: View>: View {
                         info.sourceContainer = container
                         info.isPrivatePortal = true
                         PortalPrivateStorage.shared.privateInfo[id] = info
-                        print("🟣 PortalPrivate: Stored container in storage for id: \(id)")
 
                         // Ensure portal info exists in model
                         if !portalModel.info.contains(where: { $0.infoID == id }) {
                             portalModel.info.append(PortalInfo(id: id))
-                            print("🟣 PortalPrivate: Added PortalInfo for id: \(id)")
                         }
                     }
                 }
@@ -105,19 +102,16 @@ public struct PortalPrivate<Content: View>: View {
                 .onPreferenceChange(AnchorKey.self) { prefs in
                     Task { @MainActor in
                         guard let idx = portalModel.info.firstIndex(where: { $0.infoID == id }) else {
-                            print("🟡 PortalPrivate source: No PortalInfo found for id: \(id)")
                             return
                         }
 
                         // Don't require initialized - we need to set anchor even before transition
                         guard let anchor = prefs[id] else {
-                            print("🟡 PortalPrivate source: No anchor in prefs for id: \(id)")
                             return
                         }
 
                         // Update source anchor for positioning
                         portalModel.info[idx].sourceAnchor = anchor
-                        print("🟣 PortalPrivate source: Set source anchor for id: \(id)")
                     }
                 }
             }
@@ -295,16 +289,13 @@ struct PortalPrivateItemTransitionModifier<Item: Identifiable>: ViewModifier {
                         key = "\(item.id)"
                     }
                     lastKey = key
-                    print("🔵 PortalPrivateTransition: Starting transition for key: \(key)")
 
                     // Ensure portal info exists
                     if portalModel.info.firstIndex(where: { $0.infoID == key }) == nil {
                         portalModel.info.append(PortalInfo(id: key))
-                        print("🔵 PortalPrivateTransition: Added PortalInfo for key: \(key)")
                     }
 
                     guard let idx = portalModel.info.firstIndex(where: { $0.infoID == key }) else {
-                        print("🔴 PortalPrivateTransition: Could not find PortalInfo for key: \(key)")
                         return
                     }
 
@@ -313,12 +304,10 @@ struct PortalPrivateItemTransitionModifier<Item: Identifiable>: ViewModifier {
                     portalModel.info[idx].animation = config.animation
                     portalModel.info[idx].corners = config.corners
                     portalModel.info[idx].completion = completion
-                    print("🔵 PortalPrivateTransition: Initialized PortalInfo for key: \(key)")
 
                     // Set the layer view to use the PortalView of the stored container
                     if let privateInfo = PortalPrivateStorage.shared.privateInfo[key],
                        let container = privateInfo.sourceContainer as? SourceViewContainer<AnyView> {
-                        print("🔵 PortalPrivateTransition: Found container in storage for key: \(key)")
                         // Create a portal view that will be animated
                         portalModel.info[idx].layerView = AnyView(
                             PortalView(
@@ -329,33 +318,13 @@ struct PortalPrivateItemTransitionModifier<Item: Identifiable>: ViewModifier {
                                 matchesPosition: false
                             )
                         )
-                        print("🔵 PortalPrivateTransition: Set layerView for key: \(key)")
-                    } else {
-                        print("🔴 PortalPrivateTransition: No container found in storage for key: \(key)")
-                        print("🔴 Available keys in storage: \(PortalPrivateStorage.shared.privateInfo.keys)")
-                    }
-
-                    // Check anchors
-                    if let sourceAnchor = portalModel.info[idx].sourceAnchor {
-                        print("🔵 PortalPrivateTransition: Source anchor exists for key: \(key)")
-                    } else {
-                        print("🟡 PortalPrivateTransition: No source anchor for key: \(key)")
-                    }
-
-                    if let destAnchor = portalModel.info[idx].destinationAnchor {
-                        print("🔵 PortalPrivateTransition: Destination anchor exists for key: \(key)")
-                    } else {
-                        print("🟡 PortalPrivateTransition: No destination anchor for key: \(key)")
                     }
 
                     // Forward transition
-                    print("🔵 PortalPrivateTransition: Starting animation with delay: \(config.animation.delay)")
                     DispatchQueue.main.asyncAfter(deadline: .now() + config.animation.delay) {
-                        print("🔵 PortalPrivateTransition: Setting animateView = true for key: \(key)")
                         config.animation.performAnimation({
                             portalModel.info[idx].animateView = true
                         }) {
-                            print("🔵 PortalPrivateTransition: Animation complete, hiding view for key: \(key)")
                             portalModel.info[idx].hideView = true
                             portalModel.info[idx].completion(true)
                         }
@@ -366,10 +335,8 @@ struct PortalPrivateItemTransitionModifier<Item: Identifiable>: ViewModifier {
                     guard let key = lastKey,
                           let idx = portalModel.info.firstIndex(where: { $0.infoID == key })
                     else {
-                        print("🔴 PortalPrivateTransition: Reverse - no key or index")
                         return
                     }
-                    print("🔵 PortalPrivateTransition: Starting reverse transition for key: \(key)")
 
                     portalModel.info[idx].hideView = false
 
@@ -419,11 +386,6 @@ public struct PortalPrivateDestination: View {
                     matchesPosition: false
                 )
                 .opacity(Double(opacity))
-                .onAppear {
-                    print("🟢 PortalPrivateDestination appeared for id: \(id)")
-                    print("🟢 - animateView: \(info.animateView), hideView: \(info.hideView)")
-                    print("🟢 - opacity: \(opacity)")
-                }
                 .overlay(
                     Group {
                         #if DEBUG
@@ -446,25 +408,16 @@ public struct PortalPrivateDestination: View {
                     Task { @MainActor in
                         // Don't require initialized - we need to set anchor even before transition
                         guard let anchor = prefs["\(id)DEST"] else {
-                            print("🟡 PortalPrivateDestination: No anchor in prefs for id: \(id)DEST")
                             return
                         }
 
                         // Update destination anchor for positioning
                         portalModel.info[idx].destinationAnchor = anchor
-                        print("🟢 PortalPrivateDestination: Set destination anchor for id: \(id)")
                     }
                 }
             } else {
                 // Placeholder when source not available
                 Color.clear
-                    .onAppear {
-                        print("🔴 PortalPrivateDestination: Missing container for id: \(id)")
-                        print("🔴 - Storage keys: \(PortalPrivateStorage.shared.privateInfo.keys)")
-                        if let info = PortalPrivateStorage.shared.privateInfo[id] {
-                            print("🔴 - Info exists, container: \(info.sourceContainer != nil)")
-                        }
-                    }
                     .overlay(
                         Group {
                             #if DEBUG
