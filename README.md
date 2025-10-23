@@ -79,17 +79,11 @@ You can find these in the [`Sources/Portal/Examples`](Sources/Portal/Examples) d
 
 ---
 
-## License
+## Contributing & Support
 
-This project is released under the MIT License. See [LICENSE](LICENSE.md) for details.
+Contributions are welcome! Please feel free to submit a Pull Request. See the [Contributing Guide](CONTRIBUTING.md) for details.
 
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request. Before you begin, take a moment to review the [Contributing Guide](CONTRIBUTING.md) for details on issue reporting, coding standards, and the PR process.
-
-## Support
-
-If you like this project, please consider giving it a ⭐️
+This project is released under the [MIT License](LICENSE.md). If you like Portal, please give it a ⭐️
 
 ---
 
