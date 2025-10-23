@@ -16,15 +16,9 @@
 
 ## **Demo**
 
-![Example](/assets/example1.gif)
-
-<details>
-  <summary><strong>Real Examples</strong></summary>
-
-  https://github.com/user-attachments/assets/1658216e-dabd-442f-a7fe-7c2a19bf427d
-
-  https://github.com/user-attachments/assets/7bba5836-f6e0-4d0b-95d7-f2c44c86c80a
-</details>
+<div align="center">
+  <img width="400" src="/assets/example1.gif" alt="Portal Demo">
+</div>
 
 ---
 
