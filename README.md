@@ -30,9 +30,19 @@
 
 ## Documentation
 
-For full installation steps, usage guides, examples, and animation deep-dives, visit the [Portal Wiki](https://github.com/Aeastr/Portal/wiki): 
+For full installation steps, usage guides, and examples, visit the [Portal Wiki](https://github.com/Aeastr/Portal/wiki):
 
 > Targeting iOS 15/16? Pin your dependency to `v2.1.0` or the `legacy/ios15` branch.
+
+### Package Targets
+
+Portal includes optional targets for advanced use cases:
+
+- **`Portal`** (default) – Core transition system using standard SwiftUI APIs. **App Store safe.**
+- **`PortalView`** (optional) – Low-level wrapper for `_UIPortalView`, Apple's private API for view mirroring. **⚠️ Uses private APIs.**
+- **`PortalPrivate`** (optional) – Portal transitions reimplemented with PortalView. Depends on both Portal and PortalView. **⚠️ Uses private APIs.**
+
+**For most users:** Just `import Portal`. The other targets are experimental and intended for advanced scenarios requiring view instance sharing.
 
 ---
 
