@@ -119,31 +119,6 @@ public struct PortalPrivate<Content: View>: View {
     }
 }
 
-// MARK: - Modified Portal Container
-
-/// Extended portal container that includes PortalPrivate support
-public struct PortalContainerPrivate<Content: View>: View {
-    @ViewBuilder public var content: Content
-    @Environment(\.scenePhase) private var scene
-    @State private var portalModel = CrossModel()
-    private let hideStatusBar: Bool
-
-    public init(
-        hideStatusBar: Bool = false,
-        @ViewBuilder content: () -> Content
-    ) {
-        self.hideStatusBar = hideStatusBar
-        self.content = content()
-    }
-
-    public var body: some View {
-        // Use standard PortalContainer which creates the overlay window
-        PortalContainer(hideStatusBar: hideStatusBar, portalModel: portalModel) {
-            content
-        }
-    }
-}
-
 // MARK: - View Extensions
 
 public extension View {

@@ -32,7 +32,7 @@ public struct PortalPrivateExampleView: View {
 
     public var body: some View {
         // Use PortalContainerPrivate instead of regular PortalContainer
-        PortalContainerPrivate {
+        PortalContainer {
             NavigationStack {
                 ScrollView {
                     VStack(spacing: 20) {
@@ -105,8 +105,9 @@ struct DetailView: View {
             VStack(spacing: 20) {
                 // Use PortalPrivateDestination to show the mirrored view
                 PortalPrivateDestination(id: item.id.uuidString)
-                    .frame(width: 200, height: 200)
-                    .background(Color.gray.opacity(0.1), in: .rect(cornerRadius: 20))
+//                    .frame(width: 200, height: 200)
+                    .background(Color.gray.opacity(0.1))
+                    .clipShape(.rect(cornerRadius: 20))
                     .padding()
 
                 Text("Detail View")
