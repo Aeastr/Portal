@@ -47,7 +47,7 @@ public struct PortalPrivate<Content: View>: View {
     }
 
     public var body: some View {
-        Group {
+        ZStack {
             // Create and store the source container on appear
             Color.clear
                 .frame(width: 0, height: 0)
@@ -148,6 +148,29 @@ public extension View {
         }
     }
 
+    /// Marks this view as a private portal using an `Identifiable` item's ID
+    ///
+    /// This creates a single view instance that can be displayed in multiple places
+    /// using _UIPortalView, automatically extracting the string representation of
+    /// an `Identifiable` item's ID.
+    ///
+    /// Example:
+    /// ```swift
+    /// MyComplexView()
+    ///     .portalPrivate(item: book)
+    /// ```
+    func portalPrivate<Item: Identifiable>(item: Item) -> some View {
+        let key: String
+        if let uuid = item.id as? UUID {
+            key = uuid.uuidString
+        } else {
+            key = "\(item.id)"
+        }
+        return PortalPrivate(id: key) {
+            self
+        }
+    }
+
     /// Triggers a portal transition for a private portal using the mirrored view
     ///
     /// This modifier triggers the animation for PortalPrivate views.
@@ -192,22 +215,65 @@ public extension View {
         )
     }
 
-    /// Triggers a portal transition for a private portal with a custom layer wrapper
-    func portalPrivateTransition<Item: Identifiable, LayerWrapper: View>(
-        item: Binding<Item?>,
+    /// Triggers coordinated portal transitions for multiple private portal IDs.
+    ///
+    /// This modifier enables multiple portal animations to run simultaneously as a coordinated group
+    /// using string IDs. All IDs in the array are animated together with synchronized timing.
+    ///
+    /// Example:
+    /// ```swift
+    /// .portalPrivateTransition(
+    ///     ids: ["portal1", "portal2", "portal3"],
+    ///     groupID: "myGroup",
+    ///     isActive: $showPortals
+    /// )
+    /// ```
+    func portalPrivateTransition(
+        ids: [String],
+        groupID: String,
         config: PortalTransitionConfig = .init(),
-        @ViewBuilder layerWrapper: @escaping (AnyView) -> LayerWrapper,
+        isActive: Binding<Bool>,
         completion: @escaping (Bool) -> Void = { _ in }
     ) -> some View {
         self.modifier(
-            PortalPrivateItemTransitionModifierWithWrapper(
-                item: item,
+            MultiIDPortalPrivateTransitionModifier(
+                ids: ids,
+                groupID: groupID,
                 config: config,
-                layerWrapper: layerWrapper,
+                isActive: isActive,
                 completion: completion
             )
         )
     }
+
+    /// Triggers coordinated portal transitions for multiple private portal items.
+    ///
+    /// This modifier enables multiple portal animations to run simultaneously as a coordinated group.
+    /// All items in the array are animated together with synchronized timing.
+    ///
+    /// Example:
+    /// ```swift
+    /// .portalPrivateTransition(
+    ///     items: $selectedPhotos,
+    ///     groupID: "photoStack"
+    /// )
+    /// ```
+    func portalPrivateTransition<Item: Identifiable>(
+        items: Binding<[Item]>,
+        groupID: String,
+        config: PortalTransitionConfig = .init(),
+        completion: @escaping (Bool) -> Void = { _ in }
+    ) -> some View {
+        self.modifier(
+            MultiItemPortalPrivateTransitionModifier(
+                items: items,
+                groupID: groupID,
+                config: config,
+                completion: completion
+            )
+        )
+    }
+
 }
 
 // MARK: - Transition Modifiers
@@ -347,94 +413,235 @@ struct PortalPrivateItemTransitionModifier<Item: Identifiable>: ViewModifier {
     }
 }
 
-/// Transition modifier for private portals with optional item and custom layer wrapper
-struct PortalPrivateItemTransitionModifierWithWrapper<Item: Identifiable, LayerWrapper: View>: ViewModifier {
-    @Binding var item: Item?
+// MARK: - Multi-ID Portal Private Transition Modifier
+
+/// A view modifier that manages coordinated portal transitions for multiple private portal IDs.
+struct MultiIDPortalPrivateTransitionModifier: ViewModifier {
+    let ids: [String]
+    let groupID: String
     let config: PortalTransitionConfig
-    let layerWrapper: (AnyView) -> LayerWrapper
+    @Binding var isActive: Bool
     let completion: (Bool) -> Void
     @Environment(CrossModel.self) private var portalModel
-    @State private var lastKey: String?
 
     func body(content: Content) -> some View {
         content
-            .onChange(of: item != nil) { _, hasValue in
-                if hasValue {
-                    guard let item = item else { return }
-                    // Use the same ID format as the source and destination
-                    let key: String
-                    if let uuid = item.id as? UUID {
-                        key = uuid.uuidString
-                    } else {
-                        key = "\(item.id)"
-                    }
-                    lastKey = key
+            .onChange(of: isActive) { _, newValue in
+                let groupIndices = portalModel.info.enumerated().compactMap { index, info in
+                    ids.contains(info.infoID) ? index : nil
+                }
 
-                    // Ensure portal info exists
-                    if portalModel.info.firstIndex(where: { $0.infoID == key }) == nil {
-                        portalModel.info.append(PortalInfo(id: key))
-                    }
-
-                    guard let idx = portalModel.info.firstIndex(where: { $0.infoID == key }) else {
-                        return
-                    }
-
-                    // Initialize portal info
-                    portalModel.info[idx].initalized = true
-                    portalModel.info[idx].animation = config.animation
-                    portalModel.info[idx].corners = config.corners
-                    portalModel.info[idx].completion = completion
-
-                    // Set the layer view with the wrapper applied to the PortalView
-                    if let privateInfo = PortalPrivateStorage.shared.privateInfo[key],
-                       let container = privateInfo.sourceContainer as? SourceViewContainer<AnyView> {
-                        // Create a portal view and wrap it
-                        let portalView = AnyView(
-                            PortalView(
-                                source: container,
-                                hidesSource: false,
-                                matchesAlpha: true,
-                                matchesTransform: true,
-                                matchesPosition: false
-                            )
-                        )
-                        portalModel.info[idx].layerView = AnyView(layerWrapper(portalView))
-                    }
-
+                if newValue {
                     // Forward transition
-                    DispatchQueue.main.asyncAfter(deadline: .now() + config.animation.delay) {
-                        config.animation.performAnimation({
-                            portalModel.info[idx].animateView = true
-                        }) {
-                            portalModel.info[idx].hideView = true
-                            portalModel.info[idx].completion(true)
+                    for (i, idx) in groupIndices.enumerated() {
+                        let portalID = portalModel.info[idx].infoID
+
+                        // Ensure portal info exists
+                        if portalModel.info.firstIndex(where: { $0.infoID == portalID }) == nil {
+                            portalModel.info.append(PortalInfo(id: portalID))
+                        }
+
+                        portalModel.info[idx].initalized = true
+                        portalModel.info[idx].animation = config.animation
+                        portalModel.info[idx].corners = config.corners
+                        portalModel.info[idx].groupID = groupID
+                        portalModel.info[idx].isGroupCoordinator = (i == 0)
+
+                        // Set the layer view to use the PortalView of the stored container
+                        if let privateInfo = PortalPrivateStorage.shared.privateInfo[portalID],
+                           let container = privateInfo.sourceContainer as? SourceViewContainer<AnyView> {
+                            portalModel.info[idx].layerView = AnyView(
+                                PortalView(
+                                    source: container,
+                                    hidesSource: false,
+                                    matchesAlpha: true,
+                                    matchesTransform: true,
+                                    matchesPosition: false
+                                )
+                            )
+                        }
+
+                        // Only coordinator gets completion callback
+                        if i == 0 {
+                            portalModel.info[idx].completion = completion
+                        } else {
+                            portalModel.info[idx].completion = { _ in }
                         }
                     }
 
+                    // Start coordinated animation
+                    DispatchQueue.main.asyncAfter(deadline: .now() + config.animation.delay) {
+                        config.animation.performAnimation({
+                            for idx in groupIndices {
+                                portalModel.info[idx].animateView = true
+                            }
+                        }) {
+                            for idx in groupIndices {
+                                portalModel.info[idx].hideView = true
+                                if portalModel.info[idx].isGroupCoordinator {
+                                    portalModel.info[idx].completion(true)
+                                }
+                            }
+                        }
+                    }
                 } else {
                     // Reverse transition
-                    guard let key = lastKey,
-                          let idx = portalModel.info.firstIndex(where: { $0.infoID == key })
-                    else {
-                        return
+                    for idx in groupIndices {
+                        portalModel.info[idx].hideView = false
                     }
-
-                    portalModel.info[idx].hideView = false
 
                     config.animation.performAnimation({
-                        portalModel.info[idx].animateView = false
+                        for idx in groupIndices {
+                            portalModel.info[idx].animateView = false
+                        }
                     }) {
-                        portalModel.info[idx].initalized = false
-                        portalModel.info[idx].sourceAnchor = nil
-                        portalModel.info[idx].destinationAnchor = nil
-                        portalModel.info[idx].completion(false)
+                        for idx in groupIndices {
+                            portalModel.info[idx].initalized = false
+                            portalModel.info[idx].layerView = nil
+                            portalModel.info[idx].sourceAnchor = nil
+                            portalModel.info[idx].destinationAnchor = nil
+                            portalModel.info[idx].groupID = nil
+                            portalModel.info[idx].isGroupCoordinator = false
+                            if portalModel.info[idx].isGroupCoordinator {
+                                portalModel.info[idx].completion(false)
+                            }
+                        }
                     }
-
-                    lastKey = nil
                 }
             }
     }
 }
+
+// MARK: - Multi-Item Portal Private Transition Modifier
+
+/// A view modifier that manages coordinated portal transitions for multiple private portal items.
+struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifier {
+    @Binding var items: [Item]
+    let groupID: String
+    let config: PortalTransitionConfig
+    let completion: (Bool) -> Void
+    @Environment(CrossModel.self) private var portalModel
+    @State private var lastKeys: Set<String> = []
+
+    private var keys: Set<String> {
+        Set(items.map {
+            if let uuid = $0.id as? UUID {
+                return uuid.uuidString
+            } else {
+                return "\($0.id)"
+            }
+        })
+    }
+
+    func body(content: Content) -> some View {
+        content
+            .onChange(of: !items.isEmpty) { _, hasItems in
+                let currentKeys = keys
+
+                if hasItems && !items.isEmpty {
+                    // Forward transition
+                    lastKeys = currentKeys
+
+                    // Ensure portal info exists for all items
+                    for item in items {
+                        let key: String
+                        if let uuid = item.id as? UUID {
+                            key = uuid.uuidString
+                        } else {
+                            key = "\(item.id)"
+                        }
+
+                        if portalModel.info.firstIndex(where: { $0.infoID == key }) == nil {
+                            portalModel.info.append(PortalInfo(id: key, groupID: groupID))
+                        }
+                    }
+
+                    // Configure all portals in the group
+                    let groupIndices = portalModel.info.enumerated().compactMap { index, info in
+                        currentKeys.contains(info.infoID) ? index : nil
+                    }
+
+                    // Set up group coordination
+                    for (i, idx) in groupIndices.enumerated() {
+                        let portalID = portalModel.info[idx].infoID
+                        portalModel.info[idx].initalized = true
+                        portalModel.info[idx].animation = config.animation
+                        portalModel.info[idx].corners = config.corners
+                        portalModel.info[idx].groupID = groupID
+                        portalModel.info[idx].isGroupCoordinator = (i == 0)
+
+                        // Set the layer view to use the PortalView of the stored container
+                        if let privateInfo = PortalPrivateStorage.shared.privateInfo[portalID],
+                           let container = privateInfo.sourceContainer as? SourceViewContainer<AnyView> {
+                            portalModel.info[idx].layerView = AnyView(
+                                PortalView(
+                                    source: container,
+                                    hidesSource: false,
+                                    matchesAlpha: true,
+                                    matchesTransform: true,
+                                    matchesPosition: false
+                                )
+                            )
+                        }
+
+                        // Only coordinator gets completion callback
+                        if i == 0 {
+                            portalModel.info[idx].completion = completion
+                        } else {
+                            portalModel.info[idx].completion = { _ in }
+                        }
+                    }
+
+                    // Start coordinated animation
+                    DispatchQueue.main.asyncAfter(deadline: .now() + config.animation.delay) {
+                        config.animation.performAnimation({
+                            for idx in groupIndices {
+                                portalModel.info[idx].animateView = true
+                            }
+                        }) {
+                            for idx in groupIndices {
+                                portalModel.info[idx].hideView = true
+                                if portalModel.info[idx].isGroupCoordinator {
+                                    portalModel.info[idx].completion(true)
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    // Reverse transition
+                    let cleanupKeys = lastKeys
+                    let cleanupIndices = portalModel.info.enumerated().compactMap { index, info in
+                        cleanupKeys.contains(info.infoID) ? index : nil
+                    }
+
+                    for idx in cleanupIndices {
+                        portalModel.info[idx].hideView = false
+                    }
+
+                    config.animation.performAnimation({
+                        for idx in cleanupIndices {
+                            portalModel.info[idx].animateView = false
+                        }
+                    }) {
+                        for idx in cleanupIndices {
+                            portalModel.info[idx].initalized = false
+                            portalModel.info[idx].layerView = nil
+                            portalModel.info[idx].sourceAnchor = nil
+                            portalModel.info[idx].destinationAnchor = nil
+                            portalModel.info[idx].groupID = nil
+                            portalModel.info[idx].isGroupCoordinator = false
+                            if portalModel.info[idx].isGroupCoordinator {
+                                portalModel.info[idx].completion(false)
+                            }
+                        }
+                    }
+
+                    lastKeys.removeAll()
+                }
+            }
+    }
+}
+
 
 // MARK: - Destination View for Private Portals
 
