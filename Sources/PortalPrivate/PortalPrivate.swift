@@ -77,12 +77,13 @@ public struct PortalPrivate<Content: View>: View {
                     PortalPrivateStorage.shared.privateInfo[id] = nil
                 }
 
-            // The actual source view (always visible)
+            // The actual source view (hidden when destination anchor exists)
             if let container = sourceContainer {
                 SourceViewRepresentable(
                     container: container,
                     content: AnyView(content())
                 )
+                .opacity(portalModel.info.first(where: { $0.infoID == id })?.destinationAnchor == nil ? 1 : 0)
                 .overlay(
                     Group {
                         #if DEBUG

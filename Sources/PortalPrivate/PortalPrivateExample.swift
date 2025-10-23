@@ -62,7 +62,7 @@ public struct PortalPrivateExampleView: View {
             // Trigger the portal transition for the selected item
             .portalPrivateTransition(item: $selectedItem)
         }
-        .environment(\.portalDebugOverlays, true)  // Enable debug overlays
+        .environment(\.portalDebugOverlays, false)  // Enable debug overlays
     }
 }
 
@@ -89,7 +89,7 @@ struct CardView: View {
         }
         .frame(maxWidth: .infinity)
         .frame(height: 120)
-        .background(Color.gray.opacity(0.1))
+        
         .cornerRadius(12)
     }
 }
