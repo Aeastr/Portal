@@ -14,10 +14,8 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT"></a>
 </p>
 
-## **Demo**
-
 <div align="center">
-  <img style="max-width: 600px; width: 100%;" src="/assets/example1.gif" alt="Portal Demo">
+  <img width="600" src="/assets/example1.gif" alt="Portal Demo">
 </div>
 
 ---
@@ -84,7 +82,7 @@ These visual indicators help troubleshoot portal transitions, anchor positioning
 
 ### Logging & Diagnostics
 
-Portal now ships with a dedicated [LogOutLoud](https://github.com/Aeastr/LogOutLoud) logger instance. Fetch it anywhere inside your app or tests:
+Portal ships with a dedicated [LogOutLoud](https://github.com/Aeastr/LogOutLoud) logger instance. Fetch it anywhere inside your app or tests:
 
 ```swift
 import Portal
