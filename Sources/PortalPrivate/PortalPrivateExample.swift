@@ -41,7 +41,11 @@ public struct PortalPrivateExampleView: View {
                             .font(.subheadline)
                             .foregroundColor(.secondary)
 
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 150)), GridItem(.adaptive(minimum: 150))], spacing: 16) {
+                        LazyVGrid(columns: [
+                            .init(),
+                            .init(),
+                            .init()
+                        ], spacing: 16) {
                             ForEach(items) { item in
                                 CardView(item: item)
                                     // Only define the view once!
@@ -78,7 +82,6 @@ struct CardView: View {
             Image(systemName: item.symbol)
                 .font(.system(size: 40))
                 .foregroundColor(item.color)
-                .rotationEffect(.degrees(isAnimating ? 360 : 0))
 
             Text(item.name)
                 .font(.headline)
