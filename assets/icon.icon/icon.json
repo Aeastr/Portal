@@ -4,9 +4,10 @@
   },
   "groups" : [
     {
-      "blur-material" : 0.5,
+      "blur-material" : 0.1,
       "layers" : [
         {
+          "glass" : true,
           "image-name" : "vga-kinetic-export2.png",
           "name" : "vga-kinetic-export2",
           "opacity" : 1,
@@ -19,6 +20,7 @@
           }
         },
         {
+          "glass" : true,
           "image-name" : "vga-kinetic-export.png",
           "name" : "vga-kinetic-export",
           "position" : {
@@ -31,12 +33,13 @@
         }
       ],
       "shadow" : {
-        "kind" : "neutral",
+        "kind" : "layer-color",
         "opacity" : 0.5
       },
+      "specular" : true,
       "translucency" : {
         "enabled" : true,
-        "value" : 0.5
+        "value" : 0.6
       }
     },
     {
