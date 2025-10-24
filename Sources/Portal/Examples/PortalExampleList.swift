@@ -132,33 +132,40 @@ public struct PortalExampleList: View {
         }
     }
 
+    private struct ItemData {
+        let title: String
+        let subtitle: String
+        let color: Color
+        let icon: String
+    }
+
     private static func generateLargeDataSet() -> [PortalExampleListItem] {
-        let baseItems: [(String, String, Color, String)] = [
-            ("Mountain Peak", "Breathtaking views from the summit", Color.blue, "mountain.2.fill"),
-            ("Ocean Waves", "Peaceful sounds of the sea", Color.cyan, "water.waves"),
-            ("Forest Trail", "Winding path through ancient trees", Color.green, "tree.fill"),
-            ("Desert Sunset", "Golden hour in the wilderness", Color.orange, "sun.max.fill"),
-            ("City Lights", "Urban landscape at night", Color.purple, "building.2.fill"),
-            ("Starry Sky", "Countless stars above", Color.indigo, "sparkles"),
-            ("Autumn Leaves", "Colorful foliage in fall", Color.red, "leaf.fill"),
-            ("Snow Covered", "Winter wonderland scene", Color.gray, "snowflake"),
-            ("Cherry Blossoms", "Spring flowers in bloom", Color.pink, "leaf.circle.fill"),
-            ("Lightning Storm", "Electric display in the sky", Color.yellow, "bolt.fill"),
-            ("Coral Reef", "Underwater paradise", Color.teal, "fish.fill"),
-            ("Northern Lights", "Aurora dancing overhead", Color.mint, "moon.stars.fill"),
-            ("Waterfall", "Cascading water over rocks", Color.blue, "drop.fill"),
-            ("Meadow Flowers", "Wildflowers in summer", Color.green, "tree"),
-            ("Rocky Coast", "Waves crashing on cliffs", Color.brown, "mountain.2.circle.fill"),
-            ("Foggy Morning", "Mist rolling over hills", Color.gray, "cloud.fog.fill"),
-            ("Rainbow Arc", "Colors after the rain", Color.red, "rainbow"),
-            ("Sand Dunes", "Endless waves of sand", Color.yellow, "triangle.fill"),
-            ("Ice Cave", "Frozen crystal formations", Color.cyan, "snowflake.circle.fill"),
-            ("Volcano Peak", "Majestic volcanic landscape", Color.red, "flame.fill"),
-            ("Bamboo Forest", "Tall green stalks swaying", Color.green, "leaf.arrow.triangle.circlepath"),
-            ("Prairie Wind", "Grass dancing in breeze", Color.yellow, "wind"),
-            ("Glacier View", "Ancient ice formations", Color.blue, "snowflake.road.lane"),
-            ("Sunset Beach", "Golden light on sand", Color.orange, "sun.horizon.fill"),
-            ("Moonlit Lake", "Reflection on still water", Color.indigo, "moon.circle.fill")
+        let baseItems: [ItemData] = [
+            ItemData(title: "Mountain Peak", subtitle: "Breathtaking views from the summit", color: .blue, icon: "mountain.2.fill"),
+            ItemData(title: "Ocean Waves", subtitle: "Peaceful sounds of the sea", color: .cyan, icon: "water.waves"),
+            ItemData(title: "Forest Trail", subtitle: "Winding path through ancient trees", color: .green, icon: "tree.fill"),
+            ItemData(title: "Desert Sunset", subtitle: "Golden hour in the wilderness", color: .orange, icon: "sun.max.fill"),
+            ItemData(title: "City Lights", subtitle: "Urban landscape at night", color: .purple, icon: "building.2.fill"),
+            ItemData(title: "Starry Sky", subtitle: "Countless stars above", color: .indigo, icon: "sparkles"),
+            ItemData(title: "Autumn Leaves", subtitle: "Colorful foliage in fall", color: .red, icon: "leaf.fill"),
+            ItemData(title: "Snow Covered", subtitle: "Winter wonderland scene", color: .gray, icon: "snowflake"),
+            ItemData(title: "Cherry Blossoms", subtitle: "Spring flowers in bloom", color: .pink, icon: "leaf.circle.fill"),
+            ItemData(title: "Lightning Storm", subtitle: "Electric display in the sky", color: .yellow, icon: "bolt.fill"),
+            ItemData(title: "Coral Reef", subtitle: "Underwater paradise", color: .teal, icon: "fish.fill"),
+            ItemData(title: "Northern Lights", subtitle: "Aurora dancing overhead", color: .mint, icon: "moon.stars.fill"),
+            ItemData(title: "Waterfall", subtitle: "Cascading water over rocks", color: .blue, icon: "drop.fill"),
+            ItemData(title: "Meadow Flowers", subtitle: "Wildflowers in summer", color: .green, icon: "tree"),
+            ItemData(title: "Rocky Coast", subtitle: "Waves crashing on cliffs", color: .brown, icon: "mountain.2.circle.fill"),
+            ItemData(title: "Foggy Morning", subtitle: "Mist rolling over hills", color: .gray, icon: "cloud.fog.fill"),
+            ItemData(title: "Rainbow Arc", subtitle: "Colors after the rain", color: .red, icon: "rainbow"),
+            ItemData(title: "Sand Dunes", subtitle: "Endless waves of sand", color: .yellow, icon: "triangle.fill"),
+            ItemData(title: "Ice Cave", subtitle: "Frozen crystal formations", color: .cyan, icon: "snowflake.circle.fill"),
+            ItemData(title: "Volcano Peak", subtitle: "Majestic volcanic landscape", color: .red, icon: "flame.fill"),
+            ItemData(title: "Bamboo Forest", subtitle: "Tall green stalks swaying", color: .green, icon: "leaf.arrow.triangle.circlepath"),
+            ItemData(title: "Prairie Wind", subtitle: "Grass dancing in breeze", color: .yellow, icon: "wind"),
+            ItemData(title: "Glacier View", subtitle: "Ancient ice formations", color: .blue, icon: "snowflake.road.lane"),
+            ItemData(title: "Sunset Beach", subtitle: "Golden light on sand", color: .orange, icon: "sun.horizon.fill"),
+            ItemData(title: "Moonlit Lake", subtitle: "Reflection on still water", color: .indigo, icon: "moon.circle.fill")
         ]
 
         var items: [PortalExampleListItem] = []
@@ -170,10 +177,10 @@ public struct PortalExampleList: View {
             let suffix = i / baseItems.count + 1
 
             let item = PortalExampleListItem(
-                title: "\(baseItem.0) \(suffix)",
-                description: "\(baseItem.1) - Item #\(i + 1)",
-                color: baseItem.2,
-                icon: baseItem.3
+                title: "\(baseItem.title) \(suffix)",
+                description: "\(baseItem.subtitle) - Item #\(i + 1)",
+                color: baseItem.color,
+                icon: baseItem.icon
             )
             items.append(item)
         }
