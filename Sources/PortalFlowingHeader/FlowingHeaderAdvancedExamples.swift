@@ -1,8 +1,11 @@
 //
 //  FlowingHeaderAdvancedExamples.swift
-//  PortalFlowingHeader
+//  Portal
 //
-//  Created by Aether on 12/08/2025.
+//  Created by Aether, 2025.
+//
+//  Copyright © 2025 Aether. All rights reserved.
+//  Licensed under the MIT License.
 //
 
 import SwiftUI
