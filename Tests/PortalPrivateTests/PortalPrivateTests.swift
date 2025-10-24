@@ -129,7 +129,7 @@ final class PortalPrivateTests: XCTestCase {
         info?.isPrivatePortal = true
 
         // Store the info
-        let testKey = "test-portal-\(UUID().uuidString)"
+        _ = "test-portal-\(UUID().uuidString)"
         // Note: We can't directly test the private storage,
         // but we can verify the pattern is correct
 
@@ -139,16 +139,6 @@ final class PortalPrivateTests: XCTestCase {
         // In a real scenario with NSMapTable weak references,
         // the storage would automatically clean up
         XCTAssertNil(info)
-    }
-
-    // MARK: - ID Generation Tests
-
-    func testIDGenerationFromUUID() {
-        let uuid = UUID()
-        let view = EmptyView()
-
-        // Test that ID generation doesn't crash
-        // (The actual ID generation is in PortalPrivate extension methods)
     }
 
     // MARK: - Edge Case Tests
