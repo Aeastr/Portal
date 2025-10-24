@@ -18,7 +18,8 @@ let package = Package(
             targets: ["PortalPrivate"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/Aeastr/LogOutLoud.git", from: "2.1.2")
+        .package(url: "https://github.com/Aeastr/LogOutLoud.git", from: "2.1.2"),
+        .package(url: "https://github.com/Aeastr/Obfuscate.git", branch: "main")
     ],
     targets: [
         .target(
@@ -31,7 +32,9 @@ let package = Package(
         ),
         .target(
             name: "PortalView",
-            dependencies: [],
+            dependencies: [
+                .product(name: "Obfuscate", package: "Obfuscate")
+            ],
             path: "Sources/PortalView"
         ),
         .target(
