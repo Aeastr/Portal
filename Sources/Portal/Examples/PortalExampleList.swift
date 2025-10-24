@@ -105,7 +105,7 @@ public struct PortalExampleList: View {
             .portalTransition(
                 item: $selectedItem,
                 config: .init(
-                    animation: PortalAnimation(portal_animationExample)
+                    animation: PortalAnimation(portalAnimationExample)
                 )
             ) { item in
                 Group {

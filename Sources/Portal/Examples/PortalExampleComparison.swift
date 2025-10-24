@@ -172,7 +172,7 @@ public struct PortalExampleComparison: View {
             }
             .portalTransition(
             id: "portalDemo",
-            config: .init(animation: PortalAnimation(portal_animationExample)),
+            config: .init(animation: PortalAnimation(portalAnimationExample)),
             isActive: $showPortalSheet
         ) {
             AnimatedLayer(portalID: "portalDemo") {
