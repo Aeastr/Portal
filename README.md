@@ -69,13 +69,13 @@ The wiki is included as a git submodule at `/wiki`, so you get all the docs when
   
 ## Package Targets
 
-- **`Portal`** – Core transition system using standard SwiftUI APIs. Separate view instances allow different sizes at source/destination. **✅ App Store safe.**
+- **`Portal`** – Core transition system using standard SwiftUI APIs. Separate view instances allow different sizes at source/destination.
 
-- **`PortalPrivate`** – Portal transitions powered by view mirroring. Single shared instance with perfect state preservation but same-size constraint. **⚠️ Private API (obfuscated).**
+- **`PortalFlowingHeader`** – Scroll-based header transitions that flow into the navigation bar. Smooth, native-feeling animations for polished iOS experiences. (iOS 18.0+) 
 
-- **`PortalView`** – Low-level `_UIPortalView` wrapper for direct UIKit integration. **⚠️ Private API (obfuscated).**
+- **`PortalPrivate`** – Portal transitions powered by view mirroring. Single shared instance with perfect state preservation but same-size constraint. (⚠️ Obfuscated Private API)
 
-**For most users:** Just `import Portal`. The other targets are experimental and intended for advanced scenarios requiring view instance sharing.
+- **`PortalView`** – Low-level `_UIPortalView` wrapper for direct UIKit integration.  (⚠️ Obfuscated Private API)
 
 
 ## Examples
