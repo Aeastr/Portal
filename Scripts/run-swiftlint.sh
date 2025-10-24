@@ -3,7 +3,7 @@
 # SwiftLint runner script for Portal package
 # Can be called from Xcode build phase, CI/CD, or pre-commit hooks
 
-set -e
+set -euo pipefail
 
 # Colors for output
 RED='\033[0;31m'

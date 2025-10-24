@@ -1,3 +1,12 @@
+//
+//  PortalInfo.swift
+//  Portal
+//
+//  Created by Aether, 2025.
+//
+//  Copyright © 2025 Aether. All rights reserved.
+//  Licensed under the MIT License.
+//
 import SwiftUI
 
 /// A data record that encapsulates all information needed for a single portal animation.

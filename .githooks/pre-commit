@@ -2,6 +2,9 @@
 
 # Pre-commit hook to auto-fix SwiftLint issues before committing
 
+# Don't use set -e as we want to handle errors ourselves
+set -uo pipefail
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'

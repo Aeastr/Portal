@@ -2,7 +2,7 @@
 
 # Script to set up Git hooks for the Portal project
 
-set -e
+set -euo pipefail
 
 # Colors for output
 GREEN='\033[0;32m'

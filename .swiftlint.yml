@@ -115,7 +115,18 @@ trailing_whitespace:
 vertical_whitespace:
   max_empty_lines: 2
 
-# file_header - disabled as not all files follow the same pattern
+file_header:
+  required_pattern: |
+    \/\/
+    \/\/  .*\.swift
+    \/\/  Portal
+    \/\/
+    \/\/  Created by .*, [0-9]{4}\.
+    \/\/
+    \/\/  Copyright © [0-9]{4} .*\. All rights reserved\.
+    \/\/  Licensed under the MIT License\.
+    \/\//antml:parameter>
+</invoke>
 
 custom_rules:
   no_hardcoded_delays:

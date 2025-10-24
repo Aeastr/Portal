@@ -134,6 +134,35 @@ All PRs are validated by CI:
 
 Please address any CI failures before merging.
 
+## Troubleshooting
+
+Common issues and solutions:
+
+### SwiftLint Issues
+
+- **SwiftLint not found**: Install with `brew install swiftlint`
+- **Hooks not running**: Run `./Scripts/setup-hooks.sh` to configure Git hooks
+- **CI failing**: Run `./Scripts/run-swiftlint.sh` locally first to catch issues
+- **Auto-fix not working**: Run `swiftlint --fix --config .swiftlint.yml` manually
+- **Too many violations**: Focus on errors first (red), warnings (yellow) can be addressed later
+
+### Build Issues
+
+- **Swift version mismatch**: Ensure you're using Xcode 15+ with Swift 5.9+
+- **Package resolution failed**: Try `swift package resolve` or clean build folder
+- **Missing dependencies**: Run `swift package update`
+
+### Git Hook Issues
+
+- **Permission denied**: Run `chmod +x .githooks/*` and `chmod +x Scripts/*.sh`
+- **Hooks not executing**: Check that `git config core.hooksPath` points to `.githooks`
+- **Commit blocked by linting**: Use `git commit --no-verify` to bypass (use sparingly!)
+### Testing Issues
+
+- **Examples not building**: Ensure `#if DEBUG` wrapper is present
+- **Portal transitions not working**: Check that `PortalContainer` wraps your root view
+- **Memory leaks**: Weak references are intentional for portal cleanup
+
 ## License
 
 By contributing, you agree that your contributions will be licensed under the MIT License.
