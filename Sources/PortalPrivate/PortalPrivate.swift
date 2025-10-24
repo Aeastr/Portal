@@ -272,13 +272,18 @@ public extension View {
     /// ```swift
     /// .portalPrivateTransition(
     ///     id: "myView",
-    ///     isActive: $showDetail
+    ///     isActive: $showDetail,
+    ///     hidesSource: true
     /// )
     /// ```
     func portalPrivateTransition(
         id: String,
         config: PortalTransitionConfig = .init(),
         isActive: Binding<Bool>,
+        hidesSource: Bool = false,
+        matchesAlpha: Bool = true,
+        matchesTransform: Bool = true,
+        matchesPosition: Bool = false,
         completion: @escaping (Bool) -> Void = { _ in }
     ) -> some View {
         self.modifier(
@@ -286,6 +291,10 @@ public extension View {
                 id: id,
                 config: config,
                 isActive: isActive,
+                hidesSource: hidesSource,
+                matchesAlpha: matchesAlpha,
+                matchesTransform: matchesTransform,
+                matchesPosition: matchesPosition,
                 completion: completion
             )
         )
@@ -295,12 +304,20 @@ public extension View {
     func portalPrivateTransition<Item: Identifiable>(
         item: Binding<Item?>,
         config: PortalTransitionConfig = .init(),
+        hidesSource: Bool = false,
+        matchesAlpha: Bool = true,
+        matchesTransform: Bool = true,
+        matchesPosition: Bool = false,
         completion: @escaping (Bool) -> Void = { _ in }
     ) -> some View {
         self.modifier(
             PortalPrivateItemTransitionModifier(
                 item: item,
                 config: config,
+                hidesSource: hidesSource,
+                matchesAlpha: matchesAlpha,
+                matchesTransform: matchesTransform,
+                matchesPosition: matchesPosition,
                 completion: completion
             )
         )
@@ -324,6 +341,10 @@ public extension View {
         groupID: String,
         config: PortalTransitionConfig = .init(),
         isActive: Binding<Bool>,
+        hidesSource: Bool = false,
+        matchesAlpha: Bool = true,
+        matchesTransform: Bool = true,
+        matchesPosition: Bool = false,
         completion: @escaping (Bool) -> Void = { _ in }
     ) -> some View {
         self.modifier(
@@ -332,6 +353,10 @@ public extension View {
                 groupID: groupID,
                 config: config,
                 isActive: isActive,
+                hidesSource: hidesSource,
+                matchesAlpha: matchesAlpha,
+                matchesTransform: matchesTransform,
+                matchesPosition: matchesPosition,
                 completion: completion
             )
         )
@@ -353,6 +378,10 @@ public extension View {
         items: Binding<[Item]>,
         groupID: String,
         config: PortalTransitionConfig = .init(),
+        hidesSource: Bool = false,
+        matchesAlpha: Bool = true,
+        matchesTransform: Bool = true,
+        matchesPosition: Bool = false,
         completion: @escaping (Bool) -> Void = { _ in }
     ) -> some View {
         self.modifier(
@@ -360,6 +389,10 @@ public extension View {
                 items: items,
                 groupID: groupID,
                 config: config,
+                hidesSource: hidesSource,
+                matchesAlpha: matchesAlpha,
+                matchesTransform: matchesTransform,
+                matchesPosition: matchesPosition,
                 completion: completion
             )
         )
@@ -374,6 +407,10 @@ struct PortalPrivateTransitionModifier: ViewModifier {
     let id: String
     let config: PortalTransitionConfig
     @Binding var isActive: Bool
+    let hidesSource: Bool
+    let matchesAlpha: Bool
+    let matchesTransform: Bool
+    let matchesPosition: Bool
     let completion: (Bool) -> Void
     @Environment(CrossModel.self) private var portalModel
 
@@ -394,10 +431,10 @@ struct PortalPrivateTransitionModifier: ViewModifier {
                     portalModel.info[idx].layerView = AnyView(
                         PortalView(
                             source: container,
-                            hidesSource: false,
-                            matchesAlpha: true,
-                            matchesTransform: true,
-                            matchesPosition: false
+                            hidesSource: hidesSource,
+                            matchesAlpha: matchesAlpha,
+                            matchesTransform: matchesTransform,
+                            matchesPosition: matchesPosition
                         )
                     )
                 }
@@ -434,6 +471,10 @@ struct PortalPrivateTransitionModifier: ViewModifier {
 struct PortalPrivateItemTransitionModifier<Item: Identifiable>: ViewModifier {
     @Binding var item: Item?
     let config: PortalTransitionConfig
+    let hidesSource: Bool
+    let matchesAlpha: Bool
+    let matchesTransform: Bool
+    let matchesPosition: Bool
     let completion: (Bool) -> Void
     @Environment(CrossModel.self) private var portalModel
     @State private var lastKey: String?
@@ -474,10 +515,10 @@ struct PortalPrivateItemTransitionModifier<Item: Identifiable>: ViewModifier {
                         portalModel.info[idx].layerView = AnyView(
                             PortalView(
                                 source: container,
-                                hidesSource: false,  // Don't hide source during animation
-                                matchesAlpha: true,
-                                matchesTransform: true,
-                                matchesPosition: false
+                                hidesSource: hidesSource,
+                                matchesAlpha: matchesAlpha,
+                                matchesTransform: matchesTransform,
+                                matchesPosition: matchesPosition
                             )
                         )
                     }
@@ -525,6 +566,10 @@ struct MultiIDPortalPrivateTransitionModifier: ViewModifier {
     let groupID: String
     let config: PortalTransitionConfig
     @Binding var isActive: Bool
+    let hidesSource: Bool
+    let matchesAlpha: Bool
+    let matchesTransform: Bool
+    let matchesPosition: Bool
     let completion: (Bool) -> Void
     @Environment(CrossModel.self) private var portalModel
 
@@ -557,10 +602,10 @@ struct MultiIDPortalPrivateTransitionModifier: ViewModifier {
                             portalModel.info[idx].layerView = AnyView(
                                 PortalView(
                                     source: container,
-                                    hidesSource: false,
-                                    matchesAlpha: true,
-                                    matchesTransform: true,
-                                    matchesPosition: false
+                                    hidesSource: hidesSource,
+                                    matchesAlpha: matchesAlpha,
+                                    matchesTransform: matchesTransform,
+                                    matchesPosition: matchesPosition
                                 )
                             )
                         }
@@ -623,6 +668,10 @@ struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifie
     @Binding var items: [Item]
     let groupID: String
     let config: PortalTransitionConfig
+    let hidesSource: Bool
+    let matchesAlpha: Bool
+    let matchesTransform: Bool
+    let matchesPosition: Bool
     let completion: (Bool) -> Void
     @Environment(CrossModel.self) private var portalModel
     @State private var lastKeys: Set<String> = []
@@ -680,10 +729,10 @@ struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifie
                             portalModel.info[idx].layerView = AnyView(
                                 PortalView(
                                     source: container,
-                                    hidesSource: false,
-                                    matchesAlpha: true,
-                                    matchesTransform: true,
-                                    matchesPosition: false
+                                    hidesSource: hidesSource,
+                                    matchesAlpha: matchesAlpha,
+                                    matchesTransform: matchesTransform,
+                                    matchesPosition: matchesPosition
                                 )
                             )
                         }
@@ -752,15 +801,35 @@ struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifie
 /// A destination view that shows a portal of the private source
 public struct PortalPrivateDestination: View {
     let id: String
+    let hidesSource: Bool
+    let matchesAlpha: Bool
+    let matchesTransform: Bool
+    let matchesPosition: Bool
     @Environment(CrossModel.self) private var portalModel
     @Environment(\.portalDebugOverlays) private var debugOverlaysEnabled
 
-    public init(id: String) {
+    public init(
+        id: String,
+        hidesSource: Bool = false,
+        matchesAlpha: Bool = true,
+        matchesTransform: Bool = true,
+        matchesPosition: Bool = false
+    ) {
         self.id = id
+        self.hidesSource = hidesSource
+        self.matchesAlpha = matchesAlpha
+        self.matchesTransform = matchesTransform
+        self.matchesPosition = matchesPosition
     }
 
     /// Creates a destination for a private portal using an Identifiable item's ID
-    public init<Item: Identifiable>(item: Item) {
+    public init<Item: Identifiable>(
+        item: Item,
+        hidesSource: Bool = false,
+        matchesAlpha: Bool = true,
+        matchesTransform: Bool = true,
+        matchesPosition: Bool = false
+    ) {
         let key: String
         if let uuid = item.id as? UUID {
             key = uuid.uuidString
@@ -768,6 +837,10 @@ public struct PortalPrivateDestination: View {
             key = "\(item.id)"
         }
         self.id = key
+        self.hidesSource = hidesSource
+        self.matchesAlpha = matchesAlpha
+        self.matchesTransform = matchesTransform
+        self.matchesPosition = matchesPosition
     }
 
     public var body: some View {
@@ -780,13 +853,13 @@ public struct PortalPrivateDestination: View {
                 // Destination should be visible after animation completes (opposite of hideView)
                 let opacity = info.hideView ? 1 : 0
 
-                // Show portal of the source
+                // Show portal of the source with custom settings
                 PortalView(
                     source: container,
-                    hidesSource: false,
-                    matchesAlpha: true,
-                    matchesTransform: true,
-                    matchesPosition: false
+                    hidesSource: hidesSource,
+                    matchesAlpha: matchesAlpha,
+                    matchesTransform: matchesTransform,
+                    matchesPosition: matchesPosition
                 )
                 .opacity(Double(opacity))
                 .overlay(
