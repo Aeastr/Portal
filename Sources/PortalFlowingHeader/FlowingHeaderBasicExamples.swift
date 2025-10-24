@@ -11,7 +11,7 @@ import SwiftUI
 @available(iOS 18.0, *)
 public struct FlowingHeaderExample: View {
     public init() {}
-    
+
     public var body: some View {
         NavigationStack {
             ScrollView {
@@ -20,7 +20,7 @@ public struct FlowingHeaderExample: View {
                     systemImage: "photo.on.rectangle.angled",
                     subtitle: "My Collection"
                 )
-                
+
                 LazyVStack(spacing: 12) {
                     ForEach(Self.samplePhotos) { photo in
                         HStack {
@@ -32,7 +32,7 @@ public struct FlowingHeaderExample: View {
                                         .foregroundColor(.white)
                                         .font(.title2)
                                 }
-                            
+
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(photo.name)
                                     .font(.headline)
@@ -40,9 +40,9 @@ public struct FlowingHeaderExample: View {
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
                             }
-                            
+
                             Spacer()
-                            
+
                             Image(systemName: "chevron.right")
                                 .foregroundColor(.secondary)
                                 .font(.footnote)
@@ -65,7 +65,7 @@ public struct FlowingHeaderExample: View {
 @available(iOS 18.0, *)
 public struct FlowingHeaderCustomViewExample: View {
     public init() {}
-    
+
     @ViewBuilder
     private var profileAvatar: some View {
         ZStack {
@@ -76,14 +76,14 @@ public struct FlowingHeaderCustomViewExample: View {
                     endPoint: .bottomTrailing
                 ))
                 .frame(width: 80, height: 80)
-            
+
             Image(systemName: FlowingHeaderExample.sampleUser.avatar)
                 .font(.system(size: 32))
                 .foregroundColor(.white)
         }
     }
-    
-    @ViewBuilder 
+
+    @ViewBuilder
     private var compactAvatar: some View {
         ZStack {
             Circle()
@@ -93,25 +93,25 @@ public struct FlowingHeaderCustomViewExample: View {
                     endPoint: .bottomTrailing
                 ))
                 .frame(width: 32, height: 32)
-            
+
             Image(systemName: FlowingHeaderExample.sampleUser.avatar)
                 .font(.system(size: 16))
                 .foregroundColor(.white)
         }
     }
-    
+
     public var body: some View {
         NavigationStack {
             ScrollView {
                 FlowingHeaderView(FlowingHeaderExample.sampleUser.name, subtitle: FlowingHeaderExample.sampleUser.username) {
                     profileAvatar
                 }
-                
+
                 VStack(alignment: .leading, spacing: 24) {
                     Text(FlowingHeaderExample.sampleUser.bio)
                         .font(.body)
                         .padding(.horizontal)
-                    
+
                     HStack(spacing: 40) {
                         VStack {
                             Text("\(FlowingHeaderExample.sampleUser.posts)")
@@ -120,7 +120,7 @@ public struct FlowingHeaderCustomViewExample: View {
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
-                        
+
                         VStack {
                             Text("\(FlowingHeaderExample.sampleUser.followers)")
                                 .font(.title2.bold())
@@ -128,7 +128,7 @@ public struct FlowingHeaderCustomViewExample: View {
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
-                        
+
                         VStack {
                             Text("\(FlowingHeaderExample.sampleUser.following)")
                                 .font(.title2.bold())
@@ -138,7 +138,7 @@ public struct FlowingHeaderCustomViewExample: View {
                         }
                     }
                     .padding(.horizontal)
-                    
+
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 2) {
                         ForEach(FlowingHeaderExample.samplePhotos.prefix(18)) { photo in
                             RoundedRectangle(cornerRadius: 4)
@@ -166,12 +166,12 @@ public struct FlowingHeaderCustomViewExample: View {
 @available(iOS 18.0, *)
 public struct FlowingHeaderTextOnlyExample: View {
     public init() {}
-    
+
     public var body: some View {
         NavigationStack {
             ScrollView {
                 FlowingHeaderView("Analytics", subtitle: "Business Intelligence Dashboard")
-                
+
                 LazyVStack(spacing: 16) {
                     ForEach(FlowingHeaderExample.sampleStats, id: \.title) { stat in
                         HStack {
@@ -179,17 +179,17 @@ public struct FlowingHeaderTextOnlyExample: View {
                                 Text(stat.title)
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
-                                
+
                                 Text(stat.value)
                                     .font(.title2.bold())
-                                
+
                                 Text(stat.change)
                                     .font(.caption)
                                     .foregroundColor(stat.color)
                             }
-                            
+
                             Spacer()
-                            
+
                             RoundedRectangle(cornerRadius: 8)
                                 .fill(stat.color.opacity(0.2))
                                 .frame(width: 60, height: 40)
@@ -215,7 +215,7 @@ public struct FlowingHeaderTextOnlyExample: View {
 @available(iOS 18.0, *)
 public struct FlowingHeaderBundleImageExample: View {
     public init() {}
-    
+
     public var body: some View {
         NavigationStack {
             ScrollView {
@@ -224,7 +224,7 @@ public struct FlowingHeaderBundleImageExample: View {
                     image: Image(systemName: "paintbrush.pointed.fill"),
                     subtitle: "Digital Collection"
                 )
-                
+
                 LazyVStack(spacing: 16) {
                     ForEach(FlowingHeaderExample.sampleArtwork) { artwork in
                         HStack(spacing: 16) {
@@ -236,22 +236,22 @@ public struct FlowingHeaderBundleImageExample: View {
                                         .foregroundColor(.white)
                                         .font(.title2)
                                 }
-                            
+
                             VStack(alignment: .leading, spacing: 6) {
                                 Text(artwork.title)
                                     .font(.headline)
-                                
+
                                 Text("by \(artwork.artist)")
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
-                                
+
                                 Text(artwork.year)
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
-                            
+
                             Spacer()
-                            
+
                             Button {
                                 // Action
                             } label: {

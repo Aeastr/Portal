@@ -123,7 +123,7 @@ public struct FlowingHeaderView<Content: View>: View {
     public var body: some View {
         VStack(spacing: hasVisualContent ? 12 : 8) {
             let progress = (titleProgress * 4)
-            
+
             // Show icon, image, or custom content
             if let content = content {
                 content
@@ -155,7 +155,7 @@ public struct FlowingHeaderView<Content: View>: View {
                         return [AnchorKeyID(kind: "source", id: title, type: "accessory"): anchor]
                     }
             }
-            
+
             VStack(spacing: 4) {
                 // Source title (always invisible for layout)
                 Text(title)
@@ -164,7 +164,7 @@ public struct FlowingHeaderView<Content: View>: View {
                     .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
                         return [AnchorKeyID(kind: "source", id: title, type: "title"): anchor]
                     }
-                    
+
                 Text(subtitle)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
@@ -176,7 +176,7 @@ public struct FlowingHeaderView<Content: View>: View {
         .navigationBarTitleDisplayMode(.inline)
         #endif
     }
-    
+
     private var hasVisualContent: Bool {
         content != nil || icon != nil || image != nil
     }

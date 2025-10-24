@@ -10,7 +10,6 @@ import SwiftUI
 /// Mock data structures for FlowingHeader examples
 @available(iOS 18.0, *)
 public extension FlowingHeaderExample {
-    
     /// A mock photo with basic properties for demonstration purposes
     struct MockPhoto: Identifiable {
         public let id = UUID()
@@ -18,7 +17,7 @@ public extension FlowingHeaderExample {
         let category: String
         let color: Color
     }
-    
+
     /// Mock user data
     struct MockUser {
         let name: String
@@ -29,7 +28,7 @@ public extension FlowingHeaderExample {
         let posts: Int
         let avatar: String
     }
-    
+
     /// Mock statistics data
     struct MockStats {
         let title: String
@@ -37,7 +36,7 @@ public extension FlowingHeaderExample {
         let change: String
         let color: Color
     }
-    
+
     /// Mock artwork data for gallery examples
     struct MockArtwork: Identifiable {
         public let id = UUID()
@@ -46,7 +45,7 @@ public extension FlowingHeaderExample {
         let year: String
         let color: Color
     }
-    
+
     /// Header style variations for multi-style example
     enum HeaderStyle: CaseIterable {
         case standard, compact, minimal
@@ -56,7 +55,6 @@ public extension FlowingHeaderExample {
 /// Sample data collections - lazily computed to reduce memory impact
 @available(iOS 18.0, *)
 public extension FlowingHeaderExample {
-    
     /// Sample photos for gallery examples
     /// Note: Lazily computed to reduce initial memory footprint
     static var samplePhotos: [MockPhoto] {
@@ -93,7 +91,7 @@ public extension FlowingHeaderExample {
             MockPhoto(name: "Creative Vision", category: "Art", color: .pink)
         ]
     }
-    
+
     /// Sample user data
     static let sampleUser = MockUser(
         name: "Jane Photographer",
@@ -104,7 +102,7 @@ public extension FlowingHeaderExample {
         posts: 1247,
         avatar: "person.crop.circle.fill"
     )
-    
+
     /// Sample statistics data
     static var sampleStats: [MockStats] {
         [
@@ -114,7 +112,7 @@ public extension FlowingHeaderExample {
             MockStats(title: "Sessions", value: "12,890", change: "+15.7%", color: .purple)
         ]
     }
-    
+
     /// Sample artwork data
     static var sampleArtwork: [MockArtwork] {
         [

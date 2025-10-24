@@ -11,9 +11,9 @@ import SwiftUI
 @available(iOS 18.0, *)
 public struct FlowingHeaderMultiStyleExample: View {
     public init() {}
-    
+
     @State private var currentStyle: FlowingHeaderExample.HeaderStyle = .standard
-    
+
     public var body: some View {
         NavigationStack {
             ScrollView {
@@ -27,7 +27,7 @@ public struct FlowingHeaderMultiStyleExample: View {
                     .pickerStyle(.segmented)
                     .padding(.horizontal)
                     .padding(.bottom, 20)
-                    
+
                     // Dynamic header based on selected style
                     switch currentStyle {
                     case .standard:
@@ -45,7 +45,7 @@ public struct FlowingHeaderMultiStyleExample: View {
                     case .minimal:
                         FlowingHeaderView("Settings", subtitle: "")
                     }
-                    
+
                     settingsContent
                 }
             }
@@ -57,7 +57,7 @@ public struct FlowingHeaderMultiStyleExample: View {
         }
         .flowingHeader("Settings", systemImage: currentStyle != .minimal ? "gearshape.fill" : nil)
     }
-    
+
     @ViewBuilder
     private var settingsContent: some View {
         LazyVStack(spacing: 0) {
@@ -66,19 +66,19 @@ public struct FlowingHeaderMultiStyleExample: View {
                 settingRow("Text Size", value: "Medium", icon: "textformat.size")
                 settingRow("Accent Color", value: "Blue", icon: "circle.fill")
             }
-            
+
             settingGroup("Notifications") {
                 settingRow("Push Notifications", value: "On", icon: "bell")
                 settingRow("Email Updates", value: "Weekly", icon: "envelope")
                 settingRow("Sound", value: "Enabled", icon: "speaker.2")
             }
-            
+
             settingGroup("Privacy") {
                 settingRow("Location Services", value: "When Using", icon: "location")
                 settingRow("Analytics", value: "Off", icon: "chart.bar")
                 settingRow("Crash Reports", value: "On", icon: "exclamationmark.triangle")
             }
-            
+
             settingGroup("About") {
                 settingRow("Version", value: "1.0.0", icon: "info.circle")
                 settingRow("Build", value: "100", icon: "hammer")
@@ -87,7 +87,7 @@ public struct FlowingHeaderMultiStyleExample: View {
         }
         .padding(.horizontal)
     }
-    
+
     @ViewBuilder
     private func settingGroup<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -97,7 +97,7 @@ public struct FlowingHeaderMultiStyleExample: View {
                 .foregroundColor(.secondary)
                 .padding(.leading, 16)
                 .padding(.top, 20)
-            
+
             VStack(spacing: 1) {
                 content()
             }
@@ -105,23 +105,23 @@ public struct FlowingHeaderMultiStyleExample: View {
             .cornerRadius(10)
         }
     }
-    
+
     @ViewBuilder
     private func settingRow(_ title: String, value: String, icon: String) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .foregroundColor(.blue)
                 .frame(width: 24)
-            
+
             Text(title)
                 .font(.body)
-            
+
             Spacer()
-            
+
             Text(value)
                 .font(.body)
                 .foregroundColor(.secondary)
-            
+
             Image(systemName: "chevron.right")
                 .font(.caption)
                 .foregroundColor(.secondary)
@@ -140,10 +140,10 @@ public struct FlowingHeaderMultiStyleExample: View {
 @available(iOS 18.0, *)
 public struct FlowingHeaderNavigationExample: View {
     public init() {}
-    
+
     @State private var selectedTab = 0
     @State private var searchText = ""
-    
+
     public var body: some View {
         TabView(selection: $selectedTab) {
             NavigationStack {
@@ -153,7 +153,7 @@ public struct FlowingHeaderNavigationExample: View {
                         systemImage: "photo.stack",
                         subtitle: "Your memories"
                     )
-                    
+
                     searchBar
                     photoGrid
                 }
@@ -166,7 +166,7 @@ public struct FlowingHeaderNavigationExample: View {
                 Text("Gallery")
             }
             .tag(0)
-            
+
             NavigationStack {
                 ScrollView {
                     FlowingHeaderView(
@@ -174,7 +174,7 @@ public struct FlowingHeaderNavigationExample: View {
                         systemImage: "person.crop.circle",
                         subtitle: FlowingHeaderExample.sampleUser.username
                     )
-                    
+
                     profileContent
                 }
                 .environment(\.flowingHeaderLayout, .vertical)
@@ -188,13 +188,13 @@ public struct FlowingHeaderNavigationExample: View {
             .tag(1)
         }
     }
-    
+
     @ViewBuilder
     private var searchBar: some View {
         HStack {
             Image(systemName: "magnifyingglass")
                 .foregroundColor(.secondary)
-            
+
             TextField("Search photos...", text: $searchText)
                 .textFieldStyle(.plain)
         }
@@ -204,7 +204,7 @@ public struct FlowingHeaderNavigationExample: View {
         .padding(.horizontal)
         .padding(.bottom, 16)
     }
-    
+
     @ViewBuilder
     private var photoGrid: some View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 3), spacing: 2) {
@@ -233,7 +233,7 @@ public struct FlowingHeaderNavigationExample: View {
             photoDetail(for: photoId)
         }
     }
-    
+
     @ViewBuilder
     private var profileContent: some View {
         VStack(spacing: 24) {
@@ -246,7 +246,7 @@ public struct FlowingHeaderNavigationExample: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
-                
+
                 VStack(spacing: 4) {
                     Text("\(FlowingHeaderExample.sampleUser.followers)")
                         .font(.title2.bold())
@@ -254,7 +254,7 @@ public struct FlowingHeaderNavigationExample: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
-                
+
                 VStack(spacing: 4) {
                     Text("\(FlowingHeaderExample.sampleUser.following)")
                         .font(.title2.bold())
@@ -264,13 +264,13 @@ public struct FlowingHeaderNavigationExample: View {
                 }
             }
             .padding(.horizontal)
-            
+
             // Bio
             Text(FlowingHeaderExample.sampleUser.bio)
                 .font(.body)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
-            
+
             // Action buttons
             HStack(spacing: 12) {
                 Button("Edit Profile") {
@@ -278,14 +278,14 @@ public struct FlowingHeaderNavigationExample: View {
                 }
                 .buttonStyle(.bordered)
                 .buttonBorderShape(.roundedRectangle(radius: 8))
-                
+
                 Button("Share Profile") {
                     // Action
                 }
                 .buttonStyle(.bordered)
                 .buttonBorderShape(.roundedRectangle(radius: 8))
             }
-            
+
             // Recent photos
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 1), count: 3), spacing: 1) {
                 ForEach(FlowingHeaderExample.samplePhotos.prefix(12)) { photo in
@@ -303,18 +303,18 @@ public struct FlowingHeaderNavigationExample: View {
             .padding(.horizontal)
         }
     }
-    
+
     private var filteredPhotos: [FlowingHeaderExample.MockPhoto] {
         if searchText.isEmpty {
             return FlowingHeaderExample.samplePhotos
         } else {
-            return FlowingHeaderExample.samplePhotos.filter { 
+            return FlowingHeaderExample.samplePhotos.filter {
                 $0.name.localizedCaseInsensitiveContains(searchText) ||
                 $0.category.localizedCaseInsensitiveContains(searchText)
             }
         }
     }
-    
+
     @ViewBuilder
     private func photoDetail(for photoId: UUID) -> some View {
         if let photo = FlowingHeaderExample.samplePhotos.first(where: { $0.id == photoId }) {
@@ -322,27 +322,27 @@ public struct FlowingHeaderNavigationExample: View {
                 VStack(spacing: 20) {
                     RoundedRectangle(cornerRadius: 16)
                         .fill(photo.color.gradient)
-                        .aspectRatio(4/3, contentMode: .fit)
+                        .aspectRatio(4 / 3, contentMode: .fit)
                         .overlay {
                             Image(systemName: "photo")
                                 .font(.system(size: 60))
                                 .foregroundColor(.white)
                         }
-                    
+
                     VStack(alignment: .leading, spacing: 12) {
                         Text(photo.name)
                             .font(.title.bold())
-                        
+
                         Text(photo.category)
                             .font(.headline)
                             .foregroundColor(.secondary)
-                        
+
                         Text("This is a beautiful example of \(photo.category.lowercased()) photography. The composition and color palette work together to create a compelling visual narrative.")
                             .font(.body)
                             .lineLimit(nil)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    
+
                     Spacer()
                 }
                 .padding()

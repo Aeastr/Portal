@@ -85,7 +85,7 @@ internal struct FlowingHeaderDestinationWithSystemImage: ViewModifier {
                 }
             }
     }
-    
+
     private var accessoryView: some View {
         Image(systemName: systemImage)
             .font(.headline)
@@ -94,7 +94,7 @@ internal struct FlowingHeaderDestinationWithSystemImage: ViewModifier {
                 [AnchorKeyID(kind: "destination", id: title, type: "accessory"): anchor]
             }
     }
-    
+
     private var titleView: some View {
         Text(title)
             .font(.headline.weight(.semibold))
@@ -132,7 +132,7 @@ internal struct FlowingHeaderDestinationWithCustomView<DestinationView: View>: V
                 }
             }
     }
-    
+
     private var accessoryView: some View {
         destinationView
             .opacity(0)
@@ -140,7 +140,7 @@ internal struct FlowingHeaderDestinationWithCustomView<DestinationView: View>: V
                 [AnchorKeyID(kind: "destination", id: title, type: "accessory"): anchor]
             }
     }
-    
+
     private var titleView: some View {
         Text(title)
             .font(.headline.weight(.semibold))
@@ -178,7 +178,7 @@ internal struct FlowingHeaderDestinationWithImage: ViewModifier {
                 }
             }
     }
-    
+
     private var accessoryView: some View {
         image
             .resizable()
@@ -189,7 +189,7 @@ internal struct FlowingHeaderDestinationWithImage: ViewModifier {
                 [AnchorKeyID(kind: "destination", id: title, type: "accessory"): anchor]
             }
     }
-    
+
     private var titleView: some View {
         Text(title)
             .font(.headline.weight(.semibold))
@@ -252,7 +252,7 @@ public extension View {
     func flowingHeaderDestination(_ title: String, systemImage: String) -> some View {
         modifier(FlowingHeaderDestinationWithSystemImage(title: title, systemImage: systemImage))
     }
-    
+
     /// Creates destination anchors with optional system image.
     ///
     /// - Parameters:
@@ -282,7 +282,7 @@ public extension View {
             modifier(FlowingHeaderDestination(title: title))
         }
     }
-    
+
     /// Creates destination anchors for a flowing header with a custom view.
     ///
     /// Use this variant when your header includes a custom view component that should
@@ -309,7 +309,7 @@ public extension View {
     /// - Note: The custom view provided here should match the one used in your
     ///   FlowingHeaderView for consistent animation behavior.
     func flowingHeaderDestination<DestinationView: View>(
-        _ title: String, 
+        _ title: String,
         @ViewBuilder customView: () -> DestinationView
     ) -> some View {
         modifier(FlowingHeaderDestinationWithCustomView(title: title, destinationView: customView()))
@@ -362,7 +362,7 @@ public extension View {
             return AnyView(modifier(FlowingHeaderDestination(title: title)))
         }
     }
-    
+
     /// Sets the layout style for accessory views in flowing headers.
     ///
     /// Use this modifier to control how accessory views (system images, custom views, etc.)

@@ -54,9 +54,9 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
             .environment(\.systemImageFlowing, systemImage != nil && !systemImage!.isEmpty)
             .environment(\.imageFlowing, image != nil)
             .environment(\.customViewFlowing, customView != nil)
-            .onScrollPhaseChange { oldPhase, newPhase in
+            .onScrollPhaseChange { _, newPhase in
                 isScrolling = [ScrollPhase.interacting, ScrollPhase.decelerating].contains(newPhase)
-                
+
                 // When scrolling stops, snap to nearest position
                 if !isScrolling {
                     let snapTarget = titleProgress > 0.5 ? 1.0 : 0.0
@@ -67,7 +67,7 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
             }
             .onScrollGeometryChange(for: CGFloat.self) { geometry in
                 geometry.contentOffset.y
-            } action: { oldValue, newValue in
+            } action: { _, newValue in
                 scrollOffset = newValue
 
                 // Only update progress while actively scrolling
@@ -94,7 +94,7 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
 
                     // Clamp progress t ∈ [0,1]
                     let clamped = min(max(abs(titleProgress), 0), 1)
-                    let t: CGFloat = CGFloat(clamped)
+                    let t = CGFloat(clamped)
 
                     // Render title if both anchors exist
                     if titleSrcAnchor != nil && titleDstAnchor != nil {
@@ -118,9 +118,8 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
                     }
 
                     // Debug message if no anchors found
-                    if titleSrcAnchor == nil && titleDstAnchor == nil && 
-                       accessorySrcAnchor == nil && accessoryDstAnchor == nil
-                    {
+                    if titleSrcAnchor == nil && titleDstAnchor == nil &&
+                       accessorySrcAnchor == nil && accessoryDstAnchor == nil {
                         Text("none found – keys: \\(anchors.keys), looking for \\(title)")
                             .foregroundStyle(.red)
                             .background(.white)
@@ -147,8 +146,8 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
         let progress = min(1.0, (offset - transitionStartOffset) / transitionRange)
         return Double(progress)
     }
-    
-    
+
+
     /// Renders the title with animation between source and destination positions.
     private func renderTitle(
         geometry: GeometryProxy,
@@ -160,13 +159,13 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
         let srcRect = geometry[srcAnchor]
         let dstRect = geometry[dstAnchor]
 
-        let titleDynamicOffset = experimentalAvoidance 
+        let titleDynamicOffset = experimentalAvoidance
             ? calculateDynamicOffset(
-                progress: progress, 
+                progress: progress,
                 accessoryOffset: (accessorySrcAnchor != nil ? geometry[accessorySrcAnchor!].width / 4 : 0)
-            ) 
+            )
             : 0
-        
+
         let titlePosition = calculateTitlePosition(
             srcRect: srcRect,
             dstRect: dstRect,
@@ -187,7 +186,7 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
             .scaleEffect(currentScale)
             .position(x: titlePosition.x, y: titlePosition.y)
     }
-    
+
     /// Renders the accessory with animation between source and destination positions.
     private func renderAccessory(
         geometry: GeometryProxy,
@@ -200,7 +199,7 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
 
         // Calculate position with optional collision avoidance
         let baseX = srcRect.midX + (dstRect.midX - srcRect.midX) * progress
-        let x = experimentalAvoidance 
+        let x = experimentalAvoidance
             ? baseX + calculateDynamicOffset(progress: progress, accessoryOffset: -(srcRect.width / 2) / 2)
             : baseX
         let y = srcRect.midY + (dstRect.midY - srcRect.midY) * progress
@@ -242,7 +241,7 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
         let offsetMultiplier = sin(progress * .pi) // Peaks at 0.5 progress, zero at start/end
         return accessoryOffset * offsetMultiplier
     }
-    
+
     /// Calculates title position with collision avoidance offset.
     ///
     /// - Parameters:
@@ -359,7 +358,7 @@ public extension View {
                 experimentalAvoidance: experimentalAvoidance
             ))
     }
-    
+
     /// Adds a flowing header transition with optional system image.
     ///
     /// - Parameters:
@@ -475,7 +474,7 @@ public extension View {
     ///     }
     ///     .flowingHeaderDestination("Title") { /* conditional destination */ }
     /// }
-    /// .flowingHeader("Title", 
+    /// .flowingHeader("Title",
     ///     systemImage: showIcon ? "star" : nil,
     ///     image: showImage ? Image("hero") : nil,
     ///     customView: showCustom ? CustomView() : nil
@@ -485,7 +484,7 @@ public extension View {
     /// - Parameters:
     ///   - title: The title string that matches the FlowingHeaderView title
     ///   - systemImage: Optional system image that flows to navigation bar
-    ///   - image: Optional image that flows to navigation bar  
+    ///   - image: Optional image that flows to navigation bar
     ///   - customView: Optional custom view that flows to navigation bar
     ///   - transitionStartOffset: Scroll offset where transition begins (default: -20)
     ///   - transitionRange: Distance over which transition occurs (default: 40)
@@ -502,7 +501,7 @@ public extension View {
     /// - Parameters:
     ///   - title: The title string that matches the FlowingHeaderView title
     ///   - systemImage: Optional system image that flows to navigation bar
-    ///   - image: Optional image that flows to navigation bar  
+    ///   - image: Optional image that flows to navigation bar
     ///   - customView: Optional type-erased custom view that flows to navigation bar
     ///   - transitionStartOffset: Scroll offset where transition begins (default: -20)
     ///   - transitionRange: Distance over which transition occurs (default: 40)
