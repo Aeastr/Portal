@@ -1,3 +1,13 @@
+//
+//  CrossModel.swift
+//  Portal
+//
+//  Created by Aether, 2025.
+//
+//  Copyright © 2025 Aether. All rights reserved.
+//  Licensed under the MIT License.
+//
+
 import SwiftUI
 
 /// Shared model for managing Portal animations and transitions.
@@ -13,11 +23,11 @@ public class CrossModel {
     /// Array containing information about all active portal animations.
     /// Each `PortalInfo` object tracks the state of a specific portal transition.
     public var info: [PortalInfo] = []
-    
+
     /// Array containing root-level portal information.
     /// Used for managing portal hierarchies and nested portal scenarios.
     public var rootInfo: [PortalInfo] = []
-    
+
     /// Initializes a new CrossModel instance.
     /// Creates empty arrays for managing portal information.
     public init() {}

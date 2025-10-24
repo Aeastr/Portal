@@ -1,0 +1,130 @@
+# SwiftLint configuration for Portal package
+
+# Paths to include/exclude
+included:
+  - Sources
+  - Tests
+
+excluded:
+  - .build
+  - DerivedData
+  - ${PWD}/Carthage
+  - ${PWD}/Pods
+  - ${PWD}/Scripts
+  - ${PWD}/vendor
+  - ${PWD}/fastlane
+
+# Rules configuration
+disabled_rules:
+  - todo # We use TODO comments for tracking work
+  - line_length # Can be too restrictive for some documentation
+  - file_length # Some files naturally need to be longer
+  - type_body_length # Complex types may need more lines
+  - function_body_length # Some functions are necessarily complex
+
+opt_in_rules:
+  - array_init
+  - closure_end_indentation
+  - closure_spacing
+  - collection_alignment
+  - contains_over_filter_count
+  - contains_over_filter_is_empty
+  - contains_over_first_not_nil
+  - contains_over_range_nil_comparison
+  - empty_collection_literal
+  - empty_count
+  - empty_string
+  - empty_xctest_method
+  - explicit_init
+  - extension_access_modifier
+  - fallthrough
+  - fatal_error_message
+  - file_header
+  - file_name
+  - first_where
+  - flatmap_over_map_reduce
+  - identical_operands
+  - joined_default_parameter
+  - last_where
+  - legacy_random
+  - literal_expression_end_indentation
+  - multiline_function_chains
+  - multiline_literal_brackets
+  - multiline_parameters
+  - multiline_parameters_brackets
+  - operator_usage_whitespace
+  - pattern_matching_keywords
+  - prefer_self_type_over_type_of_self
+  - redundant_nil_coalescing
+  - redundant_type_annotation
+  - sorted_first_last
+  - toggle_bool
+  - trailing_closure
+  - unowned_variable_capture
+  - vertical_parameter_alignment_on_call
+  - vertical_whitespace_closing_braces
+  - vertical_whitespace_opening_braces
+  - yoda_condition
+
+# Rule parameter configuration
+identifier_name:
+  min_length: 2
+  max_length:
+    warning: 60
+    error: 80
+  excluded:
+    - id
+    - ID
+    - x
+    - y
+    - z
+    - i
+    - j
+    - k
+
+type_name:
+  min_length: 3
+  max_length:
+    warning: 60
+    error: 80
+
+function_parameter_count:
+  warning: 8
+  error: 10
+
+cyclomatic_complexity:
+  warning: 15
+  error: 20
+
+nesting:
+  type_level:
+    warning: 3
+    error: 6
+  function_level:
+    warning: 5
+    error: 10
+
+large_tuple:
+  warning: 3
+  error: 4
+
+trailing_whitespace:
+  ignores_empty_lines: false
+  ignores_comments: false
+
+vertical_whitespace:
+  max_empty_lines: 2
+
+file_header:
+  required_pattern: "^\\/\\/\\n\\/\\/  .*\\.swift\\n\\/\\/  Portal\\n\\/\\/\\n\\/\\/  Created by .*, [0-9]{4}\\.\\n\\/\\/\\n\\/\\/  Copyright © [0-9]{4} .*\\. All rights reserved\\.\\n\\/\\/  Licensed under the MIT License\\."
+
+custom_rules:
+  no_hardcoded_delays:
+    name: "No Hardcoded Delays"
+    # Note: This regex is intentionally broad and may flag animation design parameters.
+    # It catches TimeInterval/Double/CGFloat literals to encourage use of PortalConstants.
+    # False positives (e.g., animation choreography values) are acceptable as warnings
+    # since package users won't run SwiftLint on library internals.
+    regex: '(?<!PortalConstants\.)(?:TimeInterval|Double|CGFloat)\s*\(\s*0\.[1-9]'
+    message: "Use PortalConstants for delay values instead of hardcoding them"
+    severity: warning

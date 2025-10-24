@@ -1,15 +1,25 @@
+//
+//  PortalExampleList.swift
+//  Portal
+//
+//  Created by Aether, 2025.
+//
+//  Copyright © 2025 Aether. All rights reserved.
+//  Licensed under the MIT License.
+//
+
 #if DEBUG
 import SwiftUI
 import LogOutLoudConsole
 
 /// Portal list example showing photo transitions in a native SwiftUI List
-public struct PortalExample_List: View {
-    @State private var selectedItem: PortalExample_ListItem? = nil
-    @State private var listItems: [PortalExample_ListItem] = PortalExample_List.generateLargeDataSet()
+public struct PortalExampleList: View {
+    @State private var selectedItem: PortalExampleListItem?
+    @State private var listItems: [PortalExampleListItem] = PortalExampleList.generateLargeDataSet()
     @State private var showConsole = false
-    
+
     public init() {}
-    
+
     public var body: some View {
         PortalContainer {
             NavigationView {
@@ -90,15 +100,14 @@ public struct PortalExample_List: View {
                 }
             }
             .sheet(item: $selectedItem) { item in
-                PortalExample_ListDetail(item: item)
+                PortalExampleListDetail(item: item)
             }
             .portalTransition(
                 item: $selectedItem,
                 config: .init(
-                    animation: PortalAnimation(portal_animationExample)
+                    animation: PortalAnimation(portalAnimationExample)
                 )
             ) { item in
-
                 Group {
                     RoundedRectangle(cornerRadius: 12)
                         .fill(item.color.gradient)
@@ -108,7 +117,6 @@ public struct PortalExample_List: View {
                         .font(.system(size: 24, weight: .medium))
                         .foregroundColor(.white)
                 )
-
             }
         }
         .sheet(isPresented: $showConsole) {
@@ -123,66 +131,72 @@ public struct PortalExample_List: View {
             )
         }
     }
-    
-    private static func generateLargeDataSet() -> [PortalExample_ListItem] {
-        let baseItems: [(String, String, Color, String)] = [
-            ("Mountain Peak", "Breathtaking views from the summit", Color.blue, "mountain.2.fill"),
-            ("Ocean Waves", "Peaceful sounds of the sea", Color.cyan, "water.waves"),
-            ("Forest Trail", "Winding path through ancient trees", Color.green, "tree.fill"),
-            ("Desert Sunset", "Golden hour in the wilderness", Color.orange, "sun.max.fill"),
-            ("City Lights", "Urban landscape at night", Color.purple, "building.2.fill"),
-            ("Starry Sky", "Countless stars above", Color.indigo, "sparkles"),
-            ("Autumn Leaves", "Colorful foliage in fall", Color.red, "leaf.fill"),
-            ("Snow Covered", "Winter wonderland scene", Color.gray, "snowflake"),
-            ("Cherry Blossoms", "Spring flowers in bloom", Color.pink, "leaf.circle.fill"),
-            ("Lightning Storm", "Electric display in the sky", Color.yellow, "bolt.fill"),
-            ("Coral Reef", "Underwater paradise", Color.teal, "fish.fill"),
-            ("Northern Lights", "Aurora dancing overhead", Color.mint, "moon.stars.fill"),
-            ("Waterfall", "Cascading water over rocks", Color.blue, "drop.fill"),
-            ("Meadow Flowers", "Wildflowers in summer", Color.green, "tree"),
-            ("Rocky Coast", "Waves crashing on cliffs", Color.brown, "mountain.2.circle.fill"),
-            ("Foggy Morning", "Mist rolling over hills", Color.gray, "cloud.fog.fill"),
-            ("Rainbow Arc", "Colors after the rain", Color.red, "rainbow"),
-            ("Sand Dunes", "Endless waves of sand", Color.yellow, "triangle.fill"),
-            ("Ice Cave", "Frozen crystal formations", Color.cyan, "snowflake.circle.fill"),
-            ("Volcano Peak", "Majestic volcanic landscape", Color.red, "flame.fill"),
-            ("Bamboo Forest", "Tall green stalks swaying", Color.green, "leaf.arrow.triangle.circlepath"),
-            ("Prairie Wind", "Grass dancing in breeze", Color.yellow, "wind"),
-            ("Glacier View", "Ancient ice formations", Color.blue, "snowflake.road.lane"),
-            ("Sunset Beach", "Golden light on sand", Color.orange, "sun.horizon.fill"),
-            ("Moonlit Lake", "Reflection on still water", Color.indigo, "moon.circle.fill")
+
+    private struct ItemData {
+        let title: String
+        let subtitle: String
+        let color: Color
+        let icon: String
+    }
+
+    private static func generateLargeDataSet() -> [PortalExampleListItem] {
+        let baseItems: [ItemData] = [
+            ItemData(title: "Mountain Peak", subtitle: "Breathtaking views from the summit", color: .blue, icon: "mountain.2.fill"),
+            ItemData(title: "Ocean Waves", subtitle: "Peaceful sounds of the sea", color: .cyan, icon: "water.waves"),
+            ItemData(title: "Forest Trail", subtitle: "Winding path through ancient trees", color: .green, icon: "tree.fill"),
+            ItemData(title: "Desert Sunset", subtitle: "Golden hour in the wilderness", color: .orange, icon: "sun.max.fill"),
+            ItemData(title: "City Lights", subtitle: "Urban landscape at night", color: .purple, icon: "building.2.fill"),
+            ItemData(title: "Starry Sky", subtitle: "Countless stars above", color: .indigo, icon: "sparkles"),
+            ItemData(title: "Autumn Leaves", subtitle: "Colorful foliage in fall", color: .red, icon: "leaf.fill"),
+            ItemData(title: "Snow Covered", subtitle: "Winter wonderland scene", color: .gray, icon: "snowflake"),
+            ItemData(title: "Cherry Blossoms", subtitle: "Spring flowers in bloom", color: .pink, icon: "leaf.circle.fill"),
+            ItemData(title: "Lightning Storm", subtitle: "Electric display in the sky", color: .yellow, icon: "bolt.fill"),
+            ItemData(title: "Coral Reef", subtitle: "Underwater paradise", color: .teal, icon: "fish.fill"),
+            ItemData(title: "Northern Lights", subtitle: "Aurora dancing overhead", color: .mint, icon: "moon.stars.fill"),
+            ItemData(title: "Waterfall", subtitle: "Cascading water over rocks", color: .blue, icon: "drop.fill"),
+            ItemData(title: "Meadow Flowers", subtitle: "Wildflowers in summer", color: .green, icon: "tree"),
+            ItemData(title: "Rocky Coast", subtitle: "Waves crashing on cliffs", color: .brown, icon: "mountain.2.circle.fill"),
+            ItemData(title: "Foggy Morning", subtitle: "Mist rolling over hills", color: .gray, icon: "cloud.fog.fill"),
+            ItemData(title: "Rainbow Arc", subtitle: "Colors after the rain", color: .red, icon: "rainbow"),
+            ItemData(title: "Sand Dunes", subtitle: "Endless waves of sand", color: .yellow, icon: "triangle.fill"),
+            ItemData(title: "Ice Cave", subtitle: "Frozen crystal formations", color: .cyan, icon: "snowflake.circle.fill"),
+            ItemData(title: "Volcano Peak", subtitle: "Majestic volcanic landscape", color: .red, icon: "flame.fill"),
+            ItemData(title: "Bamboo Forest", subtitle: "Tall green stalks swaying", color: .green, icon: "leaf.arrow.triangle.circlepath"),
+            ItemData(title: "Prairie Wind", subtitle: "Grass dancing in breeze", color: .yellow, icon: "wind"),
+            ItemData(title: "Glacier View", subtitle: "Ancient ice formations", color: .blue, icon: "snowflake.road.lane"),
+            ItemData(title: "Sunset Beach", subtitle: "Golden light on sand", color: .orange, icon: "sun.horizon.fill"),
+            ItemData(title: "Moonlit Lake", subtitle: "Reflection on still water", color: .indigo, icon: "moon.circle.fill")
         ]
-        
-        var items: [PortalExample_ListItem] = []
-        
+
+        var items: [PortalExampleListItem] = []
+
         // Generate 1000 items by repeating the base items with different suffixes
         for i in 0..<1000 {
             let baseIndex = i % baseItems.count
             let baseItem = baseItems[baseIndex]
             let suffix = i / baseItems.count + 1
-            
-            let item = PortalExample_ListItem(
-                title: "\(baseItem.0) \(suffix)",
-                description: "\(baseItem.1) - Item #\(i + 1)",
-                color: baseItem.2,
-                icon: baseItem.3
+
+            let item = PortalExampleListItem(
+                title: "\(baseItem.title) \(suffix)",
+                description: "\(baseItem.subtitle) - Item #\(i + 1)",
+                color: baseItem.color,
+                icon: baseItem.icon
             )
             items.append(item)
         }
-        
+
         return items
     }
-    
 }
 
 /// List item model for the Portal example
-public struct PortalExample_ListItem: Identifiable {
+public struct PortalExampleListItem: Identifiable {
     public let id = UUID()
     public let title: String
     public let description: String
     public let color: Color
     public let icon: String
-    
+
     public init(title: String, description: String, color: Color, icon: String) {
         self.title = title
         self.description = description
@@ -191,16 +205,16 @@ public struct PortalExample_ListItem: Identifiable {
     }
 }
 
-private struct PortalExample_ListDetail: View {
-    let item: PortalExample_ListItem
+private struct PortalExampleListDetail: View {
+    let item: PortalExampleListItem
     @Environment(\.dismiss) var dismiss
-    
+
     var body: some View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 32) {
                     // MARK: Destination Photo
-                    
+
                     Group {
                         RoundedRectangle(cornerRadius: 12)
                             .fill(item.color.gradient)
@@ -210,23 +224,23 @@ private struct PortalExample_ListDetail: View {
                             .font(.system(size: 24, weight: .medium))
                             .foregroundColor(.white)
                     )
-                    
+
                     .frame(width: 280, height: 200)
                     .portal(item: item, .destination)
                     .padding(.top, 20)
-                    
+
                     // Content
                     VStack(spacing: 16) {
                         Text(item.title)
                             .font(.largeTitle)
                             .fontWeight(.bold)
                             .multilineTextAlignment(.center)
-                        
+
                         Text(item.description)
                             .font(.title3)
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
-                        
+
                         Text("This photo seamlessly transitioned from the list using Portal. The same visual element now appears larger in this detail view, creating a smooth and natural user experience.")
                             .font(.body)
                             .foregroundColor(.secondary)
@@ -234,7 +248,7 @@ private struct PortalExample_ListDetail: View {
                             .padding(.horizontal)
                             .padding(.top, 8)
                     }
-                    
+
                     Spacer()
                 }
                 .padding()
@@ -256,12 +270,12 @@ private struct PortalExample_ListDetail: View {
 }
 
 #Preview("List Example") {
-    PortalExample_List()
+    PortalExampleList()
 }
 
 #Preview("Detail View") {
-    PortalExample_ListDetail(
-        item: PortalExample_ListItem(
+    PortalExampleListDetail(
+        item: PortalExampleListItem(
             title: "Mountain Peak",
             description: "Breathtaking views from the summit",
             color: .blue,

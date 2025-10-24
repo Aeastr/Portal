@@ -2,7 +2,10 @@
 //  PortalPrivateExample.swift
 //  Portal
 //
-//  Example demonstrating PortalPrivate usage with _UIPortalView
+//  Created by Aether, 2025.
+//
+//  Copyright © 2025 Aether. All rights reserved.
+//  Licensed under the MIT License.
 //
 
 import SwiftUI
@@ -24,7 +27,7 @@ public struct PortalPrivateExampleApp: App {
 // MARK: - Main Example View
 
 public struct PortalPrivateExampleView: View {
-    @State private var selectedItem: Item? = nil
+    @State private var selectedItem: Item?
     @State private var items = Item.sampleItems
 
     public init() {}
@@ -35,7 +38,6 @@ public struct PortalPrivateExampleView: View {
             NavigationStack {
                 ScrollView {
                     VStack(spacing: 20) {
-
                         Text("Tap a card to see it transition using portal view mirroring")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
@@ -46,15 +48,14 @@ public struct PortalPrivateExampleView: View {
                             .init()
                         ], spacing: 16) {
                             ForEach(items) { item in
-                                AnimatedLayer(portalID: item.id.uuidString){
+                                AnimatedLayer(portalID: item.id.uuidString) {
                                     CardView(item: item)
                                         .portalPrivate(id: item.id.uuidString)
                                         .onTapGesture {
-                                            withAnimation(.smooth){
+                                            withAnimation(.smooth) {
                                                 selectedItem = item
                                             }
                                         }
-                                        
                                 }
                                 .rotationEffect(.degrees(selectedItem == item ? 0 : 40))
                             }
@@ -69,7 +70,6 @@ public struct PortalPrivateExampleView: View {
             }
             // Trigger the portal transition with AnimatedLayer wrapper
             .portalPrivateTransition(item: $selectedItem)
-            
         }
 //        .environment(\.portalDebugOverlays, false)
     }
@@ -130,7 +130,7 @@ struct DetailView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
-                        withAnimation(.smooth){
+                        withAnimation(.smooth) {
                             selectedItem = nil
                         }
                     }
@@ -154,14 +154,14 @@ struct Item: Identifiable, Equatable {
         Item(name: "Cloud", symbol: "cloud.fill", color: .blue),
         Item(name: "Bolt", symbol: "bolt.fill", color: .orange),
         Item(name: "Leaf", symbol: "leaf.fill", color: .green),
-        Item(name: "Moon", symbol: "moon.fill", color: .purple),
+        Item(name: "Moon", symbol: "moon.fill", color: .purple)
     ]
 }
 
 // MARK: - Preview
 
 #if DEBUG
-struct PortalPrivateExampleView_Previews: PreviewProvider {
+struct PortalPrivateExampleViewPreviews: PreviewProvider {
     static var previews: some View {
         PortalPrivateExampleView()
     }

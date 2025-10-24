@@ -1,10 +1,19 @@
+//
+//  PortalViewTests.swift
+//  Portal
+//
+//  Created by Aether, 2025.
+//
+//  Copyright © 2025 Aether. All rights reserved.
+//  Licensed under the MIT License.
+//
+
 import XCTest
 import UIKit
 import SwiftUI
 @testable import PortalView
 
 final class PortalViewTests: XCTestCase {
-
     // MARK: - PortalViewWrapper Tests
 
     @MainActor

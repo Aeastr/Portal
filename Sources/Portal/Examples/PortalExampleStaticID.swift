@@ -1,12 +1,22 @@
+//
+//  PortalExampleStaticID.swift
+//  Portal
+//
+//  Created by Aether, 2025.
+//
+//  Copyright © 2025 Aether. All rights reserved.
+//  Licensed under the MIT License.
+//
+
 #if DEBUG
 import SwiftUI
 
 /// Portal static ID example showing code block transitions
-public struct PortalExample_StaticID: View {
+public struct PortalExampleStaticID: View {
     @State private var showDetail = false
-    
+
     public init() {}
-    
+
     public var body: some View {
         PortalContainer {
             NavigationView {
@@ -18,8 +28,8 @@ public struct PortalExample_StaticID: View {
                             .multilineTextAlignment(.center)
                             .padding(.horizontal)
                     }
-                    
-                    
+
+
                     // MARK: Source Code Block
                     VStack(spacing: 32) {
                         AnimatedLayer(portalID: "codeBlock") {
@@ -41,7 +51,7 @@ public struct PortalExample_StaticID: View {
                                 }
                                 .padding(.horizontal, 16)
                                 .padding(.top, 12)
-                                
+
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(".portal(id: \"hero\", .source)")
                                         .font(.system(.body, design: .monospaced))
@@ -74,14 +84,13 @@ public struct PortalExample_StaticID: View {
                                 showDetail.toggle()
                             }
                         }
-                        
+
                         Text("Portal Code Block")
                             .font(.headline)
                             .fontWeight(.medium)
                     }
-                    
+
                     Spacer()
-                    
                 }
                 .frame(maxWidth: .infinity)
                 .navigationTitle("Static ID Example")
@@ -89,7 +98,7 @@ public struct PortalExample_StaticID: View {
                 .background(Color(.systemGroupedBackground).ignoresSafeArea())
             }
             .sheet(isPresented: $showDetail) {
-                PortalExample_StaticIDDetail()
+                PortalExampleStaticIDDetail()
             }
             .portalTransition(
                 id: "codeBlock",
@@ -115,7 +124,7 @@ public struct PortalExample_StaticID: View {
                         }
                         .padding(.horizontal, 16)
                         .padding(.top, 12)
-                        
+
                         VStack(alignment: .leading, spacing: 4) {
                             Text(".portal(id: \"hero\", .source)")
                                 .font(.system(.body, design: .monospaced))
@@ -146,9 +155,9 @@ public struct PortalExample_StaticID: View {
     }
 }
 
-private struct PortalExample_StaticIDDetail: View {
+private struct PortalExampleStaticIDDetail: View {
     @Environment(\.dismiss) var dismiss
-    
+
     var body: some View {
         NavigationView {
             ScrollView {
@@ -173,7 +182,7 @@ private struct PortalExample_StaticIDDetail: View {
                             }
                             .padding(.horizontal, 16)
                             .padding(.top, 12)
-                            
+
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(".portal(id: \"hero\", .source)")
                                     .font(.system(.body, design: .monospaced))
@@ -202,15 +211,15 @@ private struct PortalExample_StaticIDDetail: View {
                     .portal(id: "codeBlock", .destination)
                     .padding(.top, 20)
                     .padding(.horizontal, 20)
-                    
-                    
+
+
                         Text("This code block transitioned seamlessly from the main view.  Portal enables these cross-boundary transitions that aren't possible with standard SwiftUI.")
                             .font(.body)
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal)
                     .padding()
-                    
+
                     Spacer()
                 }
             }
@@ -229,11 +238,11 @@ private struct PortalExample_StaticIDDetail: View {
 }
 
 #Preview("Static ID Example") {
-    PortalExample_StaticID()
+    PortalExampleStaticID()
 }
 
 #Preview("Static ID Example Detail") {
-    PortalExample_StaticIDDetail()
+    PortalExampleStaticIDDetail()
 }
 
 #endif

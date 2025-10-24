@@ -1,16 +1,26 @@
+//
+//  PortalExampleComparison.swift
+//  Portal
+//
+//  Created by Aether, 2025.
+//
+//  Copyright © 2025 Aether. All rights reserved.
+//  Licensed under the MIT License.
+//
+
 #if DEBUG
 import SwiftUI
 
 /// Comparison example showing Portal vs native iOS transitions
 /// Shows Portal vs native iOS transition features
-public struct PortalExample_Comparison: View {
+public struct PortalExampleComparison: View {
     @State private var showPortalSheet = false
     @State private var showNativeSheet = false
     @State private var showZoomSheet = false
     @Namespace private var namespace
-    
+
     public init() {}
-    
+
     public var body: some View {
         PortalContainer {
             NavigationView {
@@ -23,7 +33,7 @@ public struct PortalExample_Comparison: View {
                             .multilineTextAlignment(.center)
                             .padding(.horizontal)
                     }
-                    
+
                     LazyVGrid(columns: [
                         GridItem(.flexible()),
                         GridItem(.flexible())
@@ -34,7 +44,7 @@ public struct PortalExample_Comparison: View {
                                 .font(.headline)
                                 .fontWeight(.semibold)
                                 .foregroundColor(.blue)
-                            
+
                             AnimatedLayer(portalID: "portalDemo") {
                                 RoundedRectangle(cornerRadius: 16)
                                     .fill(
@@ -61,20 +71,20 @@ public struct PortalExample_Comparison: View {
                             .onTapGesture {
                                     showPortalSheet.toggle()
                             }
-                            
+
                             Text("Cross-boundary transitions")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                                 .multilineTextAlignment(.center)
                         }
-                        
+
                         // MARK: Native Example
                         VStack(spacing: 12) {
                             Text("Native")
                                 .font(.headline)
                                 .fontWeight(.semibold)
                                 .foregroundColor(.orange)
-                            
+
                             RoundedRectangle(cornerRadius: 16)
                                 .fill(
                                     LinearGradient(
@@ -98,13 +108,13 @@ public struct PortalExample_Comparison: View {
                                 .onTapGesture {
                                     showNativeSheet.toggle()
                                 }
-                            
+
                             Text("No cross-boundary support")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                                 .multilineTextAlignment(.center)
                         }
-                        
+
                         // MARK: iOS 18 Zoom Example - Only show on iOS 18+
                         if #available(iOS 18.0, *) {
                             VStack(spacing: 12) {
@@ -112,7 +122,7 @@ public struct PortalExample_Comparison: View {
                                     .font(.headline)
                                     .fontWeight(.semibold)
                                     .foregroundColor(.green)
-                                
+
                                 VStack(spacing: 8) {
                                     Image(systemName: "magnifyingglass")
                                         .font(.system(size: 28, weight: .semibold))
@@ -123,15 +133,15 @@ public struct PortalExample_Comparison: View {
                                         .fontWeight(.bold)
                                 }
                                 .frame(width: 160, height: 120)
-                                .matchedTransitionSource(id: "zoomDemo", in: namespace, configuration: { body in
+                                .matchedTransitionSource(id: "zoomDemo", in: namespace) { body in
                                     body
                                         .background(Color.green)
                                         .clipShape(.rect(cornerRadius: 16))
-                                })
+                                }
                                 .onTapGesture {
                                     showZoomSheet.toggle()
                                 }
-                                
+
                                 Text("Zoom presentation style")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
@@ -139,7 +149,7 @@ public struct PortalExample_Comparison: View {
                             }
                         }
                     }
-                    
+
                     Spacer()
                     }
                     .padding()
@@ -149,20 +159,20 @@ public struct PortalExample_Comparison: View {
                 .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())
             }
             .sheet(isPresented: $showPortalSheet) {
-                PortalExample_PortalComparisonSheet()
+                PortalExamplePortalComparisonSheet()
             }
             .sheet(isPresented: $showNativeSheet) {
-                PortalExample_NativeComparisonSheet()
+                PortalExampleNativeComparisonSheet()
             }
             .sheet(isPresented: $showZoomSheet) {
                 if #available(iOS 18.0, *) {
-                    PortalExample_ZoomComparisonSheet(namespace: namespace)
+                    PortalExampleZoomComparisonSheet(namespace: namespace)
                         .navigationTransition(.zoom(sourceID: "zoomDemo", in: namespace))
                 }
             }
             .portalTransition(
             id: "portalDemo",
-            config: .init(animation: PortalAnimation(portal_animationExample)),
+            config: .init(animation: PortalAnimation(portalAnimationExample)),
             isActive: $showPortalSheet
         ) {
             AnimatedLayer(portalID: "portalDemo") {
@@ -186,14 +196,14 @@ public struct PortalExample_Comparison: View {
                         }
                     )
             }
-        }
+            }
         }
     }
 }
 
-private struct PortalExample_PortalComparisonSheet: View {
+private struct PortalExamplePortalComparisonSheet: View {
     @Environment(\.dismiss) var dismiss
-    
+
     var body: some View {
         NavigationView {
             ScrollView {
@@ -222,7 +232,7 @@ private struct PortalExample_PortalComparisonSheet: View {
                     }
                     .frame(width: 280, height: 200)
                     .portal(id: "portalDemo", .destination)
-                    
+
                     Text("This element seamlessly transitioned from the main view using Portal. Portal enables cross-boundary transitions that aren't possible with standard SwiftUI.")
                         .font(.body)
                         .foregroundColor(.secondary)
@@ -243,9 +253,9 @@ private struct PortalExample_PortalComparisonSheet: View {
     }
 }
 
-private struct PortalExample_NativeComparisonSheet: View {
+private struct PortalExampleNativeComparisonSheet: View {
     @Environment(\.dismiss) var dismiss
-    
+
     var body: some View {
         NavigationView {
             ScrollView {
@@ -271,7 +281,7 @@ private struct PortalExample_NativeComparisonSheet: View {
                             }
                         )
                         .frame(width: 280, height: 200)
-                    
+
                     Text("This element appeared without any transition because native SwiftUI cannot create cross-boundary transitions. The original element and this one exist in different view hierarchies.")
                         .font(.body)
                         .foregroundColor(.secondary)
@@ -293,10 +303,10 @@ private struct PortalExample_NativeComparisonSheet: View {
 }
 
 @available(iOS 18.0, *)
-private struct PortalExample_ZoomComparisonSheet: View {
+private struct PortalExampleZoomComparisonSheet: View {
     @Environment(\.dismiss) var dismiss
     let namespace: Namespace.ID
-    
+
     var body: some View {
         NavigationView {
             ScrollView {
@@ -322,7 +332,7 @@ private struct PortalExample_ZoomComparisonSheet: View {
                             }
                         )
                         .frame(width: 280, height: 200)
-                    
+
                     Text("iOS 18's zoom transition presents the sheet with a zoom animation that originates from the tapped element. It's a presentation style, not an element transition - the sheet zooms from the source element's position.")
                         .font(.body)
                         .foregroundColor(.secondary)
@@ -344,7 +354,7 @@ private struct PortalExample_ZoomComparisonSheet: View {
 }
 
 #Preview {
-    PortalExample_Comparison()
+    PortalExampleComparison()
 }
 
 #endif

@@ -1,13 +1,23 @@
+//
+//  PortalExampleMultiItem.swift
+//  Portal
+//
+//  Created by Aether, 2025.
+//
+//  Copyright © 2025 Aether. All rights reserved.
+//  Licensed under the MIT License.
+//
+
 #if DEBUG
 import SwiftUI
 import Portal
 /// Portal multi-item example showing coordinated transitions for multiple elements
-public struct PortalExample_MultiItem: View {
+public struct PortalExampleMultiItem: View {
     @State private var selectedPhotos: [MultiItemPhoto] = []
     @State private var allPhotos: [MultiItemPhoto] = MultiItemPhoto.samplePhotos
-    
+
     public init() {}
-    
+
     public var body: some View {
         PortalContainer {
             NavigationView {
@@ -66,7 +76,7 @@ public struct PortalExample_MultiItem: View {
 struct MultiItemDetailView: View {
     let photos: [MultiItemPhoto]
     let onDismiss: () -> Void
-    
+
     var body: some View {
         NavigationView {
             ScrollView {
@@ -94,7 +104,7 @@ struct MultiItemDetailView: View {
 /// Individual photo view - MUST be identical for source and destination
 struct PhotoView: View {
     let photo: MultiItemPhoto
-    
+
     var body: some View {
         RoundedRectangle(cornerRadius: 12)
             .fill(photo.color)
@@ -103,7 +113,7 @@ struct PhotoView: View {
                     Image(systemName: photo.systemImage)
                         .font(.title2)
                         .foregroundColor(.white)
-                    
+
                     Text(photo.title)
                         .font(.caption)
                         .foregroundColor(.white)
@@ -116,7 +126,7 @@ struct PhotoView: View {
 /// Wrapper for thumbnail (source) - adds frame constraints
 struct PhotoThumbnailView: View {
     let photo: MultiItemPhoto
-    
+
     var body: some View {
         PhotoView(photo: photo)
     }
@@ -125,10 +135,10 @@ struct PhotoThumbnailView: View {
 /// Wrapper for detail (destination) - adds different frame constraints
 struct PhotoDetailView: View {
     let photo: MultiItemPhoto
-    
+
     var body: some View {
         PhotoView(photo: photo)
-            .aspectRatio(3/4, contentMode: .fit)
+            .aspectRatio(3 / 4, contentMode: .fit)
     }
 }
 
@@ -139,7 +149,7 @@ struct MultiItemPhoto: Identifiable {
     let description: String
     let color: Color
     let systemImage: String
-    
+
     static let samplePhotos: [MultiItemPhoto] = [
         MultiItemPhoto(
             title: "Mountain Peak",
@@ -181,6 +191,6 @@ struct MultiItemPhoto: Identifiable {
 }
 
 #Preview{
-    PortalExample_MultiItem()
+    PortalExampleMultiItem()
 }
 #endif

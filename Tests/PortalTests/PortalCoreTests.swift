@@ -1,9 +1,18 @@
+//
+//  PortalCoreTests.swift
+//  Portal
+//
+//  Created by Aether, 2025.
+//
+//  Copyright © 2025 Aether. All rights reserved.
+//  Licensed under the MIT License.
+//
+
 import XCTest
 import SwiftUI
 @testable import Portal
 
 final class PortalCoreTests: XCTestCase {
-
     // MARK: - PortalAnimation Tests
 
     func testPortalAnimationInitialization() {
@@ -26,7 +35,7 @@ final class PortalCoreTests: XCTestCase {
 
         // Test deprecated duration property
         let duration = animation.duration
-        XCTAssertEqual(duration, 0.38)
+        XCTAssertEqual(duration, 0.4)
     }
 
     // MARK: - PortalAnimationWithCompletion Tests

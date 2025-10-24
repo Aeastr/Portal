@@ -1,3 +1,13 @@
+//
+//  PortalLayerView.swift
+//  Portal
+//
+//  Created by Aether, 2025.
+//
+//  Copyright © 2025 Aether. All rights reserved.
+//  Licensed under the MIT License.
+//
+
 import SwiftUI
 
 
@@ -18,11 +28,11 @@ import SwiftUI
 internal struct PortalLayerView: View {
     /// The shared model containing all portal animation data and state.
     @Environment(CrossModel.self) private var portalModel
-    
+
     var body: some View {
         GeometryReader(content: geometryReaderContent)
     }
-    
+
     /// Builds the content within the geometry reader context.
     ///
     /// Creates individual `PortalLayerContentView` instances for each active portal animation,
@@ -53,7 +63,7 @@ internal struct PortalLayerView: View {
 /// 2. Animates smoothly to destination position/size
 /// 3. Handles cleanup and state reset after animation completes
 /// 4. Calls completion handlers to notify the system of animation status
-fileprivate struct PortalLayerContentView: View {
+private struct PortalLayerContentView: View {
     /// Geometry proxy for coordinate space calculations and position conversions.
     var proxy: GeometryProxy
 
@@ -88,20 +98,19 @@ fileprivate struct PortalLayerContentView: View {
            let destination = info.destinationAnchor,
            let layer = info.layerView,
            !info.hideView {
-            
             // Convert anchor bounds to concrete rectangles in global coordinate space
             let sRect = proxy[source]
             let dRect = proxy[destination]
             let animate = info.animateView
-            
+
             // Interpolate size between source and destination based on animation state
             let width = animate ? dRect.size.width : sRect.size.width
             let height = animate ? dRect.size.height : sRect.size.height
-            
+
             // Interpolate position between source and destination based on animation state
             let x = animate ? dRect.minX : sRect.minX
             let y = animate ? dRect.minY : sRect.minY
-            
+
             // Only apply clipShape if corners are configured
             Group {
                 if let corners = info.corners {

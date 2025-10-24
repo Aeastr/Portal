@@ -2,7 +2,10 @@
 //  PortalPrivateExampleNoSheet.swift
 //  Portal
 //
-//  Test if the shift issue occurs without using a sheet
+//  Created by Aether, 2025.
+//
+//  Copyright © 2025 Aether. All rights reserved.
+//  Licensed under the MIT License.
 //
 
 import SwiftUI
@@ -10,7 +13,7 @@ import Portal
 import PortalView
 
 public struct PortalPrivateExampleNoSheetView: View {
-    @State private var selectedItem: Item? = nil
+    @State private var selectedItem: Item?
     @State private var items = Item.sampleItems
 
     public init() {}
@@ -101,7 +104,7 @@ struct DetailOverlayView: View {
 // MARK: - Preview
 
 #if DEBUG
-struct PortalPrivateExampleNoSheetView_Previews: PreviewProvider {
+struct PortalPrivateExampleNoSheetViewPreviews: PreviewProvider {
     static var previews: some View {
         PortalPrivateExampleNoSheetView()
     }

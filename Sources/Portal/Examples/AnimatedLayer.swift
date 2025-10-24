@@ -1,15 +1,31 @@
+//
+//  AnimatedLayer.swift
+//  Portal
+//
+//  Created by Aether, 2025.
+//
+//  Copyright © 2025 Aether. All rights reserved.
+//  Licensed under the MIT License.
+//
+
 #if DEBUG
 import SwiftUI
 
-let portal_animationDuration: TimeInterval = 0.4
-let portal_animationExample: Animation = Animation.smooth(duration: portal_animationDuration, extraBounce: 0.25)
-let portal_animationExampleExtraBounce: Animation = Animation.smooth(duration: portal_animationDuration + 0.12, extraBounce: 0.55)
+let portalAnimationDuration: TimeInterval = 0.4
+let portalAnimationExample = Animation.smooth(duration: portalAnimationDuration, extraBounce: 0.25)
+let portalAnimationExampleExtraBounce = Animation.smooth(duration: portalAnimationDuration + 0.12, extraBounce: 0.55)
 
 /// A reusable animated layer component for Portal examples.
 /// Provides visual feedback during portal transitions with a scale animation.
 ///
 /// This is an example implementation using the `AnimatedPortalLayer` protocol.
 /// Users can copy and modify this to create their own custom animations.
+///
+/// **Note on timing values:**
+/// The timing values in this implementation (0.1, 0.12, etc.) are animation design parameters
+/// specific to this bounce effect choreography, NOT system constants. They control when the
+/// second bounce animation triggers relative to the first one. When you copy this component,
+/// these values are meant to be tuned for your specific animation design.
 struct AnimatedLayer<Content: View>: AnimatedPortalLayer {
     let portalID: String
     var scale: CGFloat = 1.25
@@ -31,20 +47,24 @@ struct AnimatedLayer<Content: View>: AnimatedPortalLayer {
 
     private func handleActiveChange(oldValue: Bool, newValue: Bool) {
         if newValue {
-            withAnimation(portal_animationExample) {
+            withAnimation(portalAnimationExample) {
                 layerScale = scale
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + (portal_animationDuration / 2) - 0.1) {
-                withAnimation(portal_animationExampleExtraBounce) {
+            // Timing calculation: Trigger second bounce slightly before halfway point
+            // The 0.1 offset is an animation design parameter for this specific bounce choreography,
+            // NOT PortalConstants.animationDelay (which is for portal system timing, not animation design)
+            DispatchQueue.main.asyncAfter(deadline: .now() + (portalAnimationDuration / 2) - 0.1) {
+                withAnimation(portalAnimationExampleExtraBounce) {
                     layerScale = 1
                 }
             }
         } else {
-            withAnimation(portal_animationExample) {
+            withAnimation(portalAnimationExample) {
                 layerScale = scale
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + (portal_animationDuration / 2) - 0.1) {
-                withAnimation(portal_animationExampleExtraBounce) {
+            // Same timing calculation for reverse animation
+            DispatchQueue.main.asyncAfter(deadline: .now() + (portalAnimationDuration / 2) - 0.1) {
+                withAnimation(portalAnimationExampleExtraBounce) {
                     layerScale = 1
                 }
             }
@@ -53,7 +73,7 @@ struct AnimatedLayer<Content: View>: AnimatedPortalLayer {
 }
 
 #Preview("Card Grid Example") {
-    PortalExample_CardGrid()
+    PortalExampleCardGrid()
 }
 
-#endif 
+#endif
