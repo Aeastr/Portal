@@ -22,29 +22,59 @@ if ! command -v swiftlint &> /dev/null; then
 fi
 
 # Get the list of Swift files that are staged for commit
-SWIFT_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep "\.swift$")
+SWIFT_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep "\.swift$" || true)
 
 if [ -z "$SWIFT_FILES" ]; then
     echo "No Swift files to check"
     exit 0
 fi
 
+# Count files
+FILE_COUNT=$(echo "$SWIFT_FILES" | wc -l | tr -d ' ')
+echo -e "${BLUE}Found $FILE_COUNT Swift file(s) to process${NC}"
+
 echo -e "${BLUE}🔧 Auto-fixing SwiftLint issues...${NC}"
 
 # Run SwiftLint auto-fix on staged Swift files
 FIXED_FILES=""
+PROCESSED=0
 for FILE in $SWIFT_FILES; do
     if [ -f "$FILE" ]; then
-        # Run auto-fix
-        swiftlint --fix --path "$FILE" --config .swiftlint.yml 2>/dev/null
-        if [ $? -eq 0 ]; then
+        echo -n "  Processing $(basename $FILE)..."
+        # Run auto-fix with timeout and capture output
+        if command -v timeout >/dev/null 2>&1; then
+            OUTPUT=$(timeout 5 swiftlint --fix --path "$FILE" --config .swiftlint.yml 2>&1)
+            RESULT=$?
+        elif command -v gtimeout >/dev/null 2>&1; then
+            OUTPUT=$(gtimeout 5 swiftlint --fix --path "$FILE" --config .swiftlint.yml 2>&1)
+            RESULT=$?
+        else
+            OUTPUT=$(swiftlint --fix --path "$FILE" --config .swiftlint.yml 2>&1)
+            RESULT=$?
+        fi
+
+        if [ $RESULT -eq 124 ]; then
+            echo -e " ${RED}timeout${NC}"
+            echo "    SwiftLint took too long to process this file"
+        elif [ $RESULT -eq 0 ]; then
             # Check if file was modified
             if ! git diff --quiet "$FILE"; then
                 FIXED_FILES="$FIXED_FILES $FILE"
+                echo -e " ${GREEN}fixed${NC}"
+            else
+                echo -e " ${GREEN}ok${NC}"
             fi
+        else
+            echo -e " ${RED}error${NC}"
+            echo "    SwiftLint error: $OUTPUT"
         fi
+        ((PROCESSED++)) || true
+    else
+        echo -e "  ${YELLOW}Warning: $FILE not found (may have been deleted)${NC}"
     fi
 done
+
+echo -e "${BLUE}Processed $PROCESSED file(s)${NC}"
 
 # If files were fixed, re-stage them
 if [ -n "$FIXED_FILES" ]; then
