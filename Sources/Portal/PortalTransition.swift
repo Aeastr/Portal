@@ -29,7 +29,6 @@ import SwiftUI
 ///     }
 /// ```
 public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: View>: ViewModifier {
-
     /// Binding to the optional item that controls the portal transition.
     ///
     /// When this value changes from `nil` to non-`nil`, a forward portal transition
@@ -108,7 +107,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
         self.layerView = layerView
         self.completion = completion
     }
-    
+
     /// Generates a string key from the current item's ID.
     ///
     /// Returns `nil` when the item is `nil`, or a string representation of the
@@ -118,7 +117,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
         guard let value = item else { return nil }
         return "\(value.id)"
     }
-    
+
     /// Handles changes to the item's presence, triggering appropriate portal transitions.
     ///
     /// This method is called whenever the item binding changes between `nil` and non-`nil`
@@ -199,7 +198,6 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
                     }
                 }
             }
-            
         } else {
             // Reverse transition: item became nil
             guard let key = lastKey,
@@ -241,7 +239,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
             )
         }
     }
-    
+
     /// Applies the modifier to the content view.
     ///
     /// Attaches an onChange handler that monitors the presence of the item
@@ -291,7 +289,6 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
 /// - `onChange`: Handles forward and reverse transitions
 /// - Automatic cleanup after reverse transitions
 internal struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier {
-
     /// The shared portal model that manages all portal animations.
     @Environment(CrossModel.self) private var portalModel
 
@@ -373,7 +370,7 @@ internal struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifi
         self.layerView = layerView
         self.completion = completion
     }
-    
+
     /// Ensures portal info exists in the model when the view appears.
     ///
     /// Creates a new `PortalInfo` entry if one doesn't already exist for this ID.
@@ -384,7 +381,7 @@ internal struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifi
             portalModel.info.append(PortalInfo(id: id))
         }
     }
-    
+
     /// Handles changes to the active state, triggering appropriate portal transitions.
     ///
     /// This method manages the complete lifecycle of portal transitions based on
@@ -430,7 +427,6 @@ internal struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifi
                     }
                 }
             }
-
         } else {
             // Reverse transition: isActive became false
             portalModel.info[idx].hideView = false
@@ -449,7 +445,7 @@ internal struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifi
             }
         }
     }
-    
+
     /// Applies the modifier to the content view.
     ///
     /// Attaches appearance and change handlers to manage the portal transition
@@ -475,7 +471,6 @@ internal struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifi
 /// - Synchronized timing for all portals in the group
 /// - Proper cleanup when animations complete
 public struct MultiIDPortalTransitionModifier<LayerView: View>: ViewModifier {
-
     /// Array of portal IDs to animate together.
     public let ids: [String]
 
@@ -596,7 +591,6 @@ public struct MultiIDPortalTransitionModifier<LayerView: View>: ViewModifier {
                     }
                 }
             }
-
         } else {
             // Reverse transition: isActive became false
             for idx in groupIndices {
@@ -657,7 +651,6 @@ public struct MultiIDPortalTransitionModifier<LayerView: View>: ViewModifier {
 ///     }
 /// ```
 public struct MultiItemPortalTransitionModifier<Item: Identifiable, LayerView: View>: ViewModifier {
-
     /// Binding to the array of items that controls the portal transitions.
     @Binding public var items: [Item]
 
@@ -672,19 +665,19 @@ public struct MultiItemPortalTransitionModifier<Item: Identifiable, LayerView: V
 
     /// Corner styling configuration for visual appearance.
     public let corners: PortalCorners?
-    
+
     /// Closure that generates the layer view for each item in the transition.
     public let layerView: (Item) -> LayerView
-    
+
     /// Completion handler called when all transitions finish.
     public let completion: (Bool) -> Void
-    
+
     /// Stagger delay between each item's animation start (in seconds).
     /// When > 0, each subsequent item will start animating with this additional delay.
     /// For example, with staggerDelay = 0.1: first item starts at base delay,
     /// second item at base + 0.1s, third at base + 0.2s, etc.
     public let staggerDelay: TimeInterval
-    
+
     /// The shared portal model that manages all portal animations.
     @Environment(CrossModel.self) private var portalModel
 
@@ -731,20 +724,20 @@ public struct MultiItemPortalTransitionModifier<Item: Identifiable, LayerView: V
         self.completion = completion
         self.staggerDelay = staggerDelay
     }
-    
+
     /// Generates string keys from the current items' IDs.
     private var keys: Set<String> {
         Set(items.map { "\($0.id)" })
     }
-    
+
     /// Handles changes to the items array, triggering appropriate portal transitions.
     private func onChange(oldValue: [Item], hasItems: Bool) {
         let currentKeys = keys
-        
+
         if hasItems && !items.isEmpty {
             // Forward transition: items were added
             lastKeys = currentKeys
-            
+
             // Ensure portal info exists for all items
             for item in items {
                 let key = "\(item.id)"
@@ -752,12 +745,12 @@ public struct MultiItemPortalTransitionModifier<Item: Identifiable, LayerView: V
                     portalModel.info.append(PortalInfo(id: key, groupID: groupID))
                 }
             }
-            
+
             // Configure all portals in the group
             let groupIndices = portalModel.info.enumerated().compactMap { index, info in
                 currentKeys.contains(info.infoID) ? index : nil
             }
-            
+
             // Set up group coordination - first item becomes coordinator
             for (i, idx) in groupIndices.enumerated() {
                 portalModel.info[idx].initialized = true
@@ -826,19 +819,18 @@ public struct MultiItemPortalTransitionModifier<Item: Identifiable, LayerView: V
                     }
                 }
             }
-            
         } else {
             // Reverse transition: items were cleared
             let cleanupKeys = lastKeys
             let cleanupIndices = portalModel.info.enumerated().compactMap { index, info in
                 cleanupKeys.contains(info.infoID) ? index : nil
             }
-            
+
             // Prepare for reverse animation
             for idx in cleanupIndices {
                 portalModel.info[idx].hideView = false
             }
-            
+
             // Start coordinated reverse animation
             withAnimation(animation, completionCriteria: completionCriteria) {
                 for idx in cleanupIndices {
@@ -860,11 +852,11 @@ public struct MultiItemPortalTransitionModifier<Item: Identifiable, LayerView: V
                     }
                 }
             }
-            
+
             lastKeys.removeAll()
         }
     }
-    
+
     public func body(content: Content) -> some View {
         content.onChange(of: !items.isEmpty) {
             onChange(oldValue: items, hasItems: !items.isEmpty)
@@ -875,7 +867,6 @@ public struct MultiItemPortalTransitionModifier<Item: Identifiable, LayerView: V
 // MARK: - View Extensions
 
 public extension View {
-    
     /// Applies a portal transition controlled by a boolean binding.
     ///
     /// This modifier enables portal transitions based on boolean state changes,
@@ -1033,7 +1024,7 @@ public extension View {
                 completion: completion,
                 layerView: layerView))
     }
-    
+
     /// Applies a portal transition controlled by an optional `Identifiable` item.
     ///
     /// This modifier automatically manages portal transitions based on the presence
@@ -1058,7 +1049,7 @@ public extension View {
     /// - Returns: A view with the portal transition modifier applied
     @available(*, deprecated, message: "Use the new API with direct parameters instead of config")
     func portalTransition<Item: Identifiable, LayerView: View>(
-        item: Binding<Optional<Item>>,
+        item: Binding<Item?>,
         config: PortalTransitionConfig,
         @ViewBuilder layerView: @escaping (Item) -> LayerView,
         completion: @escaping (Bool) -> Void = { _ in }
@@ -1084,7 +1075,7 @@ public extension View {
     ///   - layerView: Closure that receives the item and returns the view to animate
     /// - Returns: A view with the portal transition modifier applied
     func portalTransition<Item: Identifiable, LayerView: View>(
-        item: Binding<Optional<Item>>,
+        item: Binding<Item?>,
         in corners: PortalCorners? = nil,
         animation: Animation = .smooth(duration: 0.4),
         completionCriteria: AnimationCompletionCriteria = .removed,
@@ -1102,7 +1093,7 @@ public extension View {
             )
         )
     }
-    
+
     /// Applies coordinated portal transitions for multiple `Identifiable` items.
     ///
     /// This modifier enables multiple portal animations to run simultaneously as a coordinated group.
@@ -1204,5 +1195,3 @@ public extension View {
         )
     }
 }
-
-

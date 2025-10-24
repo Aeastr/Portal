@@ -28,13 +28,12 @@ import SwiftUI
 /// - Deprecated: Use direct Animation parameters instead of PortalTransitionConfig
 @available(*, deprecated, message: "Use direct Animation parameters instead of PortalTransitionConfig")
 public struct PortalTransitionConfig {
-    
     /// Animation timing and behavior configuration.
     ///
     /// Defines how the portal transition animates, including duration, easing curves,
     /// and delays. This controls the temporal aspects of the portal animation.
     public let animation: PortalAnimationProtocol
-    
+
     /// Corner styling configuration for visual appearance.
     ///
     /// Defines the corner radius values and styling for both source and destination
@@ -44,7 +43,7 @@ public struct PortalTransitionConfig {
     /// When `nil`, no corner clipping is applied, allowing content to extend
     /// beyond frame boundaries during scaling transitions.
     public let corners: PortalCorners?
-    
+
     /// Initializes a new portal transition configuration with basic animation.
     ///
     /// Creates a complete configuration object with specified animation and corner settings.
@@ -58,7 +57,7 @@ public struct PortalTransitionConfig {
         self.animation = animation
         self.corners = corners
     }
-    
+
     /// Initializes a new portal transition configuration with iOS 17+ completion criteria.
     ///
     /// Creates a complete configuration object with specified animation and corner settings.
@@ -81,7 +80,6 @@ public struct PortalTransitionConfig {
 /// - Deprecated: Use SwiftUI's Animation type directly instead
 @available(*, deprecated, message: "Use SwiftUI's Animation type directly instead")
 public protocol PortalAnimationProtocol {
-
     /// The SwiftUI animation curve and timing configuration.
     var value: Animation { get }
 
@@ -133,7 +131,6 @@ public protocol PortalAnimationProtocol {
 /// - Deprecated: Use SwiftUI's Animation type directly instead
 @available(*, deprecated, message: "Use SwiftUI's Animation type directly instead")
 public struct PortalAnimation: PortalAnimationProtocol {
-
     /// The SwiftUI animation curve and timing configuration.
     public let value: Animation
 
@@ -168,7 +165,7 @@ public struct PortalAnimation: PortalAnimationProtocol {
         self.value = animation
         self.delay = delay
     }
-    
+
     /// Default initializer that works across all iOS versions.
     ///
     /// Creates a PortalAnimation with sensible defaults, automatically selecting
@@ -176,7 +173,7 @@ public struct PortalAnimation: PortalAnimationProtocol {
     public init() {
         self.init(.smooth(duration: 0.4, extraBounce: 0.1))
     }
-    
+
     /// Executes the animation with appropriate completion handling for the iOS version.
     public func performAnimation<T>(
         _ animation: @escaping () -> T,
@@ -216,16 +213,15 @@ public struct PortalAnimation: PortalAnimationProtocol {
 /// - Deprecated: Use SwiftUI's Animation type and AnimationCompletionCriteria directly instead
 @available(*, deprecated, message: "Use SwiftUI's Animation type and AnimationCompletionCriteria directly instead")
 public struct PortalAnimationWithCompletion: PortalAnimationProtocol {
-    
     /// The SwiftUI animation curve and timing configuration.
     public let value: Animation
-    
+
     /// Delay before the animation begins, in seconds.
     public let delay: TimeInterval
-    
+
     /// Completion criteria for detecting when the animation finishes.
     public let completionCriteria: AnimationCompletionCriteria
-    
+
     /// Initializes a new portal animation configuration with completion criteria.
     ///
     /// Creates an animation configuration with modern completion criteria detection.
@@ -244,7 +240,7 @@ public struct PortalAnimationWithCompletion: PortalAnimationProtocol {
         self.delay = delay
         self.completionCriteria = completionCriteria
     }
-    
+
     /// Executes the animation with iOS 17+ completion criteria.
     public func performAnimation<T>(
         _ animation: @escaping () -> T,
@@ -276,7 +272,6 @@ public struct PortalAnimationWithCompletion: PortalAnimationProtocol {
 /// The corner style (circular vs. continuous) is applied uniformly to maintain
 /// visual consistency with the rest of the application's design language.
 public struct PortalCorners {
-    
     /// Corner radius for the source (starting) element, in points.
     ///
     /// This value defines the corner radius of the element at the beginning
@@ -285,7 +280,7 @@ public struct PortalCorners {
     ///
     /// A value of 0 creates sharp corners (rectangular appearance).
     public let source: CGFloat
-    
+
     /// Corner radius for the destination (ending) element, in points.
     ///
     /// This value defines the corner radius of the element at the end
@@ -294,7 +289,7 @@ public struct PortalCorners {
     ///
     /// A value of 0 creates sharp corners (rectangular appearance).
     public let destination: CGFloat
-    
+
     /// The style of corner rounding to apply.
     ///
     /// Defines the mathematical curve used for creating rounded corners.
@@ -305,7 +300,7 @@ public struct PortalCorners {
     /// - `.circular`: Traditional circular arc corners (iOS default)
     /// - `.continuous`: Apple's continuous corner curve (more organic appearance)
     public let style: RoundedCornerStyle
-    
+
     /// Initializes a new portal corner configuration.
     ///
     /// Creates a corner configuration with specified radius values for source

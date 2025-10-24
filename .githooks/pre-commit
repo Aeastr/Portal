@@ -1,14 +1,15 @@
 #!/bin/bash
 
-# Pre-commit hook to run SwiftLint on changed Swift files
+# Pre-commit hook to auto-fix SwiftLint issues before committing
 
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-echo "🔍 Running pre-commit SwiftLint check..."
+echo "🔍 Running pre-commit SwiftLint..."
 
 # Check if SwiftLint is installed
 if ! command -v swiftlint &> /dev/null; then
@@ -25,22 +26,60 @@ if [ -z "$SWIFT_FILES" ]; then
     exit 0
 fi
 
-# Run SwiftLint on staged Swift files
-FAILED=0
+echo -e "${BLUE}🔧 Auto-fixing SwiftLint issues...${NC}"
+
+# Run SwiftLint auto-fix on staged Swift files
+FIXED_FILES=""
 for FILE in $SWIFT_FILES; do
     if [ -f "$FILE" ]; then
-        swiftlint lint --path "$FILE" --config .swiftlint.yml --quiet
-        if [ $? -ne 0 ]; then
-            FAILED=1
+        # Run auto-fix
+        swiftlint --fix --path "$FILE" --config .swiftlint.yml 2>/dev/null
+        if [ $? -eq 0 ]; then
+            # Check if file was modified
+            if ! git diff --quiet "$FILE"; then
+                FIXED_FILES="$FIXED_FILES $FILE"
+            fi
         fi
     fi
 done
 
-if [ $FAILED -ne 0 ]; then
-    echo -e "${RED}❌ SwiftLint found issues. Please fix them before committing.${NC}"
+# If files were fixed, re-stage them
+if [ -n "$FIXED_FILES" ]; then
+    echo -e "${YELLOW}📝 SwiftLint fixed issues in:${NC}"
+    for FILE in $FIXED_FILES; do
+        echo "   - $FILE"
+        git add "$FILE"
+    done
+    echo -e "${GREEN}✅ Fixed files have been re-staged${NC}"
+fi
+
+# Now run a final check to see if there are any remaining issues that couldn't be auto-fixed
+echo -e "${BLUE}🔍 Checking for remaining issues...${NC}"
+
+REMAINING_ISSUES=0
+for FILE in $SWIFT_FILES; do
+    if [ -f "$FILE" ]; then
+        # Check for issues that can't be auto-fixed
+        OUTPUT=$(swiftlint lint --path "$FILE" --config .swiftlint.yml --quiet 2>&1)
+        if [ -n "$OUTPUT" ]; then
+            # Check if there are actual errors (not just warnings)
+            if echo "$OUTPUT" | grep -q "error:"; then
+                REMAINING_ISSUES=1
+                echo -e "${RED}❌ Cannot auto-fix issues in: $FILE${NC}"
+                echo "$OUTPUT" | grep "error:" | head -5
+            fi
+        fi
+    fi
+done
+
+if [ $REMAINING_ISSUES -ne 0 ]; then
+    echo ""
+    echo -e "${RED}❌ Some SwiftLint issues cannot be auto-fixed${NC}"
     echo "Run 'swiftlint lint --config .swiftlint.yml' to see all issues"
+    echo ""
+    echo "To commit anyway, use: git commit --no-verify"
     exit 1
 fi
 
-echo -e "${GREEN}✅ SwiftLint checks passed${NC}"
+echo -e "${GREEN}✅ All SwiftLint checks passed!${NC}"
 exit 0

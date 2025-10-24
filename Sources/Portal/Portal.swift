@@ -32,7 +32,7 @@ public struct Portal<Content: View>: View {
         self.groupID = groupID
         self.content = content()
     }
-    
+
     /// Transforms anchor preferences for this portal.
     ///
     /// - Parameter anchor: The anchor bounds to transform
@@ -90,7 +90,7 @@ public struct Portal<Content: View>: View {
     }
 
     private var key: String { source ? id : "\(id)DEST" }
-    
+
     private var opacity: CGFloat {
         guard let idx = index else { return 1 }
         if source {
@@ -99,7 +99,7 @@ public struct Portal<Content: View>: View {
             return portalModel.info[idx].initialized ? (portalModel.info[idx].hideView ? 1 : 0) : 1
         }
     }
-    
+
     private var index: Int? {
         portalModel.info.firstIndex { $0.infoID == id }
     }
@@ -118,7 +118,6 @@ public enum PortalRole {
 // MARK: - View Extensions
 
 public extension View {
-    
     /// Marks this view as a portal with the specified role.
     ///
     /// This unified modifier can mark a view as either a source or destination for a portal transition.
@@ -197,7 +196,7 @@ public extension View {
         let isSource = role == .source
         return Portal(id: key, source: isSource) { self }
     }
-    
+
     /// Marks this view as a portal with the specified role using an `Identifiable` item's ID and group.
     ///
     /// This modifier extends the basic portal functionality to support coordinated group animations.

@@ -3,7 +3,6 @@ import SwiftUI
 @testable import Portal
 
 final class PortalCoreTests: XCTestCase {
-
     // MARK: - PortalAnimation Tests
 
     func testPortalAnimationInitialization() {

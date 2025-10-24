@@ -4,7 +4,7 @@ import Portal
 
 /// PortalPrivate card grid example showing dynamic item parameter usage with view mirroring
 public struct PortalPrivateExample_CardGrid: View {
-    @State private var selectedCard: PortalExample_Card? = nil
+    @State private var selectedCard: PortalExample_Card?
     @State private var cards: [PortalExample_Card] = [
         PortalExample_Card(title: "SwiftUI", subtitle: "Declarative UI", color: .blue, icon: "swift"),
         PortalExample_Card(title: "Portal", subtitle: "Seamless Transitions", color: .purple, icon: "arrow.triangle.2.circlepath"),
@@ -13,7 +13,7 @@ public struct PortalPrivateExample_CardGrid: View {
         PortalExample_Card(title: "Code", subtitle: "Clean Architecture", color: .red, icon: "chevron.left.forwardslash.chevron.right"),
         PortalExample_Card(title: "iOS", subtitle: "Native Platform", color: .cyan, icon: "iphone")
     ]
-    
+
     private let randomCards: [PortalExample_Card] = [
         PortalExample_Card(title: "Xcode", subtitle: "Development IDE", color: .indigo, icon: "hammer.fill"),
         PortalExample_Card(title: "TestFlight", subtitle: "Beta Testing", color: .mint, icon: "airplane"),
@@ -22,23 +22,23 @@ public struct PortalPrivateExample_CardGrid: View {
         PortalExample_Card(title: "Combine", subtitle: "Reactive Framework", color: .pink, icon: "link"),
         PortalExample_Card(title: "Metal", subtitle: "Graphics API", color: .yellow, icon: "cube.fill")
     ]
-    
+
     private let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 2)
-    
+
     public init() {}
-    
+
     private func addRandomCard() {
         let availableCards = randomCards.filter { randomCard in
             !cards.contains { $0.title == randomCard.title }
         }
-        
+
         if let newCard = availableCards.randomElement() {
             withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
                 cards.append(newCard)
             }
         }
     }
-    
+
     public var body: some View {
         PortalContainer {
             NavigationView {
@@ -118,7 +118,7 @@ public struct PortalExample_Card: Identifiable {
     public let subtitle: String
     public let color: Color
     public let icon: String
-    
+
     public init(title: String, subtitle: String, color: Color, icon: String) {
         self.title = title
         self.subtitle = subtitle
@@ -130,7 +130,7 @@ public struct PortalExample_Card: Identifiable {
 private struct PortalExample_CardDetail: View {
     let card: PortalExample_Card
     @Environment(\.dismiss) var dismiss
-    
+
     var body: some View {
         NavigationView {
             ScrollView {

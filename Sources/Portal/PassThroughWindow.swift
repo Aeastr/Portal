@@ -16,7 +16,6 @@ import SwiftUI
 ///
 /// The window uses hit testing to determine whether touches should be handled or passed through.
 internal class PassThroughWindow: UIWindow {
-    
     /// Performs hit testing to determine which view should receive touch events.
     ///
     /// This override implements the pass-through behavior by checking if the touch
@@ -39,21 +38,21 @@ internal class PassThroughWindow: UIWindow {
               let rootView = rootViewController?.view else {
             return nil
         }
-        
+
         // Enhanced hit testing for iOS 18+ to better detect content areas
         if #available(iOS 18, *) {
             // Check subviews in reverse order (top to bottom) to find actual content
             for subview in rootView.subviews.reversed() {
                 // Convert the touch point to the subview's coordinate system
                 let pointInSubView = subview.convert(point, from: rootView)
-                
+
                 // If the subview contains actual content at this point, handle the touch normally
                 if subview.hitTest(pointInSubView, with: event) != nil {
                     return hitView
                 }
             }
         }
-        
+
         // If the hit view is only the root view (background), pass the touch through
         // Otherwise, return the hit view to handle the touch normally
         return hitView == rootView ? nil : hitView

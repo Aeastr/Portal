@@ -5,12 +5,12 @@ import LogOutLoudConsole
 
 /// PortalPrivate list example showing photo transitions in a native SwiftUI List with view mirroring
 public struct PortalPrivateExample_List: View {
-    @State private var selectedItem: PortalExample_ListItem? = nil
+    @State private var selectedItem: PortalExample_ListItem?
     @State private var listItems: [PortalExample_ListItem] = PortalPrivateExample_List.generateLargeDataSet()
     @State private var showConsole = false
-    
+
     public init() {}
-    
+
     public var body: some View {
         PortalContainer {
             NavigationView {
@@ -109,7 +109,7 @@ public struct PortalPrivateExample_List: View {
             )
         }
     }
-    
+
     private static func generateLargeDataSet() -> [PortalExample_ListItem] {
         let baseItems: [(String, String, Color, String)] = [
             ("Mountain Peak", "Breathtaking views from the summit", Color.blue, "mountain.2.fill"),
@@ -138,15 +138,15 @@ public struct PortalPrivateExample_List: View {
             ("Sunset Beach", "Golden light on sand", Color.orange, "sun.horizon.fill"),
             ("Moonlit Lake", "Reflection on still water", Color.indigo, "moon.circle.fill")
         ]
-        
+
         var items: [PortalExample_ListItem] = []
-        
+
         // Generate 1000 items by repeating the base items with different suffixes
         for i in 0..<1000 {
             let baseIndex = i % baseItems.count
             let baseItem = baseItems[baseIndex]
             let suffix = i / baseItems.count + 1
-            
+
             let item = PortalExample_ListItem(
                 title: "\(baseItem.0) \(suffix)",
                 description: "\(baseItem.1) - Item #\(i + 1)",
@@ -155,10 +155,9 @@ public struct PortalPrivateExample_List: View {
             )
             items.append(item)
         }
-        
+
         return items
     }
-    
 }
 
 /// List item model for the Portal example
@@ -168,7 +167,7 @@ public struct PortalExample_ListItem: Identifiable {
     public let description: String
     public let color: Color
     public let icon: String
-    
+
     public init(title: String, description: String, color: Color, icon: String) {
         self.title = title
         self.description = description
@@ -180,7 +179,7 @@ public struct PortalExample_ListItem: Identifiable {
 private struct PortalExample_ListDetail: View {
     let item: PortalExample_ListItem
     @Environment(\.dismiss) var dismiss
-    
+
     var body: some View {
         NavigationView {
             ScrollView {
@@ -189,19 +188,19 @@ private struct PortalExample_ListDetail: View {
                     PortalPrivateDestination(item: item)
                         .frame(width: 280, height: 200)
                     .padding(.top, 20)
-                    
+
                     // Content
                     VStack(spacing: 16) {
                         Text(item.title)
                             .font(.largeTitle)
                             .fontWeight(.bold)
                             .multilineTextAlignment(.center)
-                        
+
                         Text(item.description)
                             .font(.title3)
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
-                        
+
                         Text("This photo seamlessly transitioned from the list using PortalPrivate. The view is mirrored using UIKit's portal view for true instance sharing.")
                             .font(.body)
                             .foregroundColor(.secondary)
@@ -209,7 +208,7 @@ private struct PortalExample_ListDetail: View {
                             .padding(.horizontal)
                             .padding(.top, 8)
                     }
-                    
+
                     Spacer()
                 }
                 .padding()

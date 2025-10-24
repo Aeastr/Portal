@@ -30,7 +30,6 @@ struct UIPortalViewExample: View {
                 }
 
                 Section {
-                    
                     if let container = sourceContainer {
                         SourceViewRepresentable(
                             container: container,
@@ -44,7 +43,6 @@ struct UIPortalViewExample: View {
                 }
 
                 Section {
-                    
                     if let container = sourceContainer {
                         PortalView(
                             source: container,

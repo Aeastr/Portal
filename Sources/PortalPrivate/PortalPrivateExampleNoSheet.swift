@@ -10,7 +10,7 @@ import Portal
 import PortalView
 
 public struct PortalPrivateExampleNoSheetView: View {
-    @State private var selectedItem: Item? = nil
+    @State private var selectedItem: Item?
     @State private var items = Item.sampleItems
 
     public init() {}

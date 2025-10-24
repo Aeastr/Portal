@@ -2,8 +2,8 @@
 import SwiftUI
 
 let portal_animationDuration: TimeInterval = 0.4
-let portal_animationExample: Animation = Animation.smooth(duration: portal_animationDuration, extraBounce: 0.25)
-let portal_animationExampleExtraBounce: Animation = Animation.smooth(duration: portal_animationDuration + 0.12, extraBounce: 0.55)
+let portal_animationExample = Animation.smooth(duration: portal_animationDuration, extraBounce: 0.25)
+let portal_animationExampleExtraBounce = Animation.smooth(duration: portal_animationDuration + 0.12, extraBounce: 0.55)
 
 /// A reusable animated layer component for Portal examples.
 /// Provides visual feedback during portal transitions with a scale animation.
@@ -56,4 +56,4 @@ struct AnimatedLayer<Content: View>: AnimatedPortalLayer {
     PortalExample_CardGrid()
 }
 
-#endif 
+#endif

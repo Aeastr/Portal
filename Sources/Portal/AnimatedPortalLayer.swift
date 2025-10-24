@@ -54,4 +54,3 @@ private struct AnimatedPortalLayerHost<Layer: AnimatedPortalLayer>: View {
         layer.animatedContent(isActive: isActive)
     }
 }
-

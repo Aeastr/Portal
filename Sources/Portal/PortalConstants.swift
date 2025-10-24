@@ -6,7 +6,6 @@ import Foundation
 /// constants used throughout the Portal framework. These values are carefully tuned
 /// for optimal visual performance and consistency.
 public struct PortalConstants {
-
     // MARK: - Timing
 
     /// Standard delay before portal animations begin.

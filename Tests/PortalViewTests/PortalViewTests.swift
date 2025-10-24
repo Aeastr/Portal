@@ -4,7 +4,6 @@ import SwiftUI
 @testable import PortalView
 
 final class PortalViewTests: XCTestCase {
-
     // MARK: - PortalViewWrapper Tests
 
     @MainActor

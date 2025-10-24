@@ -24,7 +24,7 @@ public struct PortalContainerModern<Content: View>: View {
     @State private var portalModel: CrossModel
 
     private let hideStatusBar: Bool
-    
+
     /// Initializes a `PortalContainerModern` with optional custom settings.
     /// - Parameters:
     ///   - hideStatusBar: A boolean indicating whether the status bar should be hidden. Defaults to `false`.
@@ -41,7 +41,7 @@ public struct PortalContainerModern<Content: View>: View {
         _portalModel = State(initialValue: portalModel ?? CrossModel())
         self.content = content()
     }
-    
+
     public var body: some View {
         content
             .onAppear { setupWindow(scene) }
@@ -49,7 +49,7 @@ public struct PortalContainerModern<Content: View>: View {
             .onChange(of: scene) { _, new in setupWindow(new) }
             .environment(portalModel)
     }
-    
+
     private func setupWindow(_ scenePhase: ScenePhase) {
 #if canImport(UIKit)
         if scenePhase == .active {
@@ -121,7 +121,7 @@ import UIKit
 final class OverlayWindowManager {
     static let shared = OverlayWindowManager()
     private var overlayWindow: PassThroughWindow?
-    
+
     /// Adds the overlay window to the active scene.
     /// - Parameters:
     ///   - portalModel: The shared portal model.
@@ -160,7 +160,7 @@ final class OverlayWindowManager {
                 window.backgroundColor = .clear
                 window.isUserInteractionEnabled = false
                 window.isHidden = false
-                
+
                 let root: UIViewController
                 if hideStatusBar {
                     root = HiddenStatusHostingController(
@@ -173,7 +173,7 @@ final class OverlayWindowManager {
                 }
                 root.view.backgroundColor = .clear
                 root.view.frame = windowScene.screen.bounds
-                
+
                 window.rootViewController = root
                 guard self.overlayWindow == nil else {
                     PortalLogs.logger.log(
@@ -200,7 +200,7 @@ final class OverlayWindowManager {
             }
         }
     }
-    
+
     /// Removes the overlay window from the scene.
     func removeOverlayWindow() {
         DispatchQueue.main.async {
@@ -245,8 +245,7 @@ internal struct DebugOverlayIndicator: View {
                     .padding(6)
                     .glassEffect(.regular.tint(color.opacity(0.6)))
                     .foregroundStyle(.white)
-            }
-            else{
+            } else {
                 Text(text)
                     .font(.caption2)
                     .padding(.horizontal, 3)
@@ -270,7 +269,7 @@ internal struct DebugOverlayIndicator: View {
 
 // MARK: - Root Views
 
-fileprivate struct PortalContainerRootView: View {
+private struct PortalContainerRootView: View {
     let portalModel: CrossModel
     let debugOverlaysEnabled: Bool
 
