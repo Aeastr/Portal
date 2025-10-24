@@ -46,18 +46,64 @@ If you have an idea for a new feature or enhancement:
 
 ## Development Setup
 
-- Xcode 15 or later  
-- iOS 15.0+ deployment target  
-- Clone & open `Portal.xcodeproj` or use the Swift Package in your own project
+### Prerequisites
+
+- Xcode 15 or later
+- iOS 15.0+ deployment target
+- SwiftLint for code style checking:
+  ```bash
+  brew install swiftlint
+  ```
+
+### Initial Setup
+
+1. Clone & open `Portal.xcodeproj` or use the Swift Package in your own project
+2. Set up Git hooks for automatic code checking:
+   ```bash
+   ./Scripts/setup-hooks.sh
+   ```
 
 ## Coding Guidelines
 
-- Use idiomatic Swift & SwiftUI conventions  
-- Structure code for readability and reuse  
-- Keep public APIs minimal and well-documented  
-- If you introduce new API, add samples under `Sources/Portal/Examples`  
-- Format your code with `swift-format` or Xcode’s built-in formatter  
+- Use idiomatic Swift & SwiftUI conventions
+- Structure code for readability and reuse
+- Keep public APIs minimal and well-documented
+- If you introduce new API, add samples under `Sources/Portal/Examples`
+- Follow SwiftLint rules (see `.swiftlint.yml`)
 - Write unit tests _where applicable_
+
+### Code Style
+
+This project uses SwiftLint to maintain consistent code style. Run checks with:
+```bash
+# Check all files
+swiftlint lint --config .swiftlint.yml
+
+# Auto-fix issues where possible
+swiftlint autocorrect --config .swiftlint.yml
+
+# Or use the provided script
+./Scripts/run-swiftlint.sh
+```
+
+SwiftLint runs automatically:
+- **Pre-commit**: Checks staged Swift files
+- **CI/CD**: On all pushes and pull requests
+- **Xcode**: Can be integrated as a build phase
+
+### Constants & Best Practices
+
+- Use `PortalConstants` for all timing and configuration values
+- Don't hardcode delays or durations
+- All files must end with a newline
+- Example:
+  ```swift
+  // ✅ Good
+  DispatchQueue.main.asyncAfter(deadline: .now() + PortalConstants.animationDelay)
+
+  // ❌ Bad
+  DispatchQueue.main.asyncAfter(deadline: .now() + 0.1)
+  ```
 
 ## Running Tests
 
