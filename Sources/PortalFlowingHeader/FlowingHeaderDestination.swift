@@ -348,6 +348,7 @@ public extension View {
     ///
     /// - Note: Only the first non-nil content parameter will be used. Priority order is:
     ///   customView > image > systemImage
+    @ViewBuilder
     func flowingHeaderDestination<DestinationView: View>(
         _ title: String,
         systemImage: String? = nil,
@@ -356,13 +357,13 @@ public extension View {
     ) -> some View {
         // Priority: customView > image > systemImage
         if DestinationView.self != EmptyView.self {
-            return AnyView(modifier(FlowingHeaderDestinationWithCustomView(title: title, destinationView: customView())))
+            modifier(FlowingHeaderDestinationWithCustomView(title: title, destinationView: customView()))
         } else if let image = image {
-            return AnyView(modifier(FlowingHeaderDestinationWithImage(title: title, image: image)))
+            modifier(FlowingHeaderDestinationWithImage(title: title, image: image))
         } else if let systemImage = systemImage {
-            return AnyView(modifier(FlowingHeaderDestinationWithSystemImage(title: title, systemImage: systemImage)))
+            modifier(FlowingHeaderDestinationWithSystemImage(title: title, systemImage: systemImage))
         } else {
-            return AnyView(modifier(FlowingHeaderDestination(title: title)))
+            modifier(FlowingHeaderDestination(title: title))
         }
     }
 
