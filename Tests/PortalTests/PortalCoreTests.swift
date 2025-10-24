@@ -26,7 +26,7 @@ final class PortalCoreTests: XCTestCase {
 
         // Test deprecated duration property
         let duration = animation.duration
-        XCTAssertEqual(duration, 0.38)
+        XCTAssertEqual(duration, 0.4)
     }
 
     // MARK: - PortalAnimationWithCompletion Tests

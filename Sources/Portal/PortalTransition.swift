@@ -233,8 +233,8 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
 ///   - isActive: A binding that triggers the transition when set to `true`.
 ///   - sourceProgress: The progress value for the source view (default: 0).
 ///   - destinationProgress: The progress value for the destination view (default: 0).
-///   - animation: The animation to use for the transition (default: `.bouncy(duration: 0.38)`).
-///   - animationDuration: The duration of the transition animation (default: 0.38).
+///   - animation: The animation to use for the transition (default: `.bouncy(duration: 0.4)`).
+///   - animationDuration: The duration of the transition animation (default: 0.4).
 ///   - delay: The delay before starting the animation (default: 0.06).
 ///   - layer: A closure that returns the floating overlay view to animate.
 ///   - completion: A closure called when the transition completes, with a `Bool` indicating success.
@@ -771,7 +771,7 @@ public extension View {
     @available(*, deprecated, message: "Use the new API with direct parameters instead of config")
     func portalTransition<LayerView: View>(
         id: String,
-        config: PortalTransitionConfig = .init(),
+        config: PortalTransitionConfig,
         isActive: Binding<Bool>,
         @ViewBuilder layerView: @escaping () -> LayerView,
         completion: @escaping (Bool) -> Void = { _ in }
@@ -840,7 +840,7 @@ public extension View {
     func portalTransition<LayerView: View>(
         ids: [String],
         groupID: String,
-        config: PortalTransitionConfig = .init(),
+        config: PortalTransitionConfig,
         isActive: Binding<Bool>,
         @ViewBuilder layerView: @escaping (String) -> LayerView,
         completion: @escaping (Bool) -> Void = { _ in }
@@ -880,7 +880,7 @@ public extension View {
     @available(*, deprecated, message: "Use the new API with direct parameters instead of config")
     func portalTransition<Item: Identifiable, LayerView: View>(
         item: Binding<Optional<Item>>,
-        config: PortalTransitionConfig = .init(),
+        config: PortalTransitionConfig,
         @ViewBuilder layerView: @escaping (Item) -> LayerView,
         completion: @escaping (Bool) -> Void = { _ in }
     ) -> some View {
@@ -961,7 +961,7 @@ public extension View {
     func portalTransition<Item: Identifiable, LayerView: View>(
         items: Binding<[Item]>,
         groupID: String,
-        config: PortalTransitionConfig = .init(),
+        config: PortalTransitionConfig,
         staggerDelay: TimeInterval = 0.0,
         @ViewBuilder layerView: @escaping (Item) -> LayerView,
         completion: @escaping (Bool) -> Void = { _ in }
