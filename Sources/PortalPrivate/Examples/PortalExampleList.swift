@@ -1,5 +1,5 @@
 //
-//  PortalExample_List.swift
+//  PortalExampleList.swift
 //  Portal
 //
 //  Created by Aether, 2025.
@@ -10,12 +10,13 @@
 
 #if DEBUG
 import SwiftUI
+import Portal
 import LogOutLoudConsole
 
-/// Portal list example showing photo transitions in a native SwiftUI List
-public struct PortalExample_List: View {
-    @State private var selectedItem: PortalExample_ListItem?
-    @State private var listItems: [PortalExample_ListItem] = PortalExample_List.generateLargeDataSet()
+/// PortalPrivate list example showing photo transitions in a native SwiftUI List with view mirroring
+public struct PortalPrivateExampleList: View {
+    @State private var selectedItem: PortalExampleListItem?
+    @State private var listItems: [PortalExampleListItem] = PortalPrivateExampleList.generateLargeDataSet()
     @State private var showConsole = false
 
     public init() {}
@@ -41,20 +42,20 @@ public struct PortalExample_List: View {
                     Section("Scenic Views") {
                         ForEach(listItems) { item in
                             HStack(spacing: 16) {
-                                // Photo - Portal Source
-
-                                Group {
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(item.color.gradient)
+                                // Photo - PortalPrivate Source
+                                AnimatedLayer(portalID: "\(item.id)") {
+                                    Group {
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .fill(item.color.gradient)
+                                    }
+                                    .overlay(
+                                        Image(systemName: item.icon)
+                                            .font(.system(size: 24, weight: .medium))
+                                            .foregroundColor(.white)
+                                    )
+                                    .portalPrivate(item: item)
                                 }
-                                .overlay(
-                                    Image(systemName: item.icon)
-                                        .font(.system(size: 24, weight: .medium))
-                                        .foregroundColor(.white)
-                                )
-
                                 .frame(width: 60, height: 60)
-                                .portal(item: item, .source)
 
                                 // Content
                                 VStack(alignment: .leading, spacing: 4) {
@@ -83,7 +84,7 @@ public struct PortalExample_List: View {
                         }
                     }
                 }
-                .navigationTitle("Portal Performance Test")
+                .navigationTitle("PortalPrivate Performance")
                 .navigationBarTitleDisplayMode(.inline)
                 .background(Color(.systemGroupedBackground).ignoresSafeArea())
                 .toolbar {
@@ -100,24 +101,11 @@ public struct PortalExample_List: View {
                 }
             }
             .sheet(item: $selectedItem) { item in
-                PortalExample_ListDetail(item: item)
+                PortalExampleListDetail(item: item)
             }
-            .portalTransition(
-                item: $selectedItem,
-                config: .init(
-                    animation: PortalAnimation(portal_animationExample)
-                )
-            ) { item in
-                Group {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(item.color.gradient)
-                }
-                .overlay(
-                    Image(systemName: item.icon)
-                        .font(.system(size: 24, weight: .medium))
-                        .foregroundColor(.white)
-                )
-            }
+            .portalPrivateTransition(
+                item: $selectedItem
+            )
         }
         .sheet(isPresented: $showConsole) {
             LogConsolePanel()
@@ -132,7 +120,7 @@ public struct PortalExample_List: View {
         }
     }
 
-    private static func generateLargeDataSet() -> [PortalExample_ListItem] {
+    private static func generateLargeDataSet() -> [PortalExampleListItem] {
         let baseItems: [(String, String, Color, String)] = [
             ("Mountain Peak", "Breathtaking views from the summit", Color.blue, "mountain.2.fill"),
             ("Ocean Waves", "Peaceful sounds of the sea", Color.cyan, "water.waves"),
@@ -161,7 +149,7 @@ public struct PortalExample_List: View {
             ("Moonlit Lake", "Reflection on still water", Color.indigo, "moon.circle.fill")
         ]
 
-        var items: [PortalExample_ListItem] = []
+        var items: [PortalExampleListItem] = []
 
         // Generate 1000 items by repeating the base items with different suffixes
         for i in 0..<1000 {
@@ -169,7 +157,7 @@ public struct PortalExample_List: View {
             let baseItem = baseItems[baseIndex]
             let suffix = i / baseItems.count + 1
 
-            let item = PortalExample_ListItem(
+            let item = PortalExampleListItem(
                 title: "\(baseItem.0) \(suffix)",
                 description: "\(baseItem.1) - Item #\(i + 1)",
                 color: baseItem.2,
@@ -183,7 +171,7 @@ public struct PortalExample_List: View {
 }
 
 /// List item model for the Portal example
-public struct PortalExample_ListItem: Identifiable {
+public struct PortalExampleListItem: Identifiable {
     public let id = UUID()
     public let title: String
     public let description: String
@@ -198,8 +186,8 @@ public struct PortalExample_ListItem: Identifiable {
     }
 }
 
-private struct PortalExample_ListDetail: View {
-    let item: PortalExample_ListItem
+private struct PortalExampleListDetail: View {
+    let item: PortalExampleListItem
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
@@ -207,19 +195,8 @@ private struct PortalExample_ListDetail: View {
             ScrollView {
                 VStack(spacing: 32) {
                     // MARK: Destination Photo
-
-                    Group {
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(item.color.gradient)
-                    }
-                    .overlay(
-                        Image(systemName: item.icon)
-                            .font(.system(size: 24, weight: .medium))
-                            .foregroundColor(.white)
-                    )
-
-                    .frame(width: 280, height: 200)
-                    .portal(item: item, .destination)
+                    PortalPrivateDestination(item: item)
+                        .frame(width: 280, height: 200)
                     .padding(.top, 20)
 
                     // Content
@@ -234,7 +211,7 @@ private struct PortalExample_ListDetail: View {
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
 
-                        Text("This photo seamlessly transitioned from the list using Portal. The same visual element now appears larger in this detail view, creating a smooth and natural user experience.")
+                        Text("This photo seamlessly transitioned from the list using PortalPrivate. The view is mirrored using UIKit's portal view for true instance sharing.")
                             .font(.body)
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
@@ -262,13 +239,13 @@ private struct PortalExample_ListDetail: View {
     }
 }
 
-#Preview("List Example") {
-    PortalExample_List()
+#Preview("PortalPrivate List") {
+    PortalPrivateExampleList()
 }
 
 #Preview("Detail View") {
-    PortalExample_ListDetail(
-        item: PortalExample_ListItem(
+    PortalExampleListDetail(
+        item: PortalExampleListItem(
             title: "Mountain Peak",
             description: "Breathtaking views from the summit",
             color: .blue,

@@ -1,5 +1,5 @@
 //
-//  PortalExample_MultiItem.swift
+//  PortalExampleMultiItem.swift
 //  Portal
 //
 //  Created by Aether, 2025.
@@ -12,7 +12,7 @@
 import SwiftUI
 import Portal
 /// Portal multi-item example showing coordinated transitions for multiple elements
-public struct PortalExample_MultiItem: View {
+public struct PortalExampleMultiItem: View {
     @State private var selectedPhotos: [MultiItemPhoto] = []
     @State private var allPhotos: [MultiItemPhoto] = MultiItemPhoto.samplePhotos
 
@@ -191,6 +191,6 @@ struct MultiItemPhoto: Identifiable {
 }
 
 #Preview{
-    PortalExample_MultiItem()
+    PortalExampleMultiItem()
 }
 #endif

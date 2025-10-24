@@ -1,5 +1,5 @@
 //
-//  PortalExample_StaticID.swift
+//  PortalExampleStaticID.swift
 //  Portal
 //
 //  Created by Aether, 2025.
@@ -13,7 +13,7 @@ import SwiftUI
 import Portal
 
 /// PortalPrivate static ID example showing code block transitions with view mirroring
-public struct PortalPrivateExample_StaticID: View {
+public struct PortalPrivateExampleStaticID: View {
     @State private var showDetail = false
 
     public init() {}
@@ -99,7 +99,7 @@ public struct PortalPrivateExample_StaticID: View {
                 .background(Color(.systemGroupedBackground).ignoresSafeArea())
             }
             .sheet(isPresented: $showDetail) {
-                PortalExample_StaticIDDetail()
+                PortalExampleStaticIDDetail()
             }
             .portalPrivateTransition(
                 id: "codeBlock",
@@ -109,7 +109,7 @@ public struct PortalPrivateExample_StaticID: View {
     }
 }
 
-private struct PortalExample_StaticIDDetail: View {
+private struct PortalExampleStaticIDDetail: View {
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
@@ -147,11 +147,11 @@ private struct PortalExample_StaticIDDetail: View {
 }
 
 #Preview("Static ID Example") {
-    PortalPrivateExample_StaticID()
+    PortalPrivateExampleStaticID()
 }
 
 #Preview("Static ID Example Detail") {
-    PortalExample_StaticIDDetail()
+    PortalExampleStaticIDDetail()
 }
 
 #endif

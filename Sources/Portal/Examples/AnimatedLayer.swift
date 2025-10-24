@@ -63,7 +63,7 @@ struct AnimatedLayer<Content: View>: AnimatedPortalLayer {
 }
 
 #Preview("Card Grid Example") {
-    PortalExample_CardGrid()
+    PortalExampleCardGrid()
 }
 
 #endif

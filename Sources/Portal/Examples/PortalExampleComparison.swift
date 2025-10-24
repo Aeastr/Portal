@@ -1,5 +1,5 @@
 //
-//  PortalExample_Comparison.swift
+//  PortalExampleComparison.swift
 //  Portal
 //
 //  Created by Aether, 2025.
@@ -10,11 +10,10 @@
 
 #if DEBUG
 import SwiftUI
-import Portal
 
-/// Comparison example showing PortalPrivate vs native iOS transitions
-/// Shows PortalPrivate's view mirroring vs native iOS transition features
-public struct PortalPrivateExample_Comparison: View {
+/// Comparison example showing Portal vs native iOS transitions
+/// Shows Portal vs native iOS transition features
+public struct PortalExampleComparison: View {
     @State private var showPortalSheet = false
     @State private var showNativeSheet = false
     @State private var showZoomSheet = false
@@ -28,7 +27,7 @@ public struct PortalPrivateExample_Comparison: View {
                 ScrollView {
                     VStack(spacing: 32) {
                     VStack(spacing: 12) {
-                        Text("Compare PortalPrivate's view mirroring transitions with native iOS behavior. Tap each card to see the difference.")
+                        Text("Compare Portal's cross-boundary transitions with native iOS behavior. Tap each card to see the difference.")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
@@ -39,41 +38,41 @@ public struct PortalPrivateExample_Comparison: View {
                         GridItem(.flexible()),
                         GridItem(.flexible())
                     ], spacing: 20) {
-                        // MARK: PortalPrivate Example
+                        // MARK: Portal Example
                         VStack(spacing: 12) {
-                            Text("PortalPrivate")
+                            Text("Portal")
                                 .font(.headline)
                                 .fontWeight(.semibold)
                                 .foregroundColor(.blue)
 
                             AnimatedLayer(portalID: "portalDemo") {
-                                    RoundedRectangle(cornerRadius: 16)
-                                        .fill(
-                                            LinearGradient(
-                                                colors: [Color.blue, Color.cyan],
-                                                startPoint: .topLeading,
-                                                endPoint: .bottomTrailing
-                                            )
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [Color.blue, Color.cyan],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
                                         )
-                                        .overlay(
-                                            VStack(spacing: 8) {
-                                                Image(systemName: "arrow.up.right")
-                                                    .font(.system(size: 28, weight: .semibold))
-                                                    .foregroundColor(.white)
-                                                Text("Portal")
-                                                    .font(.title3)
-                                                    .foregroundColor(.white)
-                                                    .fontWeight(.bold)
-                                            }
-                                        )
-                                    .portalPrivate(id: "portalDemo")
+                                    )
+                                    .overlay(
+                                        VStack(spacing: 8) {
+                                            Image(systemName: "arrow.up.right")
+                                                .font(.system(size: 28, weight: .semibold))
+                                                .foregroundColor(.white)
+                                            Text("Portal")
+                                                .font(.title3)
+                                                .foregroundColor(.white)
+                                                .fontWeight(.bold)
+                                        }
+                                    )
                             }
                             .frame(width: 160, height: 120)
+                            .portal(id: "portalDemo", .source)
                             .onTapGesture {
                                     showPortalSheet.toggle()
                             }
 
-                            Text("View mirroring")
+                            Text("Cross-boundary transitions")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                                 .multilineTextAlignment(.center)
@@ -155,41 +154,86 @@ public struct PortalPrivateExample_Comparison: View {
                     }
                     .padding()
                 }
-                .navigationTitle("PortalPrivate vs Native")
+                .navigationTitle("Portal vs Native Comparison")
                 .navigationBarTitleDisplayMode(.inline)
                 .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())
             }
             .sheet(isPresented: $showPortalSheet) {
-                PortalExample_PortalComparisonSheet()
+                PortalExamplePortalComparisonSheet()
             }
             .sheet(isPresented: $showNativeSheet) {
-                PortalExample_NativeComparisonSheet()
+                PortalExampleNativeComparisonSheet()
             }
             .sheet(isPresented: $showZoomSheet) {
                 if #available(iOS 18.0, *) {
-                    PortalExample_ZoomComparisonSheet(namespace: namespace)
+                    PortalExampleZoomComparisonSheet(namespace: namespace)
                         .navigationTransition(.zoom(sourceID: "zoomDemo", in: namespace))
                 }
             }
-            .portalPrivateTransition(
-                id: "portalDemo",
-                isActive: $showPortalSheet
-            )
+            .portalTransition(
+            id: "portalDemo",
+            config: .init(animation: PortalAnimation(portal_animationExample)),
+            isActive: $showPortalSheet
+        ) {
+            AnimatedLayer(portalID: "portalDemo") {
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.blue, Color.cyan],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .overlay(
+                        VStack(spacing: 8) {
+                            Image(systemName: "arrow.up.right")
+                                .font(.system(size: 28, weight: .semibold))
+                                .foregroundColor(.white)
+                            Text("Portal")
+                                .font(.title3)
+                                .foregroundColor(.white)
+                                .fontWeight(.bold)
+                        }
+                    )
+            }
+            }
         }
     }
 }
 
-private struct PortalExample_PortalComparisonSheet: View {
+private struct PortalExamplePortalComparisonSheet: View {
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 32) {
-                    // MARK: PortalPrivate Destination
-                    PortalPrivateDestination(id: "portalDemo")
+                    // MARK: Portal Destination
+                    AnimatedLayer(portalID: "portalDemo") {
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(
+                                LinearGradient(
+                                    colors: [Color.blue, Color.cyan],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .overlay(
+                                VStack(spacing: 8) {
+                                    Image(systemName: "arrow.up.right")
+                                        .font(.system(size: 28, weight: .semibold))
+                                        .foregroundColor(.white)
+                                    Text("Portal")
+                                        .font(.title3)
+                                        .foregroundColor(.white)
+                                        .fontWeight(.bold)
+                                }
+                            )
+                    }
+                    .frame(width: 280, height: 200)
+                    .portal(id: "portalDemo", .destination)
 
-                    Text("This element seamlessly transitioned from the main view using PortalPrivate. PortalPrivate uses view mirroring via UIKit's portal view for true view instance sharing.")
+                    Text("This element seamlessly transitioned from the main view using Portal. Portal enables cross-boundary transitions that aren't possible with standard SwiftUI.")
                         .font(.body)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
@@ -199,7 +243,7 @@ private struct PortalExample_PortalComparisonSheet: View {
                 .padding(.top, 20)
                 .frame(maxWidth: .infinity)
             }
-            .navigationTitle("PortalPrivate Transition")
+            .navigationTitle("Portal Transition")
             .navigationBarTitleDisplayMode(.large)
             .navigationBarItems(trailing: Button("Done") {
                 dismiss()
@@ -209,7 +253,7 @@ private struct PortalExample_PortalComparisonSheet: View {
     }
 }
 
-private struct PortalExample_NativeComparisonSheet: View {
+private struct PortalExampleNativeComparisonSheet: View {
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
@@ -259,7 +303,7 @@ private struct PortalExample_NativeComparisonSheet: View {
 }
 
 @available(iOS 18.0, *)
-private struct PortalExample_ZoomComparisonSheet: View {
+private struct PortalExampleZoomComparisonSheet: View {
     @Environment(\.dismiss) var dismiss
     let namespace: Namespace.ID
 
@@ -310,7 +354,7 @@ private struct PortalExample_ZoomComparisonSheet: View {
 }
 
 #Preview {
-    PortalPrivateExample_Comparison()
+    PortalExampleComparison()
 }
 
 #endif

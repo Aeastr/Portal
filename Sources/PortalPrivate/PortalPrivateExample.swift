@@ -158,7 +158,7 @@ struct Item: Identifiable, Equatable {
 // MARK: - Preview
 
 #if DEBUG
-struct PortalPrivateExampleView_Previews: PreviewProvider {
+struct PortalPrivateExampleViewPreviews: PreviewProvider {
     static var previews: some View {
         PortalPrivateExampleView()
     }

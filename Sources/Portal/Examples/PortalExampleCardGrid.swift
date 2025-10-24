@@ -1,5 +1,5 @@
 //
-//  PortalExample_CardGrid.swift
+//  PortalExampleCardGrid.swift
 //  Portal
 //
 //  Created by Aether, 2025.
@@ -12,24 +12,24 @@
 import SwiftUI
 
 /// Portal card grid example showing dynamic item parameter usage
-public struct PortalExample_CardGrid: View {
-    @State private var selectedCard: PortalExample_Card?
-    @State private var cards: [PortalExample_Card] = [
-        PortalExample_Card(title: "SwiftUI", subtitle: "Declarative UI", color: .blue, icon: "swift"),
-        PortalExample_Card(title: "Portal", subtitle: "Seamless Transitions", color: .purple, icon: "arrow.triangle.2.circlepath"),
-        PortalExample_Card(title: "Animation", subtitle: "Smooth Motion", color: .green, icon: "waveform.path"),
-        PortalExample_Card(title: "Design", subtitle: "Beautiful Interfaces", color: .orange, icon: "paintbrush.fill"),
-        PortalExample_Card(title: "Code", subtitle: "Clean Architecture", color: .red, icon: "chevron.left.forwardslash.chevron.right"),
-        PortalExample_Card(title: "iOS", subtitle: "Native Platform", color: .cyan, icon: "iphone")
+public struct PortalExampleCardGrid: View {
+    @State private var selectedCard: PortalExampleCard?
+    @State private var cards: [PortalExampleCard] = [
+        PortalExampleCard(title: "SwiftUI", subtitle: "Declarative UI", color: .blue, icon: "swift"),
+        PortalExampleCard(title: "Portal", subtitle: "Seamless Transitions", color: .purple, icon: "arrow.triangle.2.circlepath"),
+        PortalExampleCard(title: "Animation", subtitle: "Smooth Motion", color: .green, icon: "waveform.path"),
+        PortalExampleCard(title: "Design", subtitle: "Beautiful Interfaces", color: .orange, icon: "paintbrush.fill"),
+        PortalExampleCard(title: "Code", subtitle: "Clean Architecture", color: .red, icon: "chevron.left.forwardslash.chevron.right"),
+        PortalExampleCard(title: "iOS", subtitle: "Native Platform", color: .cyan, icon: "iphone")
     ]
 
-    private let randomCards: [PortalExample_Card] = [
-        PortalExample_Card(title: "Xcode", subtitle: "Development IDE", color: .indigo, icon: "hammer.fill"),
-        PortalExample_Card(title: "TestFlight", subtitle: "Beta Testing", color: .mint, icon: "airplane"),
-        PortalExample_Card(title: "Core Data", subtitle: "Data Persistence", color: .brown, icon: "cylinder.fill"),
-        PortalExample_Card(title: "CloudKit", subtitle: "Cloud Sync", color: .teal, icon: "cloud.fill"),
-        PortalExample_Card(title: "Combine", subtitle: "Reactive Framework", color: .pink, icon: "link"),
-        PortalExample_Card(title: "Metal", subtitle: "Graphics API", color: .yellow, icon: "cube.fill")
+    private let randomCards: [PortalExampleCard] = [
+        PortalExampleCard(title: "Xcode", subtitle: "Development IDE", color: .indigo, icon: "hammer.fill"),
+        PortalExampleCard(title: "TestFlight", subtitle: "Beta Testing", color: .mint, icon: "airplane"),
+        PortalExampleCard(title: "Core Data", subtitle: "Data Persistence", color: .brown, icon: "cylinder.fill"),
+        PortalExampleCard(title: "CloudKit", subtitle: "Cloud Sync", color: .teal, icon: "cloud.fill"),
+        PortalExampleCard(title: "Combine", subtitle: "Reactive Framework", color: .pink, icon: "link"),
+        PortalExampleCard(title: "Metal", subtitle: "Graphics API", color: .yellow, icon: "cube.fill")
     ]
 
     private let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 2)
@@ -115,7 +115,7 @@ public struct PortalExample_CardGrid: View {
                 .background(Color(.systemGroupedBackground).ignoresSafeArea())
             }
             .sheet(item: $selectedCard) { card in
-                PortalExample_CardDetail(card: card)
+                PortalExampleCardDetail(card: card)
             }
 
             .portalTransition(
@@ -145,7 +145,7 @@ public struct PortalExample_CardGrid: View {
 }
 
 /// Card model for the Portal example
-public struct PortalExample_Card: Identifiable {
+public struct PortalExampleCard: Identifiable {
     public let id = UUID()
     public let title: String
     public let subtitle: String
@@ -160,8 +160,8 @@ public struct PortalExample_Card: Identifiable {
     }
 }
 
-private struct PortalExample_CardDetail: View {
-    let card: PortalExample_Card
+private struct PortalExampleCardDetail: View {
+    let card: PortalExampleCard
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
@@ -212,12 +212,12 @@ private struct PortalExample_CardDetail: View {
 }
 
 #Preview("Card Grid") {
-    PortalExample_CardGrid()
+    PortalExampleCardGrid()
 }
 
 #Preview("Detail View") {
-    PortalExample_CardDetail(
-        card: PortalExample_Card(title: "Portal", subtitle: "Seamless Transitions", color: .purple, icon: "arrow.triangle.2.circlepath")
+    PortalExampleCardDetail(
+        card: PortalExampleCard(title: "Portal", subtitle: "Seamless Transitions", color: .purple, icon: "arrow.triangle.2.circlepath")
     )
 }
 

@@ -101,7 +101,7 @@ struct DetailOverlayView: View {
 // MARK: - Preview
 
 #if DEBUG
-struct PortalPrivateExampleNoSheetView_Previews: PreviewProvider {
+struct PortalPrivateExampleNoSheetViewPreviews: PreviewProvider {
     static var previews: some View {
         PortalPrivateExampleNoSheetView()
     }
