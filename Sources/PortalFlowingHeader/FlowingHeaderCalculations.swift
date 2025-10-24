@@ -165,8 +165,12 @@ public struct FlowingHeaderCalculations {
         progress: CGFloat
     ) -> (x: CGFloat, y: CGFloat) {
         // Guard against division by zero
+        // Returns identity scale (1.0, 1.0) for invalid source size to:
+        // - Prevent crashes from division by zero
+        // - Maintain visual stability (no scaling applied)
+        // - Allow graceful degradation when views haven't laid out yet
         guard sourceSize.width > 0 && sourceSize.height > 0 else {
-            return (1.0, 1.0) // Return identity scale if source size is invalid
+            return (1.0, 1.0)
         }
 
         let targetWidth = sourceSize.width + (destinationSize.width - sourceSize.width) * progress

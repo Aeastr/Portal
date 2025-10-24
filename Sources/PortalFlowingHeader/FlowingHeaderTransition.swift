@@ -95,9 +95,9 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
                     let accessorySrcAnchor = anchors[accessorySrcKey]
                     let accessoryDstAnchor = anchors[accessoryDstKey]
 
-                    // Clamp progress t ∈ [0,1]
-                    let clamped = min(max(abs(titleProgress), 0), 1)
-                    let t = CGFloat(clamped)
+                    // Ensure progress is within valid range [0,1]
+                    // Use abs() defensively in case of floating-point precision issues
+                    let t = CGFloat(min(max(abs(titleProgress), 0), 1))
 
                     // Render title if both anchors exist
                     if titleSrcAnchor != nil && titleDstAnchor != nil {
@@ -122,12 +122,17 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
 
                     #if DEBUG
                     // Debug message if no anchors found
+                    // Note: Positioned at bottom to minimize layout interference
                     if titleSrcAnchor == nil && titleDstAnchor == nil &&
                        accessorySrcAnchor == nil && accessoryDstAnchor == nil {
-                        Text("none found – keys: \(anchors.keys), looking for \(title)")
+                        Text("FlowingHeader: No anchors found for '\(title)'")
+                            .font(.caption2)
                             .foregroundStyle(.red)
-                            .background(.white)
+                            .padding(4)
+                            .background(.white.opacity(0.9))
+                            .cornerRadius(4)
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                            .allowsHitTesting(false)
                     }
                     #endif
                 }

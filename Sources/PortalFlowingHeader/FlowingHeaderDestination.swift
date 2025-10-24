@@ -49,6 +49,7 @@ internal struct FlowingHeaderDestination: ViewModifier {
                     Text(title)
                         .font(.headline.weight(.semibold))
                         .opacity(0)  // Invisible but present for anchor extraction
+                        .accessibilityHidden(true)  // Hide from VoiceOver since actual title is rendered separately
                         .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
                             [AnchorKeyID(kind: "destination", id: title, type: "title"): anchor]
                         }
@@ -93,6 +94,7 @@ internal struct FlowingHeaderDestinationWithSystemImage: ViewModifier {
         Image(systemName: systemImage)
             .font(.headline)
             .opacity(0)
+            .accessibilityHidden(true)
             .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
                 [AnchorKeyID(kind: "destination", id: title, type: "accessory"): anchor]
             }
@@ -102,6 +104,7 @@ internal struct FlowingHeaderDestinationWithSystemImage: ViewModifier {
         Text(title)
             .font(.headline.weight(.semibold))
             .opacity(0)
+            .accessibilityHidden(true)
             .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
                 [AnchorKeyID(kind: "destination", id: title, type: "title"): anchor]
             }
@@ -139,6 +142,7 @@ internal struct FlowingHeaderDestinationWithCustomView<DestinationView: View>: V
     private var accessoryView: some View {
         destinationView
             .opacity(0)
+            .accessibilityHidden(true)
             .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
                 [AnchorKeyID(kind: "destination", id: title, type: "accessory"): anchor]
             }
@@ -148,6 +152,7 @@ internal struct FlowingHeaderDestinationWithCustomView<DestinationView: View>: V
         Text(title)
             .font(.headline.weight(.semibold))
             .opacity(0)
+            .accessibilityHidden(true)
             .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
                 [AnchorKeyID(kind: "destination", id: title, type: "title"): anchor]
             }
@@ -188,6 +193,7 @@ internal struct FlowingHeaderDestinationWithImage: ViewModifier {
             .aspectRatio(contentMode: .fit)
             .frame(width: 32, height: 32)
             .opacity(0)
+            .accessibilityHidden(true)
             .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
                 [AnchorKeyID(kind: "destination", id: title, type: "accessory"): anchor]
             }
@@ -197,6 +203,7 @@ internal struct FlowingHeaderDestinationWithImage: ViewModifier {
         Text(title)
             .font(.headline.weight(.semibold))
             .opacity(0)
+            .accessibilityHidden(true)
             .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
                 [AnchorKeyID(kind: "destination", id: title, type: "title"): anchor]
             }

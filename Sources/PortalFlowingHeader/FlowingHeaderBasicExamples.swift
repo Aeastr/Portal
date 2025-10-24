@@ -58,9 +58,9 @@ public struct FlowingHeaderExample: View {
                 }
                 .padding()
             }
-            .flowingHeaderDestination("Photos", systemImage: "photo.on.rectangle.angled")
+            .flowingHeaderDestination("Photos")
         }
-        .flowingHeader("Photos", systemImage: "photo.on.rectangle.angled")
+        .flowingHeader("Photos")
     }
 }
 

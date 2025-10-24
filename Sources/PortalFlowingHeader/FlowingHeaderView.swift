@@ -164,6 +164,7 @@ public struct FlowingHeaderView<Content: View>: View {
                 Text(title)
                     .font(.title.weight(.semibold))
                     .opacity(0)  // Always invisible to maintain layout
+                    .accessibilityHidden(true)  // Hide from VoiceOver since actual title is rendered separately
                     .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
                         return [AnchorKeyID(kind: "source", id: title, type: "title"): anchor]
                     }
