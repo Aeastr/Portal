@@ -1,6 +1,6 @@
 //
 //  FlowingHeaderExample.swift
-//  Portal
+//  PortalFlowingHeader
 //
 //  Created by Aether, 2025.
 //
