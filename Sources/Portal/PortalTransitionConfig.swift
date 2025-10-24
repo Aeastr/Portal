@@ -24,6 +24,9 @@ import SwiftUI
 /// // Use with portal animation
 /// portalTransition(id: "myPortal", config: config)
 /// ```
+///
+/// - Deprecated: Use direct Animation parameters instead of PortalTransitionConfig
+@available(*, deprecated, message: "Use direct Animation parameters instead of PortalTransitionConfig")
 public struct PortalTransitionConfig {
     
     /// Animation timing and behavior configuration.
@@ -74,6 +77,9 @@ public struct PortalTransitionConfig {
 ///
 /// This protocol allows both `PortalAnimation` and `PortalAnimationWithCompletion` to be
 /// used interchangeably in the portal system while maintaining type safety.
+///
+/// - Deprecated: Use SwiftUI's Animation type directly instead
+@available(*, deprecated, message: "Use SwiftUI's Animation type directly instead")
 public protocol PortalAnimationProtocol {
 
     /// The SwiftUI animation curve and timing configuration.
@@ -123,6 +129,9 @@ public protocol PortalAnimationProtocol {
 /// - Uses appropriate animation type for the iOS version
 /// - Small delay to allow for view hierarchy updates
 /// - Reliable completion detection across all iOS versions
+///
+/// - Deprecated: Use SwiftUI's Animation type directly instead
+@available(*, deprecated, message: "Use SwiftUI's Animation type directly instead")
 public struct PortalAnimation: PortalAnimationProtocol {
 
     /// The SwiftUI animation curve and timing configuration.
@@ -186,7 +195,7 @@ public struct PortalAnimation: PortalAnimationProtocol {
 /// Animation configuration for portal transitions with iOS 17+ completion criteria.
 ///
 /// This struct provides advanced animation control with modern completion criteria
-/// detection. It's only available on iOS 17+ where `AnimationCompletionCriteria` 
+/// detection. It's only available on iOS 17+ where `AnimationCompletionCriteria`
 /// is supported.
 ///
 /// **Key Features:**
@@ -203,6 +212,9 @@ public struct PortalAnimation: PortalAnimationProtocol {
 ///     completionCriteria: .logicallyComplete
 /// )
 /// ```
+///
+/// - Deprecated: Use SwiftUI's Animation type and AnimationCompletionCriteria directly instead
+@available(*, deprecated, message: "Use SwiftUI's Animation type and AnimationCompletionCriteria directly instead")
 public struct PortalAnimationWithCompletion: PortalAnimationProtocol {
     
     /// The SwiftUI animation curve and timing configuration.
