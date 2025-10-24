@@ -32,6 +32,12 @@ struct AnimatedLayerConfig {
 ///
 /// This is an example implementation using the `AnimatedPortalLayer` protocol.
 /// Users can copy and modify this to create their own custom animations.
+///
+/// **Note on timing values:**
+/// The timing values in this implementation (0.1, 0.12, etc.) are animation design parameters
+/// specific to this bounce effect choreography, NOT system constants. They control when the
+/// second bounce animation triggers relative to the first one. When you copy this component,
+/// these values are meant to be tuned for your specific animation design.
 struct AnimatedLayer<Content: View>: AnimatedPortalLayer {
     let portalID: String
     var scale: CGFloat = 2
@@ -58,6 +64,9 @@ struct AnimatedLayer<Content: View>: AnimatedPortalLayer {
             withAnimation(animationConfig.bounceAnimation) {
                 layerScale = scale
             }
+            // Timing calculation: Trigger second bounce slightly before halfway point
+            // The 0.1 offset is an animation design parameter for this specific bounce choreography,
+            // NOT PortalConstants.animationDelay (which is for portal system timing, not animation design)
             DispatchQueue.main.asyncAfter(deadline: .now() + (animationConfig.duration / 2) - 0.1) {
                 withAnimation(animationConfig.extraBounceAnimation) {
                     layerScale = 1
@@ -67,7 +76,7 @@ struct AnimatedLayer<Content: View>: AnimatedPortalLayer {
             withAnimation(animationConfig.bounceAnimation) {
                 layerScale = 1.5
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + (animationConfig.duration / 2) - 0.1) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + (animationConfig.duration / 2) - PortalConstants.animationDelay) {
                 withAnimation(animationConfig.extraBounceAnimation) {
                     layerScale = 1
                 }
