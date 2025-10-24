@@ -976,6 +976,7 @@ public extension View {
     ///   - layerView: Closure that receives each ID and returns the view to animate for that ID
     ///   - completion: Optional completion handler (defaults to no-op)
     /// - Returns: A view with the multi-ID portal transition modifier applied
+    @available(*, deprecated, message: "Use portalTransition with direct animation and corners parameters instead")
     func portalTransition<LayerView: View>(
         ids: [String],
         groupID: String,
@@ -992,6 +993,45 @@ public extension View {
                 isActive: isActive,
                 layerView: layerView,
                 completion: completion))
+    }
+
+    /// Applies a portal transition for multiple IDs with direct parameter configuration.
+    ///
+    /// Creates portal transitions for multiple elements identified by their IDs, with
+    /// shared animation parameters. All IDs in the group transition together when
+    /// `isActive` changes.
+    ///
+    /// - Parameters:
+    ///   - ids: Array of IDs for the portals to transition
+    ///   - groupID: Common group ID for organizing the IDs
+    ///   - isActive: Controls whether the transition is active
+    ///   - in corners: Corner radius configuration for visual styling
+    ///   - animation: The animation curve to use
+    ///   - completionCriteria: How to detect animation completion
+    ///   - layerView: Closure that generates the view for each ID
+    ///   - completion: Called when the transition completes
+    ///
+    /// - Returns: A modified view with the portal transitions applied
+    func portalTransition<LayerView: View>(
+        ids: [String],
+        groupID: String,
+        isActive: Binding<Bool>,
+        in corners: PortalCorners? = nil,
+        animation: Animation = .smooth(duration: 0.4),
+        completionCriteria: AnimationCompletionCriteria = .removed,
+        @ViewBuilder layerView: @escaping (String) -> LayerView,
+        completion: @escaping (Bool) -> Void = { _ in }
+    ) -> some View {
+        return self.modifier(
+            MultiIDPortalTransitionModifier(
+                ids: ids,
+                groupID: groupID,
+                isActive: isActive,
+                in: corners,
+                animation: animation,
+                completionCriteria: completionCriteria,
+                completion: completion,
+                layerView: layerView))
     }
     
     /// Applies a portal transition controlled by an optional `Identifiable` item.
@@ -1037,10 +1077,11 @@ public extension View {
     ///
     /// - Parameters:
     ///   - item: Binding to an optional `Identifiable` item that controls the transition
+    ///   - in corners: Corner radius configuration for visual styling
     ///   - animation: Animation to use for the transition (defaults to smooth animation)
     ///   - completionCriteria: How to detect animation completion (defaults to .removed)
-    ///   - layerView: Closure that receives the item and returns the view to animate
     ///   - completion: Optional completion handler (defaults to no-op)
+    ///   - layerView: Closure that receives the item and returns the view to animate
     /// - Returns: A view with the portal transition modifier applied
     func portalTransition<Item: Identifiable, LayerView: View>(
         item: Binding<Optional<Item>>,
@@ -1102,6 +1143,7 @@ public extension View {
     ///   - layerView: Closure that receives each item and returns the view to animate for that item
     ///   - completion: Optional completion handler called when all animations finish (defaults to no-op)
     /// - Returns: A view with the multi-item portal transition modifier applied
+    @available(*, deprecated, message: "Use portalTransition with direct animation and corners parameters instead")
     func portalTransition<Item: Identifiable, LayerView: View>(
         items: Binding<[Item]>,
         groupID: String,
@@ -1118,6 +1160,46 @@ public extension View {
                 layerView: layerView,
                 completion: completion,
                 staggerDelay: staggerDelay
+            )
+        )
+    }
+
+    /// Applies coordinated portal transitions for multiple items with direct parameters.
+    ///
+    /// Creates portal transitions for multiple items, with shared animation parameters
+    /// and optional stagger effects. All items in the array animate as a coordinated group.
+    ///
+    /// - Parameters:
+    ///   - items: Binding to an array of `Identifiable` items
+    ///   - groupID: Group identifier for coordinating animations
+    ///   - in corners: Corner radius configuration for visual styling
+    ///   - animation: The animation curve to use
+    ///   - completionCriteria: How to detect animation completion
+    ///   - staggerDelay: Delay between each item's animation start
+    ///   - layerView: Closure that generates the view for each item
+    ///   - completion: Called when all animations finish
+    ///
+    /// - Returns: A view with the multi-item portal transition modifier applied
+    func portalTransition<Item: Identifiable, LayerView: View>(
+        items: Binding<[Item]>,
+        groupID: String,
+        in corners: PortalCorners? = nil,
+        animation: Animation = .smooth(duration: 0.4),
+        completionCriteria: AnimationCompletionCriteria = .removed,
+        staggerDelay: TimeInterval = 0.0,
+        @ViewBuilder layerView: @escaping (Item) -> LayerView,
+        completion: @escaping (Bool) -> Void = { _ in }
+    ) -> some View {
+        return self.modifier(
+            MultiItemPortalTransitionModifier(
+                items: items,
+                groupID: groupID,
+                in: corners,
+                animation: animation,
+                completionCriteria: completionCriteria,
+                completion: completion,
+                staggerDelay: staggerDelay,
+                layerView: layerView
             )
         )
     }
