@@ -299,8 +299,15 @@ struct FlowingHeaderCalculationsTests {
             progress: 0.5
         )
 
-        #expect(position.x == 0.0) // halfway between -75 and 125
-        #expect(position.y == 0.0) // halfway between -175 and 225
+        // source.midX = -100 + 25 = -75
+        // destination.midX = 100 + 25 = 125
+        // halfway: -75 + (125 - (-75)) * 0.5 = -75 + 100 = 25
+        #expect(position.x == 25.0)
+
+        // source.midY = -200 + 25 = -175
+        // destination.midY = 200 + 25 = 225
+        // halfway: -175 + (225 - (-175)) * 0.5 = -175 + 200 = 25
+        #expect(position.y == 25.0)
     }
 
     // MARK: - Scale Calculation Tests
@@ -497,8 +504,13 @@ struct FlowingHeaderCalculationsTests {
             destinationRect: destination,
             progress: CGFloat(progress)
         )
+        // source.midX = 0 + 50 = 50, destination.midX = 200 + 25 = 225
+        // halfway: 50 + (225 - 50) * 0.5 = 50 + 87.5 = 137.5 ✓
         #expect(position.x == 137.5)
-        #expect(position.y == 125.0)
+
+        // source.midY = 100 + 50 = 150, destination.midY = 50 + 25 = 75
+        // halfway: 150 + (75 - 150) * 0.5 = 150 + (-37.5) = 112.5
+        #expect(position.y == 112.5)
 
         let scale = FlowingHeaderCalculations.calculateScale(
             sourceSize: source.size,
