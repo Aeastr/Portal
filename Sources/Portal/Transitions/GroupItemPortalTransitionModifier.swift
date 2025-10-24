@@ -88,6 +88,55 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
         self.completion = completion
         self.staggerDelay = staggerDelay
         self.layerView = layerView
+
+        // Validate animation duration
+        Self.validateAnimationDuration(animation, groupID: groupID)
+    }
+
+    /// Validates animation duration and logs a warning if it's too short for sheet transitions.
+    private static func validateAnimationDuration(_ animation: Animation, groupID: String) {
+        // Extract duration from animation if possible
+        let mirror = Mirror(reflecting: animation)
+
+        // Try to find duration in the animation's structure
+        if let duration = Self.extractDuration(from: mirror) {
+            if duration < PortalConstants.minimumSheetAnimationDuration {
+                let message = "Portal group '\(groupID)': Animation duration (\(String(format: "%.2f", duration))s) is below recommended minimum (\(String(format: "%.2f", PortalConstants.minimumSheetAnimationDuration))s) for sheet transitions. This may cause visual artifacts."
+
+                // Runtime warning that shows in Xcode console
+                #if DEBUG
+                assertionFailure(message)
+                #endif
+
+                // Also log for non-debug builds
+                PortalLogs.logger.log(
+                    message,
+                    level: .warning,
+                    tags: [PortalLogs.Tags.transition],
+                    metadata: ["groupID": groupID, "duration": "\(duration)", "minimum": "\(PortalConstants.minimumSheetAnimationDuration)"]
+                )
+            }
+        }
+    }
+
+    /// Attempts to extract duration from Animation via reflection.
+    private static func extractDuration(from mirror: Mirror) -> TimeInterval? {
+        // Check direct duration property
+        if let duration = mirror.children.first(where: { $0.label == "duration" })?.value as? TimeInterval {
+            return duration
+        }
+
+        // Recursively check nested children (for wrapped animations)
+        for child in mirror.children {
+            if let childMirror = child.value as? Any {
+                let nestedMirror = Mirror(reflecting: childMirror)
+                if let duration = extractDuration(from: nestedMirror) {
+                    return duration
+                }
+            }
+        }
+
+        return nil
     }
 
     /// Convenience init for backward compatibility with config
