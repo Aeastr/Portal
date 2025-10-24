@@ -25,7 +25,7 @@ Add Portal to your project using Swift Package Manager:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/Aeastr/Portal", from: "3.0.0")
+    .package(url: "https://github.com/Aeastr/Portal", from: "4.0.0")
 ]
 ```
 
