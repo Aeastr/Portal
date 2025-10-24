@@ -139,17 +139,11 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
     /// - Parameter offset: Current scroll offset from scroll geometry
     /// - Returns: Progress value from 0.0 to 1.0
     private func calculateProgress(for offset: CGFloat) -> Double {
-        // When scrolling down in the content, offset becomes positive
-        // We want to start transitioning when scrolling down past the threshold
-
-        // If we haven't scrolled down enough past the start threshold, return 0
-        if offset < transitionStartOffset {
-            return 0.0
-        }
-
-        // Calculate progress over the transition range
-        let progress = min(1.0, (offset - transitionStartOffset) / transitionRange)
-        return Double(progress)
+        FlowingHeaderCalculations.calculateProgress(
+            scrollOffset: offset,
+            startOffset: transitionStartOffset,
+            range: transitionRange
+        )
     }
 
 
@@ -214,8 +208,11 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
         let destSize = dstRect.size
 
         // Calculate scale factor to go from source size to destination size
-        let targetWidth = sourceSize.width + (destSize.width - sourceSize.width) * progress
-        let targetHeight = sourceSize.height + (destSize.height - sourceSize.height) * progress
+        let scale = FlowingHeaderCalculations.calculateScale(
+            sourceSize: sourceSize,
+            destinationSize: destSize,
+            progress: progress
+        )
 
         // Render the appropriate accessory content with transformations
         return Group {
@@ -232,7 +229,7 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
             }
         }
         .frame(width: sourceSize.width, height: sourceSize.height)
-        .scaleEffect(x: targetWidth / sourceSize.width, y: targetHeight / sourceSize.height)
+        .scaleEffect(x: scale.x, y: scale.y)
         .position(x: x, y: y)
     }
 
@@ -243,8 +240,10 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
     ///   - accessoryOffset: Base offset amount from accessory width
     /// - Returns: Smoothly interpolated offset that peaks at mid-transition
     private func calculateDynamicOffset(progress: CGFloat, accessoryOffset: CGFloat) -> CGFloat {
-        let offsetMultiplier = sin(progress * .pi) // Peaks at 0.5 progress, zero at start/end
-        return accessoryOffset * offsetMultiplier
+        FlowingHeaderCalculations.calculateDynamicOffset(
+            progress: progress,
+            baseOffset: accessoryOffset
+        )
     }
 
     /// Calculates title position with collision avoidance offset.
@@ -261,10 +260,12 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
         progress: CGFloat,
         offset: CGFloat
     ) -> CGPoint {
-        let baseX = srcRect.midX + (dstRect.midX - srcRect.midX) * progress
-        let x = baseX + offset
-        let y = srcRect.midY + (dstRect.midY - srcRect.midY) * progress
-        return CGPoint(x: x, y: y)
+        FlowingHeaderCalculations.calculatePosition(
+            sourceRect: srcRect,
+            destinationRect: dstRect,
+            progress: progress,
+            horizontalOffset: offset
+        )
     }
 }
 

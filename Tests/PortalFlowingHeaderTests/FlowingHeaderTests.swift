@@ -15,63 +15,62 @@ import SwiftUI
 @available(iOS 18.0, *)
 final class FlowingHeaderTests: XCTestCase {
     // MARK: - FlowingHeaderView Tests
-
+    
+    @MainActor
     func testFlowingHeaderViewInitialization() {
         // Test system image initialization
         let systemImageHeader = FlowingHeaderView(
+            "Test Title",
             systemImage: "star.fill",
-            title: "Test Title",
             subtitle: "Test Subtitle"
-        ) {
-            Text("Content")
-        }
+        )
 
         XCTAssertNotNil(systemImageHeader)
     }
-
+    
+    @MainActor
     func testFlowingHeaderViewWithCustomView() {
         // Test custom view initialization
         let customViewHeader = FlowingHeaderView(
-            customView: Image(systemName: "heart"),
-            title: "Custom Title",
+            "Custom Title",
             subtitle: "Custom Subtitle"
         ) {
-            Text("Content")
+            Image(systemName: "heart")
         }
 
         XCTAssertNotNil(customViewHeader)
     }
-
+    
+    @MainActor
     func testFlowingHeaderViewWithImage() {
         // Test image initialization
         let imageHeader = FlowingHeaderView(
+            "Image Title",
             image: Image(systemName: "photo"),
-            title: "Image Title",
             subtitle: "Image Subtitle"
-        ) {
-            Text("Content")
-        }
+        )
 
         XCTAssertNotNil(imageHeader)
     }
-
+    
+    @MainActor
     func testFlowingHeaderViewTextOnly() {
         // Test text-only initialization
         let textOnlyHeader = FlowingHeaderView(
-            title: "Text Only Title",
+            "Text Only Title",
             subtitle: "Text Only Subtitle"
-        ) {
-            Text("Content")
-        }
+        )
 
         XCTAssertNotNil(textOnlyHeader)
     }
-
+    
+    @MainActor
     func testFlowingHeaderViewTitleOnly() {
         // Test title-only initialization
-        let titleOnlyHeader = FlowingHeaderView(title: "Title Only") {
-            Text("Content")
-        }
+        let titleOnlyHeader = FlowingHeaderView(
+            "Title Only",
+            subtitle: ""
+        )
 
         XCTAssertNotNil(titleOnlyHeader)
     }
@@ -129,6 +128,7 @@ final class FlowingHeaderTests: XCTestCase {
         XCTAssertEqual(user.posts, 25)
     }
 
+    @MainActor
     func testSampleDataConsistency() {
         let photos = FlowingHeaderExample.samplePhotos
         let stats = FlowingHeaderExample.sampleStats
@@ -162,6 +162,7 @@ final class FlowingHeaderTests: XCTestCase {
         }
     }
 
+    @MainActor
     func testSampleDataMemoryEfficiency() {
         // Test that accessing sample data multiple times doesn't cause excessive memory usage
         let photos1 = FlowingHeaderExample.samplePhotos
@@ -174,31 +175,37 @@ final class FlowingHeaderTests: XCTestCase {
 
     // MARK: - Example Component Tests
 
+    @MainActor
     func testFlowingHeaderExampleCreation() {
         let example = FlowingHeaderExample()
         XCTAssertNotNil(example)
     }
-
+    
+    @MainActor
     func testFlowingHeaderCustomViewExampleCreation() {
         let example = FlowingHeaderCustomViewExample()
         XCTAssertNotNil(example)
     }
 
+    @MainActor
     func testFlowingHeaderTextOnlyExampleCreation() {
         let example = FlowingHeaderTextOnlyExample()
         XCTAssertNotNil(example)
     }
 
+    @MainActor
     func testFlowingHeaderBundleImageExampleCreation() {
         let example = FlowingHeaderBundleImageExample()
         XCTAssertNotNil(example)
     }
 
+    @MainActor
     func testFlowingHeaderMultiStyleExampleCreation() {
         let example = FlowingHeaderMultiStyleExample()
         XCTAssertNotNil(example)
     }
 
+    @MainActor
     func testFlowingHeaderNavigationExampleCreation() {
         let example = FlowingHeaderNavigationExample()
         XCTAssertNotNil(example)
@@ -215,30 +222,32 @@ final class FlowingHeaderTests: XCTestCase {
     }
 
     // MARK: - Edge Cases Tests
-
+    
+    @MainActor
     func testEmptyStringHandling() {
         // Test header with empty strings
         let header = FlowingHeaderView(
-            title: "",
+            "",
             subtitle: ""
-        ) {
-            Text("Content")
-        }
+        )
 
         XCTAssertNotNil(header)
     }
-
+    
+    @MainActor
     func testNilSubtitleHandling() {
-        // Test header with nil subtitle
-        let header = FlowingHeaderView(title: "Title Only") {
-            Text("Content")
-        }
+        // Test header with empty subtitle
+        let header = FlowingHeaderView(
+            "Title Only",
+            subtitle: ""
+        )
 
         XCTAssertNotNil(header)
     }
 
     // MARK: - Performance Tests
 
+    @MainActor
     func testLargeSampleDataPerformance() {
         measure {
             // Test performance of accessing large sample data
@@ -248,18 +257,17 @@ final class FlowingHeaderTests: XCTestCase {
             _ = photos.last?.category
         }
     }
-
+    
+    @MainActor
     func testViewCreationPerformance() {
         measure {
             // Test performance of creating FlowingHeader views
             for i in 0..<100 {
                 _ = FlowingHeaderView(
+                    "Title \(i)",
                     systemImage: "star.fill",
-                    title: "Title \(i)",
                     subtitle: "Subtitle \(i)"
-                ) {
-                    Text("Content \(i)")
-                }
+                )
             }
         }
     }
