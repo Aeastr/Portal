@@ -157,6 +157,7 @@ Common issues and solutions:
 - **Permission denied**: Run `chmod +x .githooks/*` and `chmod +x Scripts/*.sh`
 - **Hooks not executing**: Check that `git config core.hooksPath` points to `.githooks`
 - **Commit blocked by linting**: Use `git commit --no-verify` to bypass (use sparingly!)
+
 ### Testing Issues
 
 - **Examples not building**: Ensure `#if DEBUG` wrapper is present
