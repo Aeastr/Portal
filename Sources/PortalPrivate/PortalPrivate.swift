@@ -284,7 +284,6 @@ public extension View {
             PortalPrivateTransitionModifier(
                 id: id,
                 isActive: isActive,
-                corners: config.corners,
                 animation: config.animation.value,
                 completionCriteria: config.animation.completionCriteria,
                 hidesSource: hidesSource,
@@ -315,7 +314,6 @@ public extension View {
     func portalPrivateTransition(
         id: String,
         isActive: Binding<Bool>,
-        in corners: PortalCorners? = nil,
         animation: Animation = .smooth(duration: 0.4),
         completionCriteria: AnimationCompletionCriteria = .removed,
         hidesSource: Bool = false,
@@ -325,10 +323,9 @@ public extension View {
         completion: @escaping (Bool) -> Void = { _ in }
     ) -> some View {
         self.modifier(
-            PortalPrivateTransitionModifierDirect(
+            PortalPrivateTransitionModifier(
                 id: id,
                 isActive: isActive,
-                in: corners,
                 animation: animation,
                 completionCriteria: completionCriteria,
                 hidesSource: hidesSource,
@@ -354,7 +351,6 @@ public extension View {
         self.modifier(
             PortalPrivateItemTransitionModifier(
                 item: item,
-                corners: config.corners,
                 animation: config.animation.value,
                 completionCriteria: config.animation.completionCriteria,
                 hidesSource: hidesSource,
@@ -369,7 +365,6 @@ public extension View {
     /// Triggers a portal transition for a private portal with an optional item
     func portalPrivateTransition<Item: Identifiable>(
         item: Binding<Item?>,
-        in corners: PortalCorners? = nil,
         animation: Animation = .smooth(duration: 0.4),
         completionCriteria: AnimationCompletionCriteria = .removed,
         hidesSource: Bool = false,
@@ -379,9 +374,8 @@ public extension View {
         completion: @escaping (Bool) -> Void = { _ in }
     ) -> some View {
         self.modifier(
-            PortalPrivateItemTransitionModifierDirect(
+            PortalPrivateItemTransitionModifier(
                 item: item,
-                in: corners,
                 animation: animation,
                 completionCriteria: completionCriteria,
                 hidesSource: hidesSource,
@@ -447,7 +441,7 @@ public extension View {
         completion: @escaping (Bool) -> Void = { _ in }
     ) -> some View {
         self.modifier(
-            MultiIDPortalPrivateTransitionModifierDirect(
+            MultiIDPortalPrivateTransitionModifier(
                 ids: ids,
                 groupID: groupID,
                 isActive: isActive,
@@ -489,7 +483,6 @@ public extension View {
             MultiItemPortalPrivateTransitionModifier(
                 items: items,
                 groupID: groupID,
-                corners: config.corners,
                 animation: config.animation.value,
                 completionCriteria: config.animation.completionCriteria,
                 hidesSource: hidesSource,
@@ -504,7 +497,6 @@ public extension View {
     func portalPrivateTransition<Item: Identifiable>(
         items: Binding<[Item]>,
         groupID: String,
-        in corners: PortalCorners? = nil,
         animation: Animation = .smooth(duration: 0.4),
         completionCriteria: AnimationCompletionCriteria = .removed,
         hidesSource: Bool = false,
@@ -514,10 +506,9 @@ public extension View {
         completion: @escaping (Bool) -> Void = { _ in }
     ) -> some View {
         self.modifier(
-            MultiItemPortalPrivateTransitionModifierDirect(
+            MultiItemPortalPrivateTransitionModifier(
                 items: items,
                 groupID: groupID,
-                in: corners,
                 animation: animation,
                 completionCriteria: completionCriteria,
                 hidesSource: hidesSource,
@@ -537,7 +528,6 @@ public extension View {
 struct PortalPrivateTransitionModifier: ViewModifier {
     let id: String
     @Binding var isActive: Bool
-    let corners: PortalCorners?
     let animation: Animation
     let completionCriteria: AnimationCompletionCriteria
     let hidesSource: Bool
@@ -556,7 +546,6 @@ struct PortalPrivateTransitionModifier: ViewModifier {
                 portalModel.info[idx].initialized = true
                 portalModel.info[idx].animation = animation
                 portalModel.info[idx].completionCriteria = completionCriteria
-                portalModel.info[idx].corners = corners
                 portalModel.info[idx].completion = completion
 
                 // Set the layer view to use the PortalView of the stored container
@@ -608,7 +597,6 @@ struct PortalPrivateTransitionModifier: ViewModifier {
 /// Transition modifier for private portals with optional item
 struct PortalPrivateItemTransitionModifier<Item: Identifiable>: ViewModifier {
     @Binding var item: Item?
-    let corners: PortalCorners?
     let animation: Animation
     let completionCriteria: AnimationCompletionCriteria
     let hidesSource: Bool
@@ -647,7 +635,6 @@ struct PortalPrivateItemTransitionModifier<Item: Identifiable>: ViewModifier {
                     portalModel.info[idx].initialized = true
                     portalModel.info[idx].animation = animation
                     portalModel.info[idx].completionCriteria = completionCriteria
-                    portalModel.info[idx].corners = corners
                     portalModel.info[idx].completion = completion
 
                     // Set the layer view to use the PortalView of the stored container
@@ -818,7 +805,6 @@ struct MultiIDPortalPrivateTransitionModifier: ViewModifier {
 struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifier {
     @Binding var items: [Item]
     let groupID: String
-    let corners: PortalCorners?
     let animation: Animation
     let completionCriteria: AnimationCompletionCriteria
     let hidesSource: Bool
@@ -873,7 +859,6 @@ struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifie
                         portalModel.info[idx].initialized = true
                         portalModel.info[idx].animation = animation
                         portalModel.info[idx].completionCriteria = completionCriteria
-                        portalModel.info[idx].corners = corners
                         portalModel.info[idx].groupID = groupID
                         portalModel.info[idx].isGroupCoordinator = (i == 0)
 
@@ -1095,226 +1080,3 @@ internal struct DebugOverlayIndicator: View {
     }
 }
 #endif
-
-
-// MARK: - Direct Parameter Modifiers (New API)
-
-/// Portal private transition modifier with direct parameters
-struct PortalPrivateTransitionModifierDirect: ViewModifier {
-    let id: String
-    @Binding var isActive: Bool
-    let corners: PortalCorners?
-    let animation: Animation
-    let completionCriteria: AnimationCompletionCriteria
-    let hidesSource: Bool
-    let matchesAlpha: Bool
-    let matchesTransform: Bool
-    let matchesPosition: Bool
-    let completion: (Bool) -> Void
-    @Environment(CrossModel.self) private var portalModel
-
-    init(
-        id: String,
-        isActive: Binding<Bool>,
-        in corners: PortalCorners? = nil,
-        animation: Animation = .smooth(duration: 0.4),
-        completionCriteria: AnimationCompletionCriteria = .removed,
-        hidesSource: Bool = false,
-        matchesAlpha: Bool = true,
-        matchesTransform: Bool = true,
-        matchesPosition: Bool = false,
-        completion: @escaping (Bool) -> Void = { _ in }
-    ) {
-        self.id = id
-        self._isActive = isActive
-        self.corners = corners
-        self.animation = animation
-        self.completionCriteria = completionCriteria
-        self.hidesSource = hidesSource
-        self.matchesAlpha = matchesAlpha
-        self.matchesTransform = matchesTransform
-        self.matchesPosition = matchesPosition
-        self.completion = completion
-    }
-
-    func body(content: Content) -> some View {
-        return content.modifier(
-            PortalPrivateTransitionModifier(
-                id: id,
-                isActive: $isActive,
-                corners: corners,
-                animation: animation,
-                completionCriteria: completionCriteria,
-                hidesSource: hidesSource,
-                matchesAlpha: matchesAlpha,
-                matchesTransform: matchesTransform,
-                matchesPosition: matchesPosition,
-                completion: completion
-            )
-        )
-    }
-}
-
-/// Portal private item transition modifier with direct parameters
-struct PortalPrivateItemTransitionModifierDirect<Item: Identifiable>: ViewModifier {
-    @Binding var item: Item?
-    let corners: PortalCorners?
-    let animation: Animation
-    let completionCriteria: AnimationCompletionCriteria
-    let hidesSource: Bool
-    let matchesAlpha: Bool
-    let matchesTransform: Bool
-    let matchesPosition: Bool
-    let completion: (Bool) -> Void
-    @Environment(CrossModel.self) private var portalModel
-
-    init(
-        item: Binding<Item?>,
-        in corners: PortalCorners? = nil,
-        animation: Animation = .smooth(duration: 0.4),
-        completionCriteria: AnimationCompletionCriteria = .removed,
-        hidesSource: Bool = false,
-        matchesAlpha: Bool = true,
-        matchesTransform: Bool = true,
-        matchesPosition: Bool = false,
-        completion: @escaping (Bool) -> Void = { _ in }
-    ) {
-        self._item = item
-        self.corners = corners
-        self.animation = animation
-        self.completionCriteria = completionCriteria
-        self.hidesSource = hidesSource
-        self.matchesAlpha = matchesAlpha
-        self.matchesTransform = matchesTransform
-        self.matchesPosition = matchesPosition
-        self.completion = completion
-    }
-
-    func body(content: Content) -> some View {
-        return content.modifier(
-            PortalPrivateItemTransitionModifier(
-                item: $item,
-                corners: corners,
-                animation: animation,
-                completionCriteria: completionCriteria,
-                hidesSource: hidesSource,
-                matchesAlpha: matchesAlpha,
-                matchesTransform: matchesTransform,
-                matchesPosition: matchesPosition,
-                completion: completion
-            )
-        )
-    }
-}
-
-/// Multi-ID portal private transition modifier with direct parameters
-struct MultiIDPortalPrivateTransitionModifierDirect: ViewModifier {
-    let ids: [String]
-    let groupID: String
-    @Binding var isActive: Bool
-    let animation: Animation
-    let completionCriteria: AnimationCompletionCriteria
-    let hidesSource: Bool
-    let matchesAlpha: Bool
-    let matchesTransform: Bool
-    let matchesPosition: Bool
-    let completion: (Bool) -> Void
-    @Environment(CrossModel.self) private var portalModel
-
-    init(
-        ids: [String],
-        groupID: String,
-        isActive: Binding<Bool>,
-        animation: Animation = .smooth(duration: 0.4),
-        completionCriteria: AnimationCompletionCriteria = .removed,
-        hidesSource: Bool = false,
-        matchesAlpha: Bool = true,
-        matchesTransform: Bool = true,
-        matchesPosition: Bool = false,
-        completion: @escaping (Bool) -> Void = { _ in }
-    ) {
-        self.ids = ids
-        self.groupID = groupID
-        self._isActive = isActive
-        self.animation = animation
-        self.completionCriteria = completionCriteria
-        self.hidesSource = hidesSource
-        self.matchesAlpha = matchesAlpha
-        self.matchesTransform = matchesTransform
-        self.matchesPosition = matchesPosition
-        self.completion = completion
-    }
-
-    func body(content: Content) -> some View {
-        return content.modifier(
-            MultiIDPortalPrivateTransitionModifier(
-                ids: ids,
-                groupID: groupID,
-                isActive: $isActive,
-                animation: animation,
-                completionCriteria: completionCriteria,
-                hidesSource: hidesSource,
-                matchesAlpha: matchesAlpha,
-                matchesTransform: matchesTransform,
-                matchesPosition: matchesPosition,
-                completion: completion
-            )
-        )
-    }
-}
-
-/// Multi-item portal private transition modifier with direct parameters
-struct MultiItemPortalPrivateTransitionModifierDirect<Item: Identifiable>: ViewModifier {
-    @Binding var items: [Item]
-    let groupID: String
-    let corners: PortalCorners?
-    let animation: Animation
-    let completionCriteria: AnimationCompletionCriteria
-    let hidesSource: Bool
-    let matchesAlpha: Bool
-    let matchesTransform: Bool
-    let matchesPosition: Bool
-    let completion: (Bool) -> Void
-    @Environment(CrossModel.self) private var portalModel
-
-    init(
-        items: Binding<[Item]>,
-        groupID: String,
-        in corners: PortalCorners? = nil,
-        animation: Animation = .smooth(duration: 0.4),
-        completionCriteria: AnimationCompletionCriteria = .removed,
-        hidesSource: Bool = false,
-        matchesAlpha: Bool = true,
-        matchesTransform: Bool = true,
-        matchesPosition: Bool = false,
-        completion: @escaping (Bool) -> Void = { _ in }
-    ) {
-        self._items = items
-        self.groupID = groupID
-        self.corners = corners
-        self.animation = animation
-        self.completionCriteria = completionCriteria
-        self.hidesSource = hidesSource
-        self.matchesAlpha = matchesAlpha
-        self.matchesTransform = matchesTransform
-        self.matchesPosition = matchesPosition
-        self.completion = completion
-    }
-
-    func body(content: Content) -> some View {
-        return content.modifier(
-            MultiItemPortalPrivateTransitionModifier(
-                items: $items,
-                groupID: groupID,
-                corners: corners,
-                animation: animation,
-                completionCriteria: completionCriteria,
-                hidesSource: hidesSource,
-                matchesAlpha: matchesAlpha,
-                matchesTransform: matchesTransform,
-                matchesPosition: matchesPosition,
-                completion: completion
-            )
-        )
-    }
-}

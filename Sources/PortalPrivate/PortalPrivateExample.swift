@@ -69,6 +69,7 @@ public struct PortalPrivateExampleView: View {
             }
             // Trigger the portal transition with AnimatedLayer wrapper
             .portalPrivateTransition(item: $selectedItem)
+           
             
         }
 //        .environment(\.portalDebugOverlays, false)
