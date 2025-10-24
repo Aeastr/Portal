@@ -2,7 +2,10 @@
 //  PortalPrivateExample.swift
 //  Portal
 //
-//  Example demonstrating PortalPrivate usage with _UIPortalView
+//  Created by Aether, 2025.
+//
+//  Copyright © 2025 Aether. All rights reserved.
+//  Licensed under the MIT License.
 //
 
 import SwiftUI

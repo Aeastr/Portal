@@ -158,7 +158,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
             lastKey = key
 
             // Ensure portal info exists in the model
-            if portalModel.info.firstIndex(where: { $0.infoID == key }) == nil {
+            if !portalModel.info.contains(where: { $0.infoID == key }) {
                 portalModel.info.append(PortalInfo(id: key))
                 PortalLogs.logger.log(
                     "Registered new portal info",
@@ -551,10 +551,8 @@ public struct MultiIDPortalTransitionModifier<LayerView: View>: ViewModifier {
 
     /// Ensures portal info exists for all IDs when the view appears.
     private func onAppear() {
-        for id in ids {
-            if !portalModel.info.contains(where: { $0.infoID == id }) {
-                portalModel.info.append(PortalInfo(id: id, groupID: groupID))
-            }
+        for id in ids where !portalModel.info.contains(where: { $0.infoID == id }) {
+            portalModel.info.append(PortalInfo(id: id, groupID: groupID))
         }
     }
 
@@ -751,7 +749,7 @@ public struct MultiItemPortalTransitionModifier<Item: Identifiable, LayerView: V
             // Ensure portal info exists for all items
             for item in items {
                 let key = "\(item.id)"
-                if portalModel.info.firstIndex(where: { $0.infoID == key }) == nil {
+                if !portalModel.info.contains(where: { $0.infoID == key }) {
                     portalModel.info.append(PortalInfo(id: key, groupID: groupID))
                 }
             }

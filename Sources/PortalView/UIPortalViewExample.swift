@@ -1,8 +1,11 @@
 //
-//  ContentView.swift
-//  UIPortalViewExample
+//  UIPortalViewExample.swift
+//  Portal
 //
-//  Created by Aether on 10/23/25.
+//  Created by Aether, 2025.
+//
+//  Copyright © 2025 Aether. All rights reserved.
+//  Licensed under the MIT License.
 //
 
 import SwiftUI

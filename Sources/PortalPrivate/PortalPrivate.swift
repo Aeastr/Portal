@@ -2,7 +2,10 @@
 //  PortalPrivate.swift
 //  Portal
 //
-//  Portal transitions using _UIPortalView for true view instance sharing
+//  Created by Aether, 2025.
+//
+//  Copyright © 2025 Aether. All rights reserved.
+//  Licensed under the MIT License.
 //
 
 import SwiftUI
@@ -631,7 +634,7 @@ struct PortalPrivateItemTransitionModifier<Item: Identifiable>: ViewModifier {
                     lastKey = key
 
                     // Ensure portal info exists
-                    if portalModel.info.firstIndex(where: { $0.infoID == key }) == nil {
+                    if !portalModel.info.contains(where: { $0.infoID == key }) {
                         portalModel.info.append(PortalInfo(id: key))
                     }
 
@@ -728,7 +731,7 @@ struct MultiIDPortalPrivateTransitionModifier: ViewModifier {
                         let portalID = portalModel.info[idx].infoID
 
                         // Ensure portal info exists
-                        if portalModel.info.firstIndex(where: { $0.infoID == portalID }) == nil {
+                        if !portalModel.info.contains(where: { $0.infoID == portalID }) {
                             portalModel.info.append(PortalInfo(id: portalID))
                         }
 
@@ -852,7 +855,7 @@ struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifie
                             key = "\(item.id)"
                         }
 
-                        if portalModel.info.firstIndex(where: { $0.infoID == key }) == nil {
+                        if !portalModel.info.contains(where: { $0.infoID == key }) {
                             portalModel.info.append(PortalInfo(id: key, groupID: groupID))
                         }
                     }

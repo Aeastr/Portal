@@ -2,7 +2,10 @@
 //  PortalView.swift
 //  Portal
 //
-//  Runtime wrapper for private UIKit portal view API
+//  Created by Aether, 2025.
+//
+//  Copyright © 2025 Aether. All rights reserved.
+//  Licensed under the MIT License.
 //
 
 import SwiftUI

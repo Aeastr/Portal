@@ -2,7 +2,10 @@
 //  PortalPrivateExampleNoSheet.swift
 //  Portal
 //
-//  Test if the shift issue occurs without using a sheet
+//  Created by Aether, 2025.
+//
+//  Copyright © 2025 Aether. All rights reserved.
+//  Licensed under the MIT License.
 //
 
 import SwiftUI
