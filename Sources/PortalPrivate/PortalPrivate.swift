@@ -28,14 +28,18 @@ private class PortalPrivateStorage {
     static let shared = PortalPrivateStorage()
 
     // Use NSMapTable with strong keys and weak values for automatic cleanup
+    // Weak values ensure that PortalPrivateInfo is deallocated when no longer referenced
+    // by the view hierarchy, preventing memory leaks for transient portals
     private let storage = NSMapTable<NSString, PortalPrivateInfo>(
         keyOptions: .strongMemory,
         valueOptions: .weakMemory
     )
 
     // Cache for frequently accessed items to avoid repeated lookups
+    // Uses a dictionary for O(1) lookups with a separate array to track insertion order for LRU eviction
     private var cache: [String: PortalPrivateInfo] = [:]
-    private let cacheLimit = 10 // Keep only the most recent items
+    private var cacheOrder: [String] = [] // Tracks insertion order for LRU eviction
+    private let cacheLimit = PortalConstants.portalCacheLimit
 
     func setInfo(_ info: PortalPrivateInfo?, for key: String) {
         if let info = info {
@@ -44,6 +48,7 @@ private class PortalPrivateStorage {
         } else {
             storage.removeObject(forKey: key as NSString)
             cache.removeValue(forKey: key)
+            cacheOrder.removeAll { $0 == key }
         }
     }
 
@@ -65,17 +70,19 @@ private class PortalPrivateStorage {
     func removeInfo(for key: String) {
         storage.removeObject(forKey: key as NSString)
         cache.removeValue(forKey: key)
+        cacheOrder.removeAll { $0 == key }
     }
 
     private func updateCache(key: String, info: PortalPrivateInfo) {
+        // Move to end if already exists (LRU behavior)
+        cacheOrder.removeAll { $0 == key }
+        cacheOrder.append(key)
         cache[key] = info
 
-        // Limit cache size by removing oldest entries
-        if cache.count > cacheLimit {
-            // Simple FIFO eviction - remove first inserted item
-            if let firstKey = cache.keys.first {
-                cache.removeValue(forKey: firstKey)
-            }
+        // Limit cache size by removing oldest entries (LRU eviction)
+        while cache.count > cacheLimit, let oldestKey = cacheOrder.first {
+            cacheOrder.removeFirst()
+            cache.removeValue(forKey: oldestKey)
         }
     }
 
@@ -568,7 +575,7 @@ struct PortalPrivateTransitionModifier: ViewModifier {
 
                 if newValue {
                     // Forward transition
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + PortalConstants.animationDelay) {
                         withAnimation(animation, completionCriteria: completionCriteria) {
                             portalModel.info[idx].animateView = true
                         } completion: {
@@ -657,7 +664,7 @@ struct PortalPrivateItemTransitionModifier<Item: Identifiable>: ViewModifier {
                     }
 
                     // Forward transition
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + PortalConstants.animationDelay) {
                         withAnimation(animation, completionCriteria: completionCriteria) {
                             portalModel.info[idx].animateView = true
                         } completion: {
@@ -757,7 +764,7 @@ struct MultiIDPortalPrivateTransitionModifier: ViewModifier {
                     }
                     
                     // Start coordinated animation
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + PortalConstants.animationDelay) {
                         withAnimation(animation, completionCriteria: completionCriteria) {
                             for idx in groupIndices {
                                 portalModel.info[idx].animateView = true
@@ -893,7 +900,7 @@ struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifie
                     if staggerDelay > 0 {
                         // Staggered animation
                         for (i, idx) in groupIndices.enumerated() {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1 + (Double(i) * staggerDelay)) {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + PortalConstants.animationDelay + (Double(i) * staggerDelay)) {
                                 withAnimation(animation, completionCriteria: completionCriteria) {
                                     portalModel.info[idx].animateView = true
                                 } completion: {
@@ -908,7 +915,7 @@ struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifie
                         }
                     } else {
                         // Simultaneous animation
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + PortalConstants.animationDelay) {
                             withAnimation(animation, completionCriteria: completionCriteria) {
                                 for idx in groupIndices {
                                     portalModel.info[idx].animateView = true

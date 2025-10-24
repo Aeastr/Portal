@@ -60,7 +60,7 @@ public struct PortalExample_CardGrid: View {
                         LazyVGrid(columns: columns, spacing: 12) {
                             ForEach(cards) { card in
                                 VStack(spacing: 12) {
-//                                    AnimatedLayer(portalID: "\(card.id)") {
+                                    AnimatedLayer(portalID: "\(card.id)") {
                                         Group {
                                             RoundedRectangle(cornerRadius: 16)
                                                 .fill(card.color.gradient)
@@ -77,7 +77,7 @@ public struct PortalExample_CardGrid: View {
                                                     .foregroundColor(.white)
                                             }
                                         )
-//                                    }
+                                    }
                                     .frame(height: 120)
                                     .portal(item: card, .source)
                                 }
@@ -111,7 +111,7 @@ public struct PortalExample_CardGrid: View {
             .portalTransition(
                 item: $selectedCard
             ) { card in
-//                AnimatedLayer(portalID: "\(card.id)") {
+                AnimatedLayer(portalID: "\(card.id)") {
                     Group {
                         RoundedRectangle(cornerRadius: 16)
                             .fill(card.color.gradient)
@@ -128,7 +128,7 @@ public struct PortalExample_CardGrid: View {
                                 .foregroundColor(.white)
                         }
                     )
-//                }
+                }
             }
         }
     }
@@ -159,7 +159,7 @@ private struct PortalExample_CardDetail: View {
             ScrollView {
                 VStack(spacing: 32) {
                     // MARK: Destination Card
-//                    AnimatedLayer(portalID: "\(card.id)") {
+                    AnimatedLayer(portalID: "\(card.id)") {
                         Group{
                             RoundedRectangle(cornerRadius: 16)
                                 .fill(
@@ -178,7 +178,7 @@ private struct PortalExample_CardDetail: View {
                                     .foregroundColor(.white)
                             }
                         )
-//                    }
+                    }
                     .frame(width: 240, height: 180)
                     .portal(item: card, .destination)
                     .padding(.top, 20)

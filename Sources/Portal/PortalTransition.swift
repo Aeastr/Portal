@@ -103,7 +103,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
     ) {
         self._item = item
         self.animation = config.animation.value
-        self.completionCriteria = .removed
+        self.completionCriteria = config.animation.completionCriteria
         self.corners = config.corners
         self.layerView = layerView
         self.completion = completion
@@ -188,7 +188,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
             )
 
             // Start animation after delay
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + PortalConstants.animationDelay) {
                 withAnimation(animation, completionCriteria: completionCriteria) {
                     portalModel.info[idx].animateView = true
                 } completion: {
@@ -367,7 +367,7 @@ internal struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifi
     ) {
         self.id = id
         self.animation = config.animation.value
-        self.completionCriteria = .removed
+        self.completionCriteria = config.animation.completionCriteria
         self.corners = config.corners
         self._isActive = isActive
         self.layerView = layerView
@@ -419,7 +419,7 @@ internal struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifi
 
         if newValue {
             // Forward transition: isActive became true
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + PortalConstants.animationDelay) {
                 withAnimation(animation, completionCriteria: completionCriteria) {
                     portalModel.info[idx].animateView = true
                 } completion: {
@@ -537,7 +537,7 @@ public struct MultiIDPortalTransitionModifier<LayerView: View>: ViewModifier {
         self.ids = ids
         self.groupID = groupID
         self.animation = config.animation.value
-        self.completionCriteria = .removed
+        self.completionCriteria = config.animation.completionCriteria
         self.corners = config.corners
         self._isActive = isActive
         self.layerView = layerView
@@ -580,7 +580,7 @@ public struct MultiIDPortalTransitionModifier<LayerView: View>: ViewModifier {
             }
 
             // Start coordinated animation
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + PortalConstants.animationDelay) {
                 withAnimation(animation, completionCriteria: completionCriteria) {
                     for idx in groupIndices {
                         portalModel.info[idx].animateView = true
@@ -725,7 +725,7 @@ public struct MultiItemPortalTransitionModifier<Item: Identifiable, LayerView: V
         self._items = items
         self.groupID = groupID
         self.animation = config.animation.value
-        self.completionCriteria = .removed
+        self.completionCriteria = config.animation.completionCriteria
         self.corners = config.corners
         self.layerView = layerView
         self.completion = completion
@@ -808,7 +808,7 @@ public struct MultiItemPortalTransitionModifier<Item: Identifiable, LayerView: V
                 }
             } else {
                 // Coordinated animation: all items start together
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + PortalConstants.animationDelay) {
                     withAnimation(animation, completionCriteria: completionCriteria) {
                         for idx in groupIndices {
                             portalModel.info[idx].animateView = true
