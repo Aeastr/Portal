@@ -126,18 +126,10 @@ file_header:
     \/\/  Copyright © [0-9]{4} .*\. All rights reserved\.
     \/\/  Licensed under the MIT License\.
     \/\/
-    \n/antml:parameter>
-</invoke>
 
 custom_rules:
   no_hardcoded_delays:
     name: "No Hardcoded Delays"
     regex: '(?<!PortalConstants\.)(?:TimeInterval|Double|CGFloat)\s*\(\s*0\.[1-9]'
     message: "Use PortalConstants for delay values instead of hardcoding them"
-    severity: warning
-
-  newline_at_end_of_file:
-    name: "Newline at End of File"
-    regex: '(?!\n$)[\s\S]$'
-    message: "Files should end with a newline"
     severity: warning
