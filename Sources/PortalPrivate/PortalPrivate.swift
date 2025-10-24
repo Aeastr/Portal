@@ -811,6 +811,7 @@ struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifie
     let groupID: String
     let animation: Animation
     let completionCriteria: AnimationCompletionCriteria
+    let staggerDelay: TimeInterval
     let hidesSource: Bool
     let matchesAlpha: Bool
     let matchesTransform: Bool
@@ -889,17 +890,36 @@ struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifie
                     }
 
                     // Start coordinated animation
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        withAnimation(animation, completionCriteria: completionCriteria) {
-                            for idx in groupIndices {
-                                portalModel.info[idx].animateView = true
+                    if staggerDelay > 0 {
+                        // Staggered animation
+                        for (i, idx) in groupIndices.enumerated() {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1 + (Double(i) * staggerDelay)) {
+                                withAnimation(animation, completionCriteria: completionCriteria) {
+                                    portalModel.info[idx].animateView = true
+                                } completion: {
+                                    Task { @MainActor in
+                                        portalModel.info[idx].hideView = true
+                                        if portalModel.info[idx].isGroupCoordinator {
+                                            portalModel.info[idx].completion(true)
+                                        }
+                                    }
+                                }
                             }
-                        } completion: {
-                            Task { @MainActor in
+                        }
+                    } else {
+                        // Simultaneous animation
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            withAnimation(animation, completionCriteria: completionCriteria) {
                                 for idx in groupIndices {
-                                    portalModel.info[idx].hideView = true
-                                    if portalModel.info[idx].isGroupCoordinator {
-                                        portalModel.info[idx].completion(true)
+                                    portalModel.info[idx].animateView = true
+                                }
+                            } completion: {
+                                Task { @MainActor in
+                                    for idx in groupIndices {
+                                        portalModel.info[idx].hideView = true
+                                        if portalModel.info[idx].isGroupCoordinator {
+                                            portalModel.info[idx].completion(true)
+                                        }
                                     }
                                 }
                             }
