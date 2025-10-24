@@ -37,11 +37,14 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
     /// with cleanup is performed.
     @Binding public var item: Item?
 
-    /// Configuration object containing animation and styling parameters.
-    ///
-    /// Defines how the portal transition behaves, including timing, easing curves,
-    /// corner styling, and completion criteria.
-    public let config: PortalTransitionConfig
+    /// Animation to use for the transition.
+    public let animation: Animation
+
+    /// Completion criteria for detecting when the animation finishes.
+    public let completionCriteria: AnimationCompletionCriteria
+
+    /// Corner styling configuration for visual appearance.
+    public let corners: PortalCorners?
 
     /// Closure that generates the layer view for the transition animation.
     ///
@@ -66,13 +69,32 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
     /// the last key to properly clean up the portal state.
     @State private var lastKey: String?
 
-    /// Initializes a new optional portal transition modifier.
+    /// Initializes a new optional portal transition modifier with direct parameters.
     ///
     /// - Parameters:
     ///   - item: Binding to the optional item that controls the transition
-    ///   - config: Configuration for animation and styling behavior
-    ///   - layerView: Closure that generates the transition layer view
+    ///   - corners: Corner styling (defaults to environment value)
+    ///   - animation: Animation to use for the transition
+    ///   - completionCriteria: How to detect animation completion
     ///   - completion: Handler called when the transition completes
+    ///   - layerView: Closure that generates the transition layer view
+    public init(
+        item: Binding<Item?>,
+        in corners: PortalCorners? = nil,
+        animation: Animation = .smooth(duration: 0.4),
+        completionCriteria: AnimationCompletionCriteria = .removed,
+        completion: @escaping (Bool) -> Void,
+        @ViewBuilder layerView: @escaping (Item) -> LayerView
+    ) {
+        self._item = item
+        self.corners = corners
+        self.animation = animation
+        self.completionCriteria = completionCriteria
+        self.completion = completion
+        self.layerView = layerView
+    }
+
+    /// Convenience init for backward compatibility with config.
     public init(
         item: Binding<Item?>,
         config: PortalTransitionConfig,
@@ -80,7 +102,9 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
         completion: @escaping (Bool) -> Void
     ) {
         self._item = item
-        self.config = config
+        self.animation = config.animation.value
+        self.completionCriteria = .removed
+        self.corners = config.corners
         self.layerView = layerView
         self.completion = completion
     }
@@ -147,8 +171,9 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
 
             // Configure portal for forward animation
             portalModel.info[idx].initialized = true
-            portalModel.info[idx].animation = config.animation
-            portalModel.info[idx].corners = config.corners
+            portalModel.info[idx].animation = animation
+            portalModel.info[idx].completionCriteria = completionCriteria
+            portalModel.info[idx].corners = corners
             portalModel.info[idx].completion = completion
             portalModel.info[idx].layerView = AnyView(layerView(unwrapped))
 
@@ -158,18 +183,20 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
                 tags: [PortalLogs.Tags.transition],
                 metadata: [
                     "id": key,
-                    "delay_ms": Int(config.animation.delay * 1_000)
+                    "delay_ms": Int(0.1 * 1_000)
                 ]
             )
 
-            // Start animation after configured delay
-            DispatchQueue.main.asyncAfter(deadline: .now() + config.animation.delay) {
-                config.animation.performAnimation({
+            // Start animation after delay
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                withAnimation(animation, completionCriteria: completionCriteria) {
                     portalModel.info[idx].animateView = true
-                }) {
-                    // Hide destination view and notify completion
-                    portalModel.info[idx].hideView = true
-                    portalModel.info[idx].completion(true)
+                } completion: {
+                    Task { @MainActor in
+                        // Hide destination view and notify completion
+                        portalModel.info[idx].hideView = true
+                        portalModel.info[idx].completion(true)
+                    }
                 }
             }
             
@@ -190,15 +217,17 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
             )
 
             // Start reverse animation
-            config.animation.performAnimation({
+            withAnimation(animation, completionCriteria: completionCriteria) {
                 portalModel.info[idx].animateView = false
-            }) {
-                // Complete cleanup after reverse animation
-                portalModel.info[idx].initialized = false
-                portalModel.info[idx].layerView = nil
-                portalModel.info[idx].sourceAnchor = nil
-                portalModel.info[idx].destinationAnchor = nil
-                portalModel.info[idx].completion(false)
+            } completion: {
+                Task { @MainActor in
+                    // Complete cleanup after reverse animation
+                    portalModel.info[idx].initialized = false
+                    portalModel.info[idx].layerView = nil
+                    portalModel.info[idx].sourceAnchor = nil
+                    portalModel.info[idx].destinationAnchor = nil
+                    portalModel.info[idx].completion(false)
+                }
             }
 
             // Clear stored key
@@ -272,8 +301,14 @@ internal struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifi
     /// destination views for the transition to work correctly.
     public let id: String
 
-    /// Configuration object containing animation and styling parameters.
-    public let config: PortalTransitionConfig
+    /// Animation for the portal transition.
+    public let animation: Animation
+
+    /// Completion criteria for detecting when animation finishes.
+    public let completionCriteria: AnimationCompletionCriteria
+
+    /// Corner styling configuration for visual appearance.
+    public let corners: PortalCorners?
 
     /// Boolean binding that controls the portal transition state.
     ///
@@ -298,10 +333,31 @@ internal struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifi
     ///
     /// - Parameters:
     ///   - id: Unique identifier for the portal transition
-    ///   - config: Configuration for animation and styling behavior
+    ///   - animation: Animation for the transition
+    ///   - completionCriteria: Criteria for detecting animation completion
+    ///   - corners: Corner styling configuration (optional)
     ///   - isActive: Binding that controls the transition state
     ///   - layerView: Closure that generates the transition layer view
     ///   - completion: Handler called when the transition completes
+    public init(
+        id: String,
+        isActive: Binding<Bool>,
+        in corners: PortalCorners? = nil,
+        animation: Animation,
+        completionCriteria: AnimationCompletionCriteria,
+        completion: @escaping (Bool) -> Void,
+        @ViewBuilder layerView: @escaping () -> LayerView
+    ) {
+        self.id = id
+        self._isActive = isActive
+        self.corners = corners
+        self.animation = animation
+        self.completionCriteria = completionCriteria
+        self.completion = completion
+        self.layerView = layerView
+    }
+
+    /// Convenience init for backward compatibility with config
     public init(
         id: String,
         config: PortalTransitionConfig,
@@ -310,7 +366,9 @@ internal struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifi
         completion: @escaping (Bool) -> Void
     ) {
         self.id = id
-        self.config = config
+        self.animation = config.animation.value
+        self.completionCriteria = .removed
+        self.corners = config.corners
         self._isActive = isActive
         self.layerView = layerView
         self.completion = completion
@@ -348,44 +406,46 @@ internal struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifi
     ///   - newValue: New value of the isActive state
     private func onChange(oldValue: Bool, newValue: Bool) {
         guard let idx = portalModel.info.firstIndex(where: { $0.infoID == id }) else { return }
-        
-        var portalInfoArray: [PortalInfo] {
-            get { portalModel.info }
-            set { portalModel.info = newValue }
-        }
-        
+
+        @Bindable var portalModel = portalModel
+
         // Configure portal info for any transition
-        portalInfoArray[idx].initialized = true
-        portalInfoArray[idx].animation = config.animation
-        portalInfoArray[idx].corners = config.corners
-        portalInfoArray[idx].completion = completion
-        portalInfoArray[idx].layerView = AnyView(layerView())
+        portalModel.info[idx].initialized = true
+        portalModel.info[idx].animation = animation
+        portalModel.info[idx].completionCriteria = completionCriteria
+        portalModel.info[idx].corners = corners
+        portalModel.info[idx].completion = completion
+        portalModel.info[idx].layerView = AnyView(layerView())
 
         if newValue {
             // Forward transition: isActive became true
-            DispatchQueue.main.asyncAfter(deadline: .now() + config.animation.delay) {
-                config.animation.performAnimation({
-                    portalInfoArray[idx].animateView = true
-                }) {
-                    // Hide destination view and notify completion
-                    portalInfoArray[idx].hideView = true
-                    portalInfoArray[idx].completion(true)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                withAnimation(animation, completionCriteria: completionCriteria) {
+                    portalModel.info[idx].animateView = true
+                } completion: {
+                    Task { @MainActor in
+                        // Hide destination view and notify completion
+                        portalModel.info[idx].hideView = true
+                        portalModel.info[idx].completion(true)
+                    }
                 }
             }
-            
+
         } else {
             // Reverse transition: isActive became false
-            portalInfoArray[idx].hideView = false
-            
-            config.animation.performAnimation({
-                portalInfoArray[idx].animateView = false
-            }) {
-                // Complete cleanup after reverse animation
-                portalInfoArray[idx].initialized = false
-                portalInfoArray[idx].layerView = nil
-                portalInfoArray[idx].sourceAnchor = nil
-                portalInfoArray[idx].destinationAnchor = nil
-                portalInfoArray[idx].completion(false)
+            portalModel.info[idx].hideView = false
+
+            withAnimation(animation, completionCriteria: completionCriteria) {
+                portalModel.info[idx].animateView = false
+            } completion: {
+                Task { @MainActor in
+                    // Complete cleanup after reverse animation
+                    portalModel.info[idx].initialized = false
+                    portalModel.info[idx].layerView = nil
+                    portalModel.info[idx].sourceAnchor = nil
+                    portalModel.info[idx].destinationAnchor = nil
+                    portalModel.info[idx].completion(false)
+                }
             }
         }
     }
@@ -422,8 +482,14 @@ public struct MultiIDPortalTransitionModifier<LayerView: View>: ViewModifier {
     /// Group identifier for coordinating the animations.
     public let groupID: String
 
-    /// Configuration object containing animation and styling parameters.
-    public let config: PortalTransitionConfig
+    /// Animation to use for the transition.
+    public let animation: Animation
+
+    /// Completion criteria for detecting when the animation finishes.
+    public let completionCriteria: AnimationCompletionCriteria
+
+    /// Corner styling configuration for visual appearance.
+    public let corners: PortalCorners?
 
     /// Boolean binding that controls the portal transition state.
     @Binding public var isActive: Bool
@@ -437,6 +503,29 @@ public struct MultiIDPortalTransitionModifier<LayerView: View>: ViewModifier {
     /// The shared portal model that manages all portal animations.
     @Environment(CrossModel.self) private var portalModel
 
+    /// Environment corners configuration.
+
+    public init(
+        ids: [String],
+        groupID: String,
+        isActive: Binding<Bool>,
+        in corners: PortalCorners? = nil,
+        animation: Animation = .smooth(duration: 0.4),
+        completionCriteria: AnimationCompletionCriteria = .removed,
+        completion: @escaping (Bool) -> Void,
+        @ViewBuilder layerView: @escaping (String) -> LayerView
+    ) {
+        self.ids = ids
+        self.groupID = groupID
+        self._isActive = isActive
+        self.corners = corners
+        self.animation = animation
+        self.completionCriteria = completionCriteria
+        self.completion = completion
+        self.layerView = layerView
+    }
+
+    /// Convenience init for backward compatibility with config
     public init(
         ids: [String],
         groupID: String,
@@ -447,7 +536,9 @@ public struct MultiIDPortalTransitionModifier<LayerView: View>: ViewModifier {
     ) {
         self.ids = ids
         self.groupID = groupID
-        self.config = config
+        self.animation = config.animation.value
+        self.completionCriteria = .removed
+        self.corners = config.corners
         self._isActive = isActive
         self.layerView = layerView
         self.completion = completion
@@ -473,8 +564,9 @@ public struct MultiIDPortalTransitionModifier<LayerView: View>: ViewModifier {
             for (i, idx) in groupIndices.enumerated() {
                 let portalID = portalModel.info[idx].infoID
                 portalModel.info[idx].initialized = true
-                portalModel.info[idx].animation = config.animation
-                portalModel.info[idx].corners = config.corners
+                portalModel.info[idx].animation = animation
+                portalModel.info[idx].completionCriteria = completionCriteria
+                portalModel.info[idx].corners = corners
                 portalModel.info[idx].groupID = groupID
                 portalModel.info[idx].isGroupCoordinator = (i == 0)
                 portalModel.info[idx].layerView = AnyView(layerView(portalID))
@@ -488,16 +580,18 @@ public struct MultiIDPortalTransitionModifier<LayerView: View>: ViewModifier {
             }
 
             // Start coordinated animation
-            DispatchQueue.main.asyncAfter(deadline: .now() + config.animation.delay) {
-                config.animation.performAnimation({
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                withAnimation(animation, completionCriteria: completionCriteria) {
                     for idx in groupIndices {
                         portalModel.info[idx].animateView = true
                     }
-                }) {
-                    for idx in groupIndices {
-                        portalModel.info[idx].hideView = true
-                        if portalModel.info[idx].isGroupCoordinator {
-                            portalModel.info[idx].completion(true)
+                } completion: {
+                    Task { @MainActor in
+                        for idx in groupIndices {
+                            portalModel.info[idx].hideView = true
+                            if portalModel.info[idx].isGroupCoordinator {
+                                portalModel.info[idx].completion(true)
+                            }
                         }
                     }
                 }
@@ -509,20 +603,22 @@ public struct MultiIDPortalTransitionModifier<LayerView: View>: ViewModifier {
                 portalModel.info[idx].hideView = false
             }
 
-            config.animation.performAnimation({
+            withAnimation(animation, completionCriteria: completionCriteria) {
                 for idx in groupIndices {
                     portalModel.info[idx].animateView = false
                 }
-            }) {
-                for idx in groupIndices {
-                    portalModel.info[idx].initialized = false
-                    portalModel.info[idx].layerView = nil
-                    portalModel.info[idx].sourceAnchor = nil
-                    portalModel.info[idx].destinationAnchor = nil
-                    portalModel.info[idx].groupID = nil
-                    portalModel.info[idx].isGroupCoordinator = false
-                    if portalModel.info[idx].isGroupCoordinator {
-                        portalModel.info[idx].completion(false)
+            } completion: {
+                Task { @MainActor in
+                    for idx in groupIndices {
+                        portalModel.info[idx].initialized = false
+                        portalModel.info[idx].layerView = nil
+                        portalModel.info[idx].sourceAnchor = nil
+                        portalModel.info[idx].destinationAnchor = nil
+                        portalModel.info[idx].groupID = nil
+                        portalModel.info[idx].isGroupCoordinator = false
+                        if portalModel.info[idx].isGroupCoordinator {
+                            portalModel.info[idx].completion(false)
+                        }
                     }
                 }
             }
@@ -561,15 +657,21 @@ public struct MultiIDPortalTransitionModifier<LayerView: View>: ViewModifier {
 ///     }
 /// ```
 public struct MultiItemPortalTransitionModifier<Item: Identifiable, LayerView: View>: ViewModifier {
-    
+
     /// Binding to the array of items that controls the portal transitions.
     @Binding public var items: [Item]
-    
+
     /// Group identifier for coordinating the animations.
     public let groupID: String
-    
-    /// Configuration object containing animation and styling parameters.
-    public let config: PortalTransitionConfig
+
+    /// Animation to use for the transition.
+    public let animation: Animation
+
+    /// Completion criteria for detecting when the animation finishes.
+    public let completionCriteria: AnimationCompletionCriteria
+
+    /// Corner styling configuration for visual appearance.
+    public let corners: PortalCorners?
     
     /// Closure that generates the layer view for each item in the transition.
     public let layerView: (Item) -> LayerView
@@ -585,10 +687,33 @@ public struct MultiItemPortalTransitionModifier<Item: Identifiable, LayerView: V
     
     /// The shared portal model that manages all portal animations.
     @Environment(CrossModel.self) private var portalModel
-    
+
+    /// Environment corners configuration.
+
     /// Tracks the last set of keys for cleanup during reverse transitions.
     @State private var lastKeys: Set<String> = []
-    
+
+    public init(
+        items: Binding<[Item]>,
+        groupID: String,
+        in corners: PortalCorners? = nil,
+        animation: Animation = .smooth(duration: 0.4),
+        completionCriteria: AnimationCompletionCriteria = .removed,
+        completion: @escaping (Bool) -> Void,
+        staggerDelay: TimeInterval = 0.0,
+        @ViewBuilder layerView: @escaping (Item) -> LayerView
+    ) {
+        self._items = items
+        self.groupID = groupID
+        self.corners = corners
+        self.animation = animation
+        self.completionCriteria = completionCriteria
+        self.completion = completion
+        self.staggerDelay = staggerDelay
+        self.layerView = layerView
+    }
+
+    /// Convenience init for backward compatibility with config
     public init(
         items: Binding<[Item]>,
         groupID: String,
@@ -599,7 +724,9 @@ public struct MultiItemPortalTransitionModifier<Item: Identifiable, LayerView: V
     ) {
         self._items = items
         self.groupID = groupID
-        self.config = config
+        self.animation = config.animation.value
+        self.completionCriteria = .removed
+        self.corners = config.corners
         self.layerView = layerView
         self.completion = completion
         self.staggerDelay = staggerDelay
@@ -634,16 +761,17 @@ public struct MultiItemPortalTransitionModifier<Item: Identifiable, LayerView: V
             // Set up group coordination - first item becomes coordinator
             for (i, idx) in groupIndices.enumerated() {
                 portalModel.info[idx].initialized = true
-                portalModel.info[idx].animation = config.animation
-                portalModel.info[idx].corners = config.corners
+                portalModel.info[idx].animation = animation
+                portalModel.info[idx].completionCriteria = completionCriteria
+                portalModel.info[idx].corners = corners
                 portalModel.info[idx].groupID = groupID
                 portalModel.info[idx].isGroupCoordinator = (i == 0)
-                
+
                 // Find the corresponding item for this portal
                 if let item = items.first(where: { "\($0.id)" == portalModel.info[idx].infoID }) {
                     portalModel.info[idx].layerView = AnyView(layerView(item))
                 }
-                
+
                 // Only coordinator gets completion callback
                 if i == 0 {
                     portalModel.info[idx].completion = completion
@@ -651,26 +779,28 @@ public struct MultiItemPortalTransitionModifier<Item: Identifiable, LayerView: V
                     portalModel.info[idx].completion = { _ in }
                 }
             }
-            
+
             // Start staggered animations
             if staggerDelay > 0 {
                 // Staggered animation: start each item with increasing delay
                 for (i, idx) in groupIndices.enumerated() {
-                    let itemDelay = config.animation.delay + (TimeInterval(i) * staggerDelay)
-                    
+                    let itemDelay = 0.1 + (TimeInterval(i) * staggerDelay)
+
                     DispatchQueue.main.asyncAfter(deadline: .now() + itemDelay) {
-                        config.animation.performAnimation({
+                        withAnimation(animation, completionCriteria: completionCriteria) {
                             portalModel.info[idx].animateView = true
-                        }) {
-                            // Hide destination view for this item
-                            portalModel.info[idx].hideView = true
-                            
-                            // Only coordinator calls completion, and only after the last item
-                            if portalModel.info[idx].isGroupCoordinator {
-                                // Wait for the last item to finish before calling completion
-                                let lastItemDelay = TimeInterval(groupIndices.count - 1) * staggerDelay
-                                DispatchQueue.main.asyncAfter(deadline: .now() + lastItemDelay) {
-                                    portalModel.info[idx].completion(true)
+                        } completion: {
+                            Task { @MainActor in
+                                // Hide destination view for this item
+                                portalModel.info[idx].hideView = true
+
+                                // Only coordinator calls completion, and only after the last item
+                                if portalModel.info[idx].isGroupCoordinator {
+                                    // Wait for the last item to finish before calling completion
+                                    let lastItemDelay = TimeInterval(groupIndices.count - 1) * staggerDelay
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + lastItemDelay) {
+                                        portalModel.info[idx].completion(true)
+                                    }
                                 }
                             }
                         }
@@ -678,17 +808,19 @@ public struct MultiItemPortalTransitionModifier<Item: Identifiable, LayerView: V
                 }
             } else {
                 // Coordinated animation: all items start together
-                DispatchQueue.main.asyncAfter(deadline: .now() + config.animation.delay) {
-                    config.animation.performAnimation({
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    withAnimation(animation, completionCriteria: completionCriteria) {
                         for idx in groupIndices {
                             portalModel.info[idx].animateView = true
                         }
-                    }) {
-                        // Hide destination views and notify completion (only coordinator calls completion)
-                        for idx in groupIndices {
-                            portalModel.info[idx].hideView = true
-                            if portalModel.info[idx].isGroupCoordinator {
-                                portalModel.info[idx].completion(true)
+                    } completion: {
+                        Task { @MainActor in
+                            // Hide destination views and notify completion (only coordinator calls completion)
+                            for idx in groupIndices {
+                                portalModel.info[idx].hideView = true
+                                if portalModel.info[idx].isGroupCoordinator {
+                                    portalModel.info[idx].completion(true)
+                                }
                             }
                         }
                     }
@@ -708,21 +840,23 @@ public struct MultiItemPortalTransitionModifier<Item: Identifiable, LayerView: V
             }
             
             // Start coordinated reverse animation
-            config.animation.performAnimation({
+            withAnimation(animation, completionCriteria: completionCriteria) {
                 for idx in cleanupIndices {
                     portalModel.info[idx].animateView = false
                 }
-            }) {
-                // Complete cleanup after reverse animation
-                for idx in cleanupIndices {
-                    portalModel.info[idx].initialized = false
-                    portalModel.info[idx].layerView = nil
-                    portalModel.info[idx].sourceAnchor = nil
-                    portalModel.info[idx].destinationAnchor = nil
-                    portalModel.info[idx].groupID = nil
-                    portalModel.info[idx].isGroupCoordinator = false
-                    if portalModel.info[idx].isGroupCoordinator {
-                        portalModel.info[idx].completion(false)
+            } completion: {
+                Task { @MainActor in
+                    // Complete cleanup after reverse animation
+                    for idx in cleanupIndices {
+                        portalModel.info[idx].initialized = false
+                        portalModel.info[idx].layerView = nil
+                        portalModel.info[idx].sourceAnchor = nil
+                        portalModel.info[idx].destinationAnchor = nil
+                        portalModel.info[idx].groupID = nil
+                        portalModel.info[idx].isGroupCoordinator = false
+                        if portalModel.info[idx].isGroupCoordinator {
+                            portalModel.info[idx].completion(false)
+                        }
                     }
                 }
             }
@@ -798,19 +932,21 @@ public extension View {
     func portalTransition<LayerView: View>(
         id: String,
         isActive: Binding<Bool>,
+        in corners: PortalCorners? = nil,
         animation: Animation = .smooth(duration: 0.4),
         completionCriteria: AnimationCompletionCriteria = .removed,
-        @ViewBuilder layerView: @escaping () -> LayerView,
-        completion: @escaping (Bool) -> Void = { _ in }
+        completion: @escaping (Bool) -> Void = { _ in },
+        @ViewBuilder layerView: @escaping () -> LayerView
     ) -> some View {
         return self.modifier(
-            ConditionalPortalTransitionModifierDirect(
+            ConditionalPortalTransitionModifier(
                 id: id,
+                isActive: isActive,
+                in: corners,
                 animation: animation,
                 completionCriteria: completionCriteria,
-                isActive: isActive,
-                layerView: layerView,
-                completion: completion))
+                completion: completion,
+                layerView: layerView))
     }
 
     /// Applies coordinated portal transitions for multiple portal IDs.
@@ -908,18 +1044,20 @@ public extension View {
     /// - Returns: A view with the portal transition modifier applied
     func portalTransition<Item: Identifiable, LayerView: View>(
         item: Binding<Optional<Item>>,
+        in corners: PortalCorners? = nil,
         animation: Animation = .smooth(duration: 0.4),
         completionCriteria: AnimationCompletionCriteria = .removed,
-        @ViewBuilder layerView: @escaping (Item) -> LayerView,
-        completion: @escaping (Bool) -> Void = { _ in }
+        completion: @escaping (Bool) -> Void = { _ in },
+        @ViewBuilder layerView: @escaping (Item) -> LayerView
     ) -> some View {
         return self.modifier(
-            OptionalPortalTransitionModifierDirect(
+            OptionalPortalTransitionModifier(
                 item: item,
+                in: corners,
                 animation: animation,
                 completionCriteria: completionCriteria,
-                layerView: layerView,
-                completion: completion
+                completion: completion,
+                layerView: layerView
             )
         )
     }
@@ -984,3 +1122,5 @@ public extension View {
         )
     }
 }
+
+

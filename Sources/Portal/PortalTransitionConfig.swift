@@ -75,13 +75,16 @@ public struct PortalTransitionConfig {
 /// This protocol allows both `PortalAnimation` and `PortalAnimationWithCompletion` to be
 /// used interchangeably in the portal system while maintaining type safety.
 public protocol PortalAnimationProtocol {
-    
+
     /// The SwiftUI animation curve and timing configuration.
     var value: Animation { get }
-    
+
     /// Delay before the animation begins, in seconds.
     var delay: TimeInterval { get }
-    
+
+    /// Completion criteria for detecting when the animation finishes.
+    var completionCriteria: AnimationCompletionCriteria { get }
+
     /// Executes the animation with appropriate completion handling for the iOS version.
     ///
     /// This method abstracts away the iOS version differences and provides a clean
@@ -121,12 +124,16 @@ public protocol PortalAnimationProtocol {
 /// - Small delay to allow for view hierarchy updates
 /// - Reliable completion detection across all iOS versions
 public struct PortalAnimation: PortalAnimationProtocol {
-    
+
     /// The SwiftUI animation curve and timing configuration.
     public let value: Animation
-    
+
     /// Delay before the animation begins, in seconds.
     public let delay: TimeInterval
+
+    /// Completion criteria for detecting when the animation finishes.
+    /// Defaults to .removed for PortalAnimation.
+    public let completionCriteria: AnimationCompletionCriteria = .removed
 
     /// Duration of the animation in seconds.
     /// - Note: This property is deprecated and no longer used. The duration is now inferred from the Animation object.

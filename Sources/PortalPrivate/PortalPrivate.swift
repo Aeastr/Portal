@@ -283,8 +283,10 @@ public extension View {
         self.modifier(
             PortalPrivateTransitionModifier(
                 id: id,
-                config: config,
                 isActive: isActive,
+                corners: config.corners,
+                animation: config.animation.value,
+                completionCriteria: config.animation.completionCriteria,
                 hidesSource: hidesSource,
                 matchesAlpha: matchesAlpha,
                 matchesTransform: matchesTransform,
@@ -349,7 +351,9 @@ public extension View {
         self.modifier(
             PortalPrivateItemTransitionModifier(
                 item: item,
-                config: config,
+                corners: config.corners,
+                animation: config.animation.value,
+                completionCriteria: config.animation.completionCriteria,
                 hidesSource: hidesSource,
                 matchesAlpha: matchesAlpha,
                 matchesTransform: matchesTransform,
@@ -413,8 +417,10 @@ public extension View {
             MultiIDPortalPrivateTransitionModifier(
                 ids: ids,
                 groupID: groupID,
-                config: config,
                 isActive: isActive,
+                corners: config.corners,
+                animation: config.animation.value,
+                completionCriteria: config.animation.completionCriteria,
                 hidesSource: hidesSource,
                 matchesAlpha: matchesAlpha,
                 matchesTransform: matchesTransform,
@@ -477,7 +483,9 @@ public extension View {
             MultiItemPortalPrivateTransitionModifier(
                 items: items,
                 groupID: groupID,
-                config: config,
+                corners: config.corners,
+                animation: config.animation.value,
+                completionCriteria: config.animation.completionCriteria,
                 hidesSource: hidesSource,
                 matchesAlpha: matchesAlpha,
                 matchesTransform: matchesTransform,
@@ -518,8 +526,10 @@ public extension View {
 /// Transition modifier for private portals with boolean state
 struct PortalPrivateTransitionModifier: ViewModifier {
     let id: String
-    let config: PortalTransitionConfig
     @Binding var isActive: Bool
+    let corners: PortalCorners?
+    let animation: Animation
+    let completionCriteria: AnimationCompletionCriteria
     let hidesSource: Bool
     let matchesAlpha: Bool
     let matchesTransform: Bool
@@ -534,8 +544,9 @@ struct PortalPrivateTransitionModifier: ViewModifier {
 
                 // Initialize portal info
                 portalModel.info[idx].initialized = true
-                portalModel.info[idx].animation = config.animation
-                portalModel.info[idx].corners = config.corners
+                portalModel.info[idx].animation = animation
+                portalModel.info[idx].completionCriteria = completionCriteria
+                portalModel.info[idx].corners = corners
                 portalModel.info[idx].completion = completion
 
                 // Set the layer view to use the PortalView of the stored container
@@ -554,26 +565,30 @@ struct PortalPrivateTransitionModifier: ViewModifier {
 
                 if newValue {
                     // Forward transition
-                    DispatchQueue.main.asyncAfter(deadline: .now() + config.animation.delay) {
-                        config.animation.performAnimation({
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        withAnimation(animation, completionCriteria: completionCriteria) {
                             portalModel.info[idx].animateView = true
-                        }) {
-                            portalModel.info[idx].hideView = true
-                            portalModel.info[idx].completion(true)
+                        } completion: {
+                            Task { @MainActor in
+                                portalModel.info[idx].hideView = true
+                                portalModel.info[idx].completion(true)
+                            }
                         }
                     }
                 } else {
                     // Reverse transition
                     portalModel.info[idx].hideView = false
 
-                    config.animation.performAnimation({
+                    withAnimation(animation, completionCriteria: completionCriteria) {
                         portalModel.info[idx].animateView = false
-                    }) {
-                        portalModel.info[idx].initialized = false
-                        portalModel.info[idx].layerView = nil
-                        portalModel.info[idx].sourceAnchor = nil
-                        portalModel.info[idx].destinationAnchor = nil
-                        portalModel.info[idx].completion(false)
+                    } completion: {
+                        Task { @MainActor in
+                            portalModel.info[idx].initialized = false
+                            portalModel.info[idx].layerView = nil
+                            portalModel.info[idx].sourceAnchor = nil
+                            portalModel.info[idx].destinationAnchor = nil
+                            portalModel.info[idx].completion(false)
+                        }
                     }
                 }
             }
@@ -583,7 +598,9 @@ struct PortalPrivateTransitionModifier: ViewModifier {
 /// Transition modifier for private portals with optional item
 struct PortalPrivateItemTransitionModifier<Item: Identifiable>: ViewModifier {
     @Binding var item: Item?
-    let config: PortalTransitionConfig
+    let corners: PortalCorners?
+    let animation: Animation
+    let completionCriteria: AnimationCompletionCriteria
     let hidesSource: Bool
     let matchesAlpha: Bool
     let matchesTransform: Bool
@@ -615,10 +632,12 @@ struct PortalPrivateItemTransitionModifier<Item: Identifiable>: ViewModifier {
                         return
                     }
 
+
                     // Initialize portal info
                     portalModel.info[idx].initialized = true
-                    portalModel.info[idx].animation = config.animation
-                    portalModel.info[idx].corners = config.corners
+                    portalModel.info[idx].animation = animation
+                    portalModel.info[idx].completionCriteria = completionCriteria
+                    portalModel.info[idx].corners = corners
                     portalModel.info[idx].completion = completion
 
                     // Set the layer view to use the PortalView of the stored container
@@ -637,12 +656,14 @@ struct PortalPrivateItemTransitionModifier<Item: Identifiable>: ViewModifier {
                     }
 
                     // Forward transition
-                    DispatchQueue.main.asyncAfter(deadline: .now() + config.animation.delay) {
-                        config.animation.performAnimation({
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        withAnimation(animation, completionCriteria: completionCriteria) {
                             portalModel.info[idx].animateView = true
-                        }) {
-                            portalModel.info[idx].hideView = true
-                            portalModel.info[idx].completion(true)
+                        } completion: {
+                            Task { @MainActor in
+                                portalModel.info[idx].hideView = true
+                                portalModel.info[idx].completion(true)
+                            }
                         }
                     }
 
@@ -656,13 +677,15 @@ struct PortalPrivateItemTransitionModifier<Item: Identifiable>: ViewModifier {
 
                     portalModel.info[idx].hideView = false
 
-                    config.animation.performAnimation({
+                    withAnimation(animation, completionCriteria: completionCriteria) {
                         portalModel.info[idx].animateView = false
-                    }) {
-                        portalModel.info[idx].initialized = false
-                        portalModel.info[idx].sourceAnchor = nil
-                        portalModel.info[idx].destinationAnchor = nil
-                        portalModel.info[idx].completion(false)
+                    } completion: {
+                        Task { @MainActor in
+                            portalModel.info[idx].initialized = false
+                            portalModel.info[idx].sourceAnchor = nil
+                            portalModel.info[idx].destinationAnchor = nil
+                            portalModel.info[idx].completion(false)
+                        }
                     }
 
                     lastKey = nil
@@ -677,8 +700,10 @@ struct PortalPrivateItemTransitionModifier<Item: Identifiable>: ViewModifier {
 struct MultiIDPortalPrivateTransitionModifier: ViewModifier {
     let ids: [String]
     let groupID: String
-    let config: PortalTransitionConfig
     @Binding var isActive: Bool
+    let corners: PortalCorners?
+    let animation: Animation
+    let completionCriteria: AnimationCompletionCriteria
     let hidesSource: Bool
     let matchesAlpha: Bool
     let matchesTransform: Bool
@@ -704,8 +729,10 @@ struct MultiIDPortalPrivateTransitionModifier: ViewModifier {
                         }
 
                         portalModel.info[idx].initialized = true
-                        portalModel.info[idx].animation = config.animation
-                        portalModel.info[idx].corners = config.corners
+                        let effectiveCorners = corners ?? environmentCorners
+                        portalModel.info[idx].animation = animation
+                        portalModel.info[idx].completionCriteria = completionCriteria
+                        portalModel.info[idx].corners = effectiveCorners
                         portalModel.info[idx].groupID = groupID
                         portalModel.info[idx].isGroupCoordinator = (i == 0)
 
@@ -732,16 +759,18 @@ struct MultiIDPortalPrivateTransitionModifier: ViewModifier {
                     }
 
                     // Start coordinated animation
-                    DispatchQueue.main.asyncAfter(deadline: .now() + config.animation.delay) {
-                        config.animation.performAnimation({
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        withAnimation(animation, completionCriteria: completionCriteria) {
                             for idx in groupIndices {
                                 portalModel.info[idx].animateView = true
                             }
-                        }) {
-                            for idx in groupIndices {
-                                portalModel.info[idx].hideView = true
-                                if portalModel.info[idx].isGroupCoordinator {
-                                    portalModel.info[idx].completion(true)
+                        } completion: {
+                            Task { @MainActor in
+                                for idx in groupIndices {
+                                    portalModel.info[idx].hideView = true
+                                    if portalModel.info[idx].isGroupCoordinator {
+                                        portalModel.info[idx].completion(true)
+                                    }
                                 }
                             }
                         }
@@ -752,14 +781,15 @@ struct MultiIDPortalPrivateTransitionModifier: ViewModifier {
                         portalModel.info[idx].hideView = false
                     }
 
-                    config.animation.performAnimation({
+                    withAnimation(animation, completionCriteria: completionCriteria) {
                         for idx in groupIndices {
                             portalModel.info[idx].animateView = false
                         }
-                    }) {
-                        for idx in groupIndices {
-                            portalModel.info[idx].initialized = false
-                            portalModel.info[idx].layerView = nil
+                    } completion: {
+                        Task { @MainActor in
+                            for idx in groupIndices {
+                                portalModel.info[idx].initialized = false
+                                portalModel.info[idx].layerView = nil
                             portalModel.info[idx].sourceAnchor = nil
                             portalModel.info[idx].destinationAnchor = nil
                             portalModel.info[idx].groupID = nil
@@ -780,7 +810,9 @@ struct MultiIDPortalPrivateTransitionModifier: ViewModifier {
 struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifier {
     @Binding var items: [Item]
     let groupID: String
-    let config: PortalTransitionConfig
+    let corners: PortalCorners?
+    let animation: Animation
+    let completionCriteria: AnimationCompletionCriteria
     let hidesSource: Bool
     let matchesAlpha: Bool
     let matchesTransform: Bool
@@ -831,8 +863,10 @@ struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifie
                     for (i, idx) in groupIndices.enumerated() {
                         let portalID = portalModel.info[idx].infoID
                         portalModel.info[idx].initialized = true
-                        portalModel.info[idx].animation = config.animation
-                        portalModel.info[idx].corners = config.corners
+                        let effectiveCorners = corners ?? environmentCorners
+                        portalModel.info[idx].animation = animation
+                        portalModel.info[idx].completionCriteria = completionCriteria
+                        portalModel.info[idx].corners = effectiveCorners
                         portalModel.info[idx].groupID = groupID
                         portalModel.info[idx].isGroupCoordinator = (i == 0)
 
@@ -859,16 +893,18 @@ struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifie
                     }
 
                     // Start coordinated animation
-                    DispatchQueue.main.asyncAfter(deadline: .now() + config.animation.delay) {
-                        config.animation.performAnimation({
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        withAnimation(animation, completionCriteria: completionCriteria) {
                             for idx in groupIndices {
                                 portalModel.info[idx].animateView = true
                             }
-                        }) {
-                            for idx in groupIndices {
-                                portalModel.info[idx].hideView = true
-                                if portalModel.info[idx].isGroupCoordinator {
-                                    portalModel.info[idx].completion(true)
+                        } completion: {
+                            Task { @MainActor in
+                                for idx in groupIndices {
+                                    portalModel.info[idx].hideView = true
+                                    if portalModel.info[idx].isGroupCoordinator {
+                                        portalModel.info[idx].completion(true)
+                                    }
                                 }
                             }
                         }
@@ -884,20 +920,22 @@ struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifie
                         portalModel.info[idx].hideView = false
                     }
 
-                    config.animation.performAnimation({
+                    withAnimation(animation, completionCriteria: completionCriteria) {
                         for idx in cleanupIndices {
                             portalModel.info[idx].animateView = false
                         }
-                    }) {
-                        for idx in cleanupIndices {
-                            portalModel.info[idx].initialized = false
-                            portalModel.info[idx].layerView = nil
-                            portalModel.info[idx].sourceAnchor = nil
-                            portalModel.info[idx].destinationAnchor = nil
-                            portalModel.info[idx].groupID = nil
-                            portalModel.info[idx].isGroupCoordinator = false
-                            if portalModel.info[idx].isGroupCoordinator {
-                                portalModel.info[idx].completion(false)
+                    } completion: {
+                        Task { @MainActor in
+                            for idx in cleanupIndices {
+                                portalModel.info[idx].initialized = false
+                                portalModel.info[idx].layerView = nil
+                                portalModel.info[idx].sourceAnchor = nil
+                                portalModel.info[idx].destinationAnchor = nil
+                                portalModel.info[idx].groupID = nil
+                                portalModel.info[idx].isGroupCoordinator = false
+                                if portalModel.info[idx].isGroupCoordinator {
+                                    portalModel.info[idx].completion(false)
+                                }
                             }
                         }
                     }
@@ -1066,7 +1104,6 @@ struct PortalPrivateTransitionModifierDirect: ViewModifier {
     let matchesPosition: Bool
     let completion: (Bool) -> Void
     @Environment(CrossModel.self) private var portalModel
-    @Environment(\.portalCorners) private var environmentCorners
 
     func body(content: Content) -> some View {
         // For now, wrap in PortalAnimation for compatibility
@@ -1099,7 +1136,6 @@ struct PortalPrivateItemTransitionModifierDirect<Item: Identifiable>: ViewModifi
     let matchesPosition: Bool
     let completion: (Bool) -> Void
     @Environment(CrossModel.self) private var portalModel
-    @Environment(\.portalCorners) private var environmentCorners
 
     func body(content: Content) -> some View {
         let portalAnimation = PortalAnimation(animation)
@@ -1131,7 +1167,6 @@ struct MultiIDPortalPrivateTransitionModifierDirect: ViewModifier {
     let matchesPosition: Bool
     let completion: (Bool) -> Void
     @Environment(CrossModel.self) private var portalModel
-    @Environment(\.portalCorners) private var environmentCorners
 
     func body(content: Content) -> some View {
         let config = PortalTransitionConfig(animation: animation, corners: environmentCorners)
@@ -1163,7 +1198,6 @@ struct MultiItemPortalPrivateTransitionModifierDirect<Item: Identifiable>: ViewM
     let matchesPosition: Bool
     let completion: (Bool) -> Void
     @Environment(CrossModel.self) private var portalModel
-    @Environment(\.portalCorners) private var environmentCorners
 
     func body(content: Content) -> some View {
         let config = PortalTransitionConfig(animation: animation, corners: environmentCorners)

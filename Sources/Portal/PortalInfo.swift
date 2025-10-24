@@ -59,17 +59,17 @@ public struct PortalInfo: Identifiable {
     /// Set when the source view reports its position through the preference system.
     public var sourceAnchor: Anchor<CGRect>? = nil
     
-    /// Animation configuration settings for this portal transition.
+    /// Animation for the portal transition.
     ///
-    /// Contains all the animation-related parameters that control how the portal
-    /// transition behaves, including timing, easing curves, and animation phases.
-    /// This centralized configuration allows for fine-tuned control over the
-    /// visual characteristics of the portal animation.
+    /// The SwiftUI animation that controls how the portal transition behaves,
+    /// including timing and easing curves.
+    public var animation: Animation = .smooth(duration: 0.4)
+
+    /// Completion criteria for detecting when the animation finishes.
     ///
-    /// The animation settings are applied to the intermediate layer view during
-    /// the transition between source and destination positions. Different animation
-    /// configurations can be used for different portal types or contexts.
-    public var animation: PortalAnimationProtocol = PortalAnimation()
+    /// Determines when the animation is considered complete, such as when
+    /// the view is removed or logically complete.
+    public var completionCriteria: AnimationCompletionCriteria = .removed
 
     /// Corner styling configuration for the portal transition elements.
     ///
