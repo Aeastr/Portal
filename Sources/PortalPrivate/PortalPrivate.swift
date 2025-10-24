@@ -837,132 +837,140 @@ struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifie
         })
     }
 
+    /// Ensures portal info exists for all items with UUID handling.
+    private func ensurePortalInfo(for items: [Item]) {
+        for item in items {
+            let key: String
+            if let uuid = item.id as? UUID {
+                key = uuid.uuidString
+            } else {
+                key = "\(item.id)"
+            }
+
+            if !portalModel.info.contains(where: { $0.infoID == key }) {
+                portalModel.info.append(PortalInfo(id: key, groupID: groupID))
+            }
+        }
+    }
+
+    /// Configures portal info for all items in the group.
+    private func configureGroupPortals(at indices: [Int]) {
+        for (i, idx) in indices.enumerated() {
+            let portalID = portalModel.info[idx].infoID
+            portalModel.info[idx].initialized = true
+            portalModel.info[idx].animation = animation
+            portalModel.info[idx].completionCriteria = completionCriteria
+            portalModel.info[idx].groupID = groupID
+            portalModel.info[idx].isGroupCoordinator = (i == 0)
+
+            if let privateInfo = PortalPrivateStorage.shared.getInfo(for: portalID),
+               let container = privateInfo.sourceContainer as? SourceViewContainer<AnyView> {
+                portalModel.info[idx].layerView = AnyView(
+                    PortalView(
+                        source: container,
+                        hidesSource: hidesSource,
+                        matchesAlpha: matchesAlpha,
+                        matchesTransform: matchesTransform,
+                        matchesPosition: matchesPosition
+                    )
+                )
+            }
+
+            portalModel.info[idx].completion = (i == 0) ? completion : { _ in }
+        }
+    }
+
+    /// Starts staggered forward animations for the given indices.
+    private func startStaggeredAnimation(at indices: [Int]) {
+        for (i, idx) in indices.enumerated() {
+            DispatchQueue.main.asyncAfter(deadline: .now() + PortalConstants.animationDelay + (Double(i) * staggerDelay)) {
+                withAnimation(animation, completionCriteria: completionCriteria) {
+                    portalModel.info[idx].animateView = true
+                } completion: {
+                    Task { @MainActor in
+                        portalModel.info[idx].hideView = true
+                        if portalModel.info[idx].isGroupCoordinator {
+                            portalModel.info[idx].completion(true)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// Starts simultaneous forward animations for the given indices.
+    private func startSimultaneousAnimation(at indices: [Int]) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + PortalConstants.animationDelay) {
+            withAnimation(animation, completionCriteria: completionCriteria) {
+                for idx in indices {
+                    portalModel.info[idx].animateView = true
+                }
+            } completion: {
+                Task { @MainActor in
+                    for idx in indices {
+                        portalModel.info[idx].hideView = true
+                        if portalModel.info[idx].isGroupCoordinator {
+                            portalModel.info[idx].completion(true)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// Performs reverse transition cleanup.
+    private func performReverseTransition(for keys: Set<String>) {
+        let cleanupIndices = portalModel.info.enumerated().compactMap { index, info in
+            keys.contains(info.infoID) ? index : nil
+        }
+
+        for idx in cleanupIndices {
+            portalModel.info[idx].hideView = false
+        }
+
+        withAnimation(animation, completionCriteria: completionCriteria) {
+            for idx in cleanupIndices {
+                portalModel.info[idx].animateView = false
+            }
+        } completion: {
+            Task { @MainActor in
+                for idx in cleanupIndices {
+                    portalModel.info[idx].initialized = false
+                    portalModel.info[idx].layerView = nil
+                    portalModel.info[idx].sourceAnchor = nil
+                    portalModel.info[idx].destinationAnchor = nil
+                    portalModel.info[idx].groupID = nil
+                    portalModel.info[idx].isGroupCoordinator = false
+                    if portalModel.info[idx].isGroupCoordinator {
+                        portalModel.info[idx].completion(false)
+                    }
+                }
+            }
+        }
+    }
+
     func body(content: Content) -> some View {
         content
             .onChange(of: !items.isEmpty) { _, hasItems in
                 let currentKeys = keys
 
                 if hasItems && !items.isEmpty {
-                    // Forward transition
                     lastKeys = currentKeys
+                    ensurePortalInfo(for: items)
 
-                    // Ensure portal info exists for all items
-                    for item in items {
-                        let key: String
-                        if let uuid = item.id as? UUID {
-                            key = uuid.uuidString
-                        } else {
-                            key = "\(item.id)"
-                        }
-
-                        if !portalModel.info.contains(where: { $0.infoID == key }) {
-                            portalModel.info.append(PortalInfo(id: key, groupID: groupID))
-                        }
-                    }
-
-                    // Configure all portals in the group
                     let groupIndices = portalModel.info.enumerated().compactMap { index, info in
                         currentKeys.contains(info.infoID) ? index : nil
                     }
 
-                    // Set up group coordination
-                    for (i, idx) in groupIndices.enumerated() {
-                        let portalID = portalModel.info[idx].infoID
-                        portalModel.info[idx].initialized = true
-                        portalModel.info[idx].animation = animation
-                        portalModel.info[idx].completionCriteria = completionCriteria
-                        portalModel.info[idx].groupID = groupID
-                        portalModel.info[idx].isGroupCoordinator = (i == 0)
+                    configureGroupPortals(at: groupIndices)
 
-                        // Set the layer view to use the PortalView of the stored container
-                        if let privateInfo = PortalPrivateStorage.shared.getInfo(for: portalID),
-                           let container = privateInfo.sourceContainer as? SourceViewContainer<AnyView> {
-                            portalModel.info[idx].layerView = AnyView(
-                                PortalView(
-                                    source: container,
-                                    hidesSource: hidesSource,
-                                    matchesAlpha: matchesAlpha,
-                                    matchesTransform: matchesTransform,
-                                    matchesPosition: matchesPosition
-                                )
-                            )
-                        }
-
-                        // Only coordinator gets completion callback
-                        if i == 0 {
-                            portalModel.info[idx].completion = completion
-                        } else {
-                            portalModel.info[idx].completion = { _ in }
-                        }
-                    }
-
-                    // Start coordinated animation
                     if staggerDelay > 0 {
-                        // Staggered animation
-                        for (i, idx) in groupIndices.enumerated() {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + PortalConstants.animationDelay + (Double(i) * staggerDelay)) {
-                                withAnimation(animation, completionCriteria: completionCriteria) {
-                                    portalModel.info[idx].animateView = true
-                                } completion: {
-                                    Task { @MainActor in
-                                        portalModel.info[idx].hideView = true
-                                        if portalModel.info[idx].isGroupCoordinator {
-                                            portalModel.info[idx].completion(true)
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        startStaggeredAnimation(at: groupIndices)
                     } else {
-                        // Simultaneous animation
-                        DispatchQueue.main.asyncAfter(deadline: .now() + PortalConstants.animationDelay) {
-                            withAnimation(animation, completionCriteria: completionCriteria) {
-                                for idx in groupIndices {
-                                    portalModel.info[idx].animateView = true
-                                }
-                            } completion: {
-                                Task { @MainActor in
-                                    for idx in groupIndices {
-                                        portalModel.info[idx].hideView = true
-                                        if portalModel.info[idx].isGroupCoordinator {
-                                            portalModel.info[idx].completion(true)
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        startSimultaneousAnimation(at: groupIndices)
                     }
                 } else {
-                    // Reverse transition
-                    let cleanupKeys = lastKeys
-                    let cleanupIndices = portalModel.info.enumerated().compactMap { index, info in
-                        cleanupKeys.contains(info.infoID) ? index : nil
-                    }
-
-                    for idx in cleanupIndices {
-                        portalModel.info[idx].hideView = false
-                    }
-
-                    withAnimation(animation, completionCriteria: completionCriteria) {
-                        for idx in cleanupIndices {
-                            portalModel.info[idx].animateView = false
-                        }
-                    } completion: {
-                        Task { @MainActor in
-                            for idx in cleanupIndices {
-                                portalModel.info[idx].initialized = false
-                                portalModel.info[idx].layerView = nil
-                                portalModel.info[idx].sourceAnchor = nil
-                                portalModel.info[idx].destinationAnchor = nil
-                                portalModel.info[idx].groupID = nil
-                                portalModel.info[idx].isGroupCoordinator = false
-                                if portalModel.info[idx].isGroupCoordinator {
-                                    portalModel.info[idx].completion(false)
-                                }
-                            }
-                        }
-                    }
-
+                    performReverseTransition(for: lastKeys)
                     lastKeys.removeAll()
                 }
             }
