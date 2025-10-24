@@ -11,6 +11,9 @@ let package = Package(
             name: "Portal",
             targets: ["Portal"]),
         .library(
+            name: "PortalFlowingHeader",
+            targets: ["PortalFlowingHeader"]),
+        .library(
             name: "PortalView",
             targets: ["PortalView"]),
         .library(
@@ -31,6 +34,10 @@ let package = Package(
             path: "Sources/Portal"
         ),
         .target(
+            name: "PortalFlowingHeader",
+            path: "Sources/PortalFlowingHeader"
+        ),
+        .target(
             name: "PortalView",
             dependencies: [
                 .product(name: "Obfuscate", package: "Obfuscate")
@@ -46,8 +53,9 @@ let package = Package(
             path: "Sources/PortalPrivate"
         ),
         .testTarget(
-            name: "PortalTests",
-            dependencies: ["Portal"]
+            name: "PortalFlowingHeaderTests",
+            dependencies: ["PortalFlowingHeader"],
+            path: "Tests/PortalFlowingHeaderTests"
         ),
         .testTarget(
             name: "PortalViewTests",

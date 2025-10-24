@@ -43,8 +43,11 @@ The wiki is included as a git submodule at `/wiki`, so you get all the docs when
 - **Seamless Transitions**  
   Effortlessly animate floating overlays between source and destination views using simple view modifiers.
 
+- **PortalFlowingHeader**  
+  Smooth, scroll-based header transitions where content flows from the scroll view into the navigation bar. Perfect for polished, native-feeling iOS experiences. (iOS 18.0+)
+
 - **Works with Standard Presentations**  
-  Fully compatible with SwiftUI’s built-in presentation methods like `.sheet` and `.navigationDestination`.
+  Fully compatible with SwiftUI's built-in presentation methods like `.sheet` and `.navigationDestination`.
 
 - **Flexible Anchoring**  
   Mark any view as a portal source or destination, keyed by static IDs or `Identifiable` items.
