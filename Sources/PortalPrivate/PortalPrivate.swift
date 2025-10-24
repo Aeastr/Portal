@@ -423,7 +423,6 @@ public extension View {
                 ids: ids,
                 groupID: groupID,
                 isActive: isActive,
-                corners: config.corners,
                 animation: config.animation.value,
                 completionCriteria: config.animation.completionCriteria,
                 hidesSource: hidesSource,
@@ -439,7 +438,6 @@ public extension View {
         ids: [String],
         groupID: String,
         isActive: Binding<Bool>,
-        in corners: PortalCorners? = nil,
         animation: Animation = .smooth(duration: 0.4),
         completionCriteria: AnimationCompletionCriteria = .removed,
         hidesSource: Bool = false,
@@ -453,7 +451,6 @@ public extension View {
                 ids: ids,
                 groupID: groupID,
                 isActive: isActive,
-                in: corners,
                 animation: animation,
                 completionCriteria: completionCriteria,
                 hidesSource: hidesSource,
@@ -714,7 +711,6 @@ struct MultiIDPortalPrivateTransitionModifier: ViewModifier {
     let ids: [String]
     let groupID: String
     @Binding var isActive: Bool
-    let corners: PortalCorners?
     let animation: Animation
     let completionCriteria: AnimationCompletionCriteria
     let hidesSource: Bool
@@ -744,7 +740,6 @@ struct MultiIDPortalPrivateTransitionModifier: ViewModifier {
                         portalModel.info[idx].initialized = true
                         portalModel.info[idx].animation = animation
                         portalModel.info[idx].completionCriteria = completionCriteria
-                        portalModel.info[idx].corners = corners
                         portalModel.info[idx].groupID = groupID
                         portalModel.info[idx].isGroupCoordinator = (i == 0)
                         
@@ -1217,7 +1212,6 @@ struct MultiIDPortalPrivateTransitionModifierDirect: ViewModifier {
     let ids: [String]
     let groupID: String
     @Binding var isActive: Bool
-    let corners: PortalCorners?
     let animation: Animation
     let completionCriteria: AnimationCompletionCriteria
     let hidesSource: Bool
@@ -1231,7 +1225,6 @@ struct MultiIDPortalPrivateTransitionModifierDirect: ViewModifier {
         ids: [String],
         groupID: String,
         isActive: Binding<Bool>,
-        in corners: PortalCorners? = nil,
         animation: Animation = .smooth(duration: 0.4),
         completionCriteria: AnimationCompletionCriteria = .removed,
         hidesSource: Bool = false,
@@ -1243,7 +1236,6 @@ struct MultiIDPortalPrivateTransitionModifierDirect: ViewModifier {
         self.ids = ids
         self.groupID = groupID
         self._isActive = isActive
-        self.corners = corners
         self.animation = animation
         self.completionCriteria = completionCriteria
         self.hidesSource = hidesSource
@@ -1259,7 +1251,6 @@ struct MultiIDPortalPrivateTransitionModifierDirect: ViewModifier {
                 ids: ids,
                 groupID: groupID,
                 isActive: $isActive,
-                corners: corners,
                 animation: animation,
                 completionCriteria: completionCriteria,
                 hidesSource: hidesSource,
