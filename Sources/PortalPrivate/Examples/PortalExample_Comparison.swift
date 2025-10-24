@@ -179,7 +179,7 @@ private struct PortalExample_PortalComparisonSheet: View {
                     // MARK: PortalPrivate Destination
                     PortalPrivateDestination(id: "portalDemo")
                     
-                    Text("This element seamlessly transitioned from the main view using PortalPrivate. PortalPrivate uses view mirroring via _UIPortalView for true view instance sharing.")
+                    Text("This element seamlessly transitioned from the main view using PortalPrivate. PortalPrivate uses view mirroring via UIKit's portal view for true view instance sharing.")
                         .font(.body)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)

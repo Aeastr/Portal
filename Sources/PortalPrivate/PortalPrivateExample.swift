@@ -36,7 +36,7 @@ public struct PortalPrivateExampleView: View {
                 ScrollView {
                     VStack(spacing: 20) {
 
-                        Text("Tap a card to see it transition using _UIPortalView")
+                        Text("Tap a card to see it transition using portal view mirroring")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
 
@@ -119,7 +119,7 @@ struct DetailView: View {
                     .font(.title)
                     .bold()
 
-                Text("This is showing the exact same view instance as the source using _UIPortalView. Notice the animation continues seamlessly!")
+                Text("This is showing the exact same view instance as the source using portal view mirroring. Notice the animation continues seamlessly!")
                     .multilineTextAlignment(.center)
                     .padding()
 

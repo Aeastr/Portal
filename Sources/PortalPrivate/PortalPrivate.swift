@@ -33,20 +33,50 @@ private class PortalPrivateStorage {
         valueOptions: .weakMemory
     )
 
+    // Cache for frequently accessed items to avoid repeated lookups
+    private var cache: [String: PortalPrivateInfo] = [:]
+    private let cacheLimit = 10 // Keep only the most recent items
+
     func setInfo(_ info: PortalPrivateInfo?, for key: String) {
         if let info = info {
             storage.setObject(info, forKey: key as NSString)
+            updateCache(key: key, info: info)
         } else {
             storage.removeObject(forKey: key as NSString)
+            cache.removeValue(forKey: key)
         }
     }
 
     func getInfo(for key: String) -> PortalPrivateInfo? {
-        storage.object(forKey: key as NSString)
+        // Check cache first
+        if let cached = cache[key] {
+            return cached
+        }
+
+        // Fall back to storage
+        if let info = storage.object(forKey: key as NSString) {
+            updateCache(key: key, info: info)
+            return info
+        }
+
+        return nil
     }
 
     func removeInfo(for key: String) {
         storage.removeObject(forKey: key as NSString)
+        cache.removeValue(forKey: key)
+    }
+
+    private func updateCache(key: String, info: PortalPrivateInfo) {
+        cache[key] = info
+
+        // Limit cache size by removing oldest entries
+        if cache.count > cacheLimit {
+            // Simple FIFO eviction - remove first inserted item
+            if let firstKey = cache.keys.first {
+                cache.removeValue(forKey: firstKey)
+            }
+        }
     }
 
 }
@@ -353,7 +383,7 @@ struct PortalPrivateTransitionModifier: ViewModifier {
                 guard let idx = portalModel.info.firstIndex(where: { $0.infoID == id }) else { return }
 
                 // Initialize portal info
-                portalModel.info[idx].initalized = true
+                portalModel.info[idx].initialized = true
                 portalModel.info[idx].animation = config.animation
                 portalModel.info[idx].corners = config.corners
                 portalModel.info[idx].completion = completion
@@ -389,7 +419,7 @@ struct PortalPrivateTransitionModifier: ViewModifier {
                     config.animation.performAnimation({
                         portalModel.info[idx].animateView = false
                     }) {
-                        portalModel.info[idx].initalized = false
+                        portalModel.info[idx].initialized = false
                         portalModel.info[idx].layerView = nil
                         portalModel.info[idx].sourceAnchor = nil
                         portalModel.info[idx].destinationAnchor = nil
@@ -432,7 +462,7 @@ struct PortalPrivateItemTransitionModifier<Item: Identifiable>: ViewModifier {
                     }
 
                     // Initialize portal info
-                    portalModel.info[idx].initalized = true
+                    portalModel.info[idx].initialized = true
                     portalModel.info[idx].animation = config.animation
                     portalModel.info[idx].corners = config.corners
                     portalModel.info[idx].completion = completion
@@ -475,7 +505,7 @@ struct PortalPrivateItemTransitionModifier<Item: Identifiable>: ViewModifier {
                     config.animation.performAnimation({
                         portalModel.info[idx].animateView = false
                     }) {
-                        portalModel.info[idx].initalized = false
+                        portalModel.info[idx].initialized = false
                         portalModel.info[idx].sourceAnchor = nil
                         portalModel.info[idx].destinationAnchor = nil
                         portalModel.info[idx].completion(false)
@@ -515,7 +545,7 @@ struct MultiIDPortalPrivateTransitionModifier: ViewModifier {
                             portalModel.info.append(PortalInfo(id: portalID))
                         }
 
-                        portalModel.info[idx].initalized = true
+                        portalModel.info[idx].initialized = true
                         portalModel.info[idx].animation = config.animation
                         portalModel.info[idx].corners = config.corners
                         portalModel.info[idx].groupID = groupID
@@ -570,7 +600,7 @@ struct MultiIDPortalPrivateTransitionModifier: ViewModifier {
                         }
                     }) {
                         for idx in groupIndices {
-                            portalModel.info[idx].initalized = false
+                            portalModel.info[idx].initialized = false
                             portalModel.info[idx].layerView = nil
                             portalModel.info[idx].sourceAnchor = nil
                             portalModel.info[idx].destinationAnchor = nil
@@ -638,7 +668,7 @@ struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifie
                     // Set up group coordination
                     for (i, idx) in groupIndices.enumerated() {
                         let portalID = portalModel.info[idx].infoID
-                        portalModel.info[idx].initalized = true
+                        portalModel.info[idx].initialized = true
                         portalModel.info[idx].animation = config.animation
                         portalModel.info[idx].corners = config.corners
                         portalModel.info[idx].groupID = groupID
@@ -698,7 +728,7 @@ struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifie
                         }
                     }) {
                         for idx in cleanupIndices {
-                            portalModel.info[idx].initalized = false
+                            portalModel.info[idx].initialized = false
                             portalModel.info[idx].layerView = nil
                             portalModel.info[idx].sourceAnchor = nil
                             portalModel.info[idx].destinationAnchor = nil
@@ -780,7 +810,7 @@ public struct PortalPrivateDestination: View {
                 .onPreferenceChange(AnchorKey.self) { prefs in
                     Task { @MainActor in
                         // Wait for initialization like base Portal does
-                        guard portalModel.info[idx].initalized else { return }
+                        guard portalModel.info[idx].initialized else { return }
                         guard let anchor = prefs["\(id)DEST"] else {
                             return
                         }

@@ -30,7 +30,7 @@ public struct PortalInfo: Identifiable {
     /// Set to `true` when the portal system has completed setup for this animation,
     /// including registering both source and destination views. Only initialized
     /// portals can begin their transition animations.
-    public var initalized = false
+    public var initialized = false
     
     /// The intermediate view layer used during the portal transition animation.
     ///

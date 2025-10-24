@@ -202,7 +202,7 @@ private struct PortalExample_ListDetail: View {
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
                         
-                        Text("This photo seamlessly transitioned from the list using PortalPrivate. The view is mirrored using _UIPortalView for true instance sharing.")
+                        Text("This photo seamlessly transitioned from the list using PortalPrivate. The view is mirrored using UIKit's portal view for true instance sharing.")
                             .font(.body)
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)

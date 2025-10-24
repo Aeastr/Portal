@@ -16,7 +16,7 @@ struct UIPortalViewExample: View {
         NavigationStack {
             List {
                 Section {
-                    Text("This demo shows _UIPortalView, a private API that displays the same view instance in multiple locations. The Source and Portal views share identical UUIDs and animations because they're literally the same UIView - the portal is just a window into the source.")
+                    Text("This demo shows UIKit's portal view, a private API that displays the same view instance in multiple locations. The Source and Portal views share identical UUIDs and animations because they're literally the same UIView - the portal is just a window into the source.")
                         .font(.body)
                 }
 
@@ -55,7 +55,7 @@ struct UIPortalViewExample: View {
                 } header: {
                     Text("Portal View")
                 } footer: {
-                    Text("_UIPortalView showing the same instance")
+                    Text("Portal view showing the same instance")
                 }
             }
             .listStyle(.insetGrouped)

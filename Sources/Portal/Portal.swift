@@ -38,7 +38,7 @@ public struct Portal<Content: View>: View {
     /// - Parameter anchor: The anchor bounds to transform
     /// - Returns: A dictionary mapping portal IDs to their anchor bounds
     private func anchorPreferenceTransform(anchor: Anchor<CGRect>) -> [String: Anchor<CGRect>] {
-        if let idx = index, portalModel.info[idx].initalized {
+        if let idx = index, portalModel.info[idx].initialized {
             return [key: anchor]
         }
         return [:]
@@ -71,7 +71,7 @@ public struct Portal<Content: View>: View {
             .anchorPreference(key: AnchorKey.self, value: .bounds, transform: anchorPreferenceTransform)
             .onPreferenceChange(AnchorKey.self) { prefs in
                 Task { @MainActor in
-                    guard let idx = currentIndex, model.info[idx].initalized else { return }
+                    guard let idx = currentIndex, model.info[idx].initialized else { return }
                     guard let anchor = prefs[currentKey] else { return }
 
                     // Set the group ID if provided
@@ -96,7 +96,7 @@ public struct Portal<Content: View>: View {
         if source {
             return portalModel.info[idx].destinationAnchor == nil ? 1 : 0
         } else {
-            return portalModel.info[idx].initalized ? (portalModel.info[idx].hideView ? 1 : 0) : 1
+            return portalModel.info[idx].initialized ? (portalModel.info[idx].hideView ? 1 : 0) : 1
         }
     }
     
