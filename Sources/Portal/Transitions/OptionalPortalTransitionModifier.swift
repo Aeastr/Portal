@@ -258,7 +258,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
     }
 }
 
-extension View{
+extension View {
     /// Applies a portal transition controlled by an optional `Identifiable` item.
     ///
     /// This modifier automatically manages portal transitions based on the presence

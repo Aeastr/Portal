@@ -218,7 +218,7 @@ internal struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifi
     }
 }
 
-extension View{
+extension View {
     /// Applies a portal transition controlled by a boolean binding.
     ///
     /// This modifier enables portal transitions based on boolean state changes,
