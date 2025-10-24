@@ -732,8 +732,8 @@ public struct MultiItemPortalTransitionModifier<Item: Identifiable, LayerView: V
     }
     
     public func body(content: Content) -> some View {
-        content.onChange(of: !items.isEmpty) { newValue in
-            onChange(oldValue: items, hasItems: newValue)
+        content.onChange(of: !items.isEmpty) {
+            onChange(oldValue: items, hasItems: !items.isEmpty)
         }
     }
 }

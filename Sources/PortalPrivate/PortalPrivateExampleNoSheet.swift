@@ -8,7 +8,6 @@
 import SwiftUI
 import Portal
 import PortalView
-import PortalPrivate
 
 public struct PortalPrivateExampleNoSheetView: View {
     @State private var selectedItem: Item? = nil

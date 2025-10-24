@@ -2,9 +2,20 @@
 import SwiftUI
 import Portal
 
-let portal_animationDuration: TimeInterval = 0.4
-let portal_animationExample: Animation = Animation.smooth(duration: portal_animationDuration, extraBounce: 0.65)
-let portal_animationExampleExtraBounce: Animation = Animation.smooth(duration: portal_animationDuration + 0.12, extraBounce: 0.55)
+// Configuration for animation timing - can be customized via environment or init
+struct AnimatedLayerConfig {
+    let duration: TimeInterval
+    let bounceAnimation: Animation
+    let extraBounceAnimation: Animation
+
+    static let `default` = AnimatedLayerConfig()
+
+    init(duration: TimeInterval = 0.4, extraBounce: Double = 0.65, extraBounceDuration: Double = 0.12) {
+        self.duration = duration
+        self.bounceAnimation = Animation.smooth(duration: duration, extraBounce: extraBounce)
+        self.extraBounceAnimation = Animation.smooth(duration: duration + extraBounceDuration, extraBounce: max(0, extraBounce - 0.1))
+    }
+}
 
 /// A reusable animated layer component for Portal examples.
 /// Provides visual feedback during portal transitions with a scale animation.
@@ -14,6 +25,7 @@ let portal_animationExampleExtraBounce: Animation = Animation.smooth(duration: p
 struct AnimatedLayer<Content: View>: AnimatedPortalLayer {
     let portalID: String
     var scale: CGFloat = 2
+    var animationConfig: AnimatedLayerConfig = .default
     @ViewBuilder let content: () -> Content
 
     @State private var layerScale: CGFloat = 1
@@ -33,20 +45,20 @@ struct AnimatedLayer<Content: View>: AnimatedPortalLayer {
 
     private func handleActiveChange(oldValue: Bool, newValue: Bool) {
         if newValue {
-            withAnimation(portal_animationExample) {
+            withAnimation(animationConfig.bounceAnimation) {
                 layerScale = scale
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + (portal_animationDuration / 2) - 0.1) {
-                withAnimation(portal_animationExampleExtraBounce) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + (animationConfig.duration / 2) - 0.1) {
+                withAnimation(animationConfig.extraBounceAnimation) {
                     layerScale = 1
                 }
             }
         } else {
-            withAnimation(portal_animationExample) {
+            withAnimation(animationConfig.bounceAnimation) {
                 layerScale = 1.5
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + (portal_animationDuration / 2) - 0.1) {
-                withAnimation(portal_animationExampleExtraBounce) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + (animationConfig.duration / 2) - 0.1) {
+                withAnimation(animationConfig.extraBounceAnimation) {
                     layerScale = 1
                 }
             }

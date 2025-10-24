@@ -14,6 +14,9 @@ import UIKit
 public class PortalViewWrapper: UIView {
     private var portalView: UIView?
 
+    /// Whether the portal view is available on this system
+    public private(set) var isPortalViewAvailable = false
+
     public var sourceView: UIView? {
         didSet {
             updateSourceView()
@@ -69,24 +72,38 @@ public class PortalViewWrapper: UIView {
     }
 
     private func setupPortalView() {
-        // Access _UIPortalView via runtime
+        // Access _UIPortalView via runtime with proper error handling
         guard let portalClass = NSClassFromString("_UIPortalView") as? UIView.Type else {
-            print("⚠️ _UIPortalView class not available")
+            print("⚠️ Portal Warning: _UIPortalView class not available on iOS \(UIDevice.current.systemVersion)")
+            print("⚠️ Portal transitions will fall back to standard behavior")
+            isPortalViewAvailable = false
+
+            // Add a placeholder view to prevent crashes
+            let fallbackView = UIView(frame: bounds)
+            fallbackView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+            fallbackView.backgroundColor = .clear
+            addSubview(fallbackView)
             return
         }
 
+        // Safely create portal instance
         let portal = portalClass.init(frame: bounds)
         portal.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         addSubview(portal)
         self.portalView = portal
+        isPortalViewAvailable = true
 
-        // Set default properties
+        // Set default properties with safe key-value coding
         portal.setValue(true, forKey: "matchesAlpha")
         portal.setValue(true, forKey: "matchesTransform")
         portal.setValue(true, forKey: "matchesPosition")
     }
 
     private func updateSourceView() {
+        guard isPortalViewAvailable else {
+            // Silently fail if portal view is not available
+            return
+        }
         portalView?.setValue(sourceView, forKey: "sourceView")
     }
 }

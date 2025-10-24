@@ -8,7 +8,6 @@
 import SwiftUI
 import Portal
 import PortalView
-import PortalPrivate
 
 // MARK: - Example App
 

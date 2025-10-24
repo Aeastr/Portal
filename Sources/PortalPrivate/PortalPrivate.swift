@@ -26,9 +26,29 @@ public class PortalPrivateInfo {
 @MainActor
 private class PortalPrivateStorage {
     static let shared = PortalPrivateStorage()
-    var privateInfo: [String: PortalPrivateInfo] = [:]
 
-    private init() {}
+    // Use NSMapTable with strong keys and weak values for automatic cleanup
+    private let storage = NSMapTable<NSString, PortalPrivateInfo>(
+        keyOptions: .strongMemory,
+        valueOptions: .weakMemory
+    )
+
+    func setInfo(_ info: PortalPrivateInfo?, for key: String) {
+        if let info = info {
+            storage.setObject(info, forKey: key as NSString)
+        } else {
+            storage.removeObject(forKey: key as NSString)
+        }
+    }
+
+    func getInfo(for key: String) -> PortalPrivateInfo? {
+        storage.object(forKey: key as NSString)
+    }
+
+    func removeInfo(for key: String) {
+        storage.removeObject(forKey: key as NSString)
+    }
+
 }
 
 // MARK: - PortalPrivate View Wrapper
@@ -64,7 +84,7 @@ public struct PortalPrivate<Content: View>: View {
                         let info = PortalPrivateInfo()
                         info.sourceContainer = container
                         info.isPrivatePortal = true
-                        PortalPrivateStorage.shared.privateInfo[id] = info
+                        PortalPrivateStorage.shared.setInfo(info, for: id)
 
                         // Ensure portal info exists in model
                         if !portalModel.info.contains(where: { $0.infoID == id }) {
@@ -77,7 +97,7 @@ public struct PortalPrivate<Content: View>: View {
                 }
                 .onDisappear {
                     // Clean up
-                    PortalPrivateStorage.shared.privateInfo[id] = nil
+                    PortalPrivateStorage.shared.removeInfo(for: id)
                 }
 
             // The actual source view (hidden when destination anchor exists)
@@ -339,7 +359,7 @@ struct PortalPrivateTransitionModifier: ViewModifier {
                 portalModel.info[idx].completion = completion
 
                 // Set the layer view to use the PortalView of the stored container
-                if let privateInfo = PortalPrivateStorage.shared.privateInfo[id],
+                if let privateInfo = PortalPrivateStorage.shared.getInfo(for: id),
                    let container = privateInfo.sourceContainer as? SourceViewContainer<AnyView> {
                     portalModel.info[idx].layerView = AnyView(
                         PortalView(
@@ -418,7 +438,7 @@ struct PortalPrivateItemTransitionModifier<Item: Identifiable>: ViewModifier {
                     portalModel.info[idx].completion = completion
 
                     // Set the layer view to use the PortalView of the stored container
-                    if let privateInfo = PortalPrivateStorage.shared.privateInfo[key],
+                    if let privateInfo = PortalPrivateStorage.shared.getInfo(for: key),
                        let container = privateInfo.sourceContainer as? SourceViewContainer<AnyView> {
                         // Create a portal view that will be animated
                         portalModel.info[idx].layerView = AnyView(
@@ -502,7 +522,7 @@ struct MultiIDPortalPrivateTransitionModifier: ViewModifier {
                         portalModel.info[idx].isGroupCoordinator = (i == 0)
 
                         // Set the layer view to use the PortalView of the stored container
-                        if let privateInfo = PortalPrivateStorage.shared.privateInfo[portalID],
+                        if let privateInfo = PortalPrivateStorage.shared.getInfo(for: portalID),
                            let container = privateInfo.sourceContainer as? SourceViewContainer<AnyView> {
                             portalModel.info[idx].layerView = AnyView(
                                 PortalView(
@@ -625,7 +645,7 @@ struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifie
                         portalModel.info[idx].isGroupCoordinator = (i == 0)
 
                         // Set the layer view to use the PortalView of the stored container
-                        if let privateInfo = PortalPrivateStorage.shared.privateInfo[portalID],
+                        if let privateInfo = PortalPrivateStorage.shared.getInfo(for: portalID),
                            let container = privateInfo.sourceContainer as? SourceViewContainer<AnyView> {
                             portalModel.info[idx].layerView = AnyView(
                                 PortalView(
@@ -722,7 +742,7 @@ public struct PortalPrivateDestination: View {
 
     public var body: some View {
         Group {
-            if let privateInfo = PortalPrivateStorage.shared.privateInfo[id],
+            if let privateInfo = PortalPrivateStorage.shared.getInfo(for: id),
                let container = privateInfo.sourceContainer as? SourceViewContainer<AnyView>,
                let idx = portalModel.info.firstIndex(where: { $0.infoID == id }) {
 

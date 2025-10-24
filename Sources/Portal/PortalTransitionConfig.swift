@@ -127,7 +127,15 @@ public struct PortalAnimation: PortalAnimationProtocol {
     
     /// Delay before the animation begins, in seconds.
     public let delay: TimeInterval
-    
+
+    /// Duration of the animation in seconds.
+    /// - Note: This property is deprecated and no longer used. The duration is now inferred from the Animation object.
+    @available(*, deprecated, message: "Duration is no longer used in iOS 17+. The duration is now inferred from the Animation object itself.")
+    public var duration: TimeInterval {
+        // Return a reasonable default for backwards compatibility
+        0.38
+    }
+
     /// Initializes a new portal animation configuration.
     ///
     /// Creates an animation configuration with specified timing parameters.
