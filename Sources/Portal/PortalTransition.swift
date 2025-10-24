@@ -183,7 +183,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
                 tags: [PortalLogs.Tags.transition],
                 metadata: [
                     "id": key,
-                    "delay_ms": Int(0.1 * 1_000)
+                    "delay_ms": Int(PortalConstants.animationDelay * 1_000)
                 ]
             )
 
@@ -784,7 +784,7 @@ public struct MultiItemPortalTransitionModifier<Item: Identifiable, LayerView: V
             if staggerDelay > 0 {
                 // Staggered animation: start each item with increasing delay
                 for (i, idx) in groupIndices.enumerated() {
-                    let itemDelay = 0.1 + (TimeInterval(i) * staggerDelay)
+                    let itemDelay = PortalConstants.animationDelay + (TimeInterval(i) * staggerDelay)
 
                     DispatchQueue.main.asyncAfter(deadline: .now() + itemDelay) {
                         withAnimation(animation, completionCriteria: completionCriteria) {
