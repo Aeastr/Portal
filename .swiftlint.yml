@@ -125,7 +125,8 @@ file_header:
     \/\/
     \/\/  Copyright © [0-9]{4} .*\. All rights reserved\.
     \/\/  Licensed under the MIT License\.
-    \/\//antml:parameter>
+    \/\/
+    \n/antml:parameter>
 </invoke>
 
 custom_rules:

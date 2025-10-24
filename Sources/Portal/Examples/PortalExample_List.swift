@@ -7,6 +7,7 @@
 //  Copyright © 2025 Aether. All rights reserved.
 //  Licensed under the MIT License.
 //
+
 #if DEBUG
 import SwiftUI
 import LogOutLoudConsole

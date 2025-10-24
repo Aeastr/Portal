@@ -7,6 +7,7 @@
 //  Copyright © 2025 Aether. All rights reserved.
 //  Licensed under the MIT License.
 //
+
 import SwiftUI
 
 /// Comprehensive configuration container for portal transition animations.

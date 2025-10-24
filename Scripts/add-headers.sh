@@ -82,7 +82,7 @@ add_header() {
             -e "s/{{COPYRIGHT_HOLDER}}/$COPYRIGHT_HOLDER/g" \
             -e "s/{{YEAR}}/$YEAR/g" \
             "$PROJECT_ROOT/.header-template" > "$file.tmp"
-        echo "" >> "$file.tmp"
+        echo "" >> "$file.tmp"  # This adds the blank line after the header
     else
         # Fallback to inline template
         cat > "$file.tmp" << EOF
