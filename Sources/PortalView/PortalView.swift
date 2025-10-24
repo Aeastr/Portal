@@ -103,6 +103,10 @@ public class PortalViewWrapper: UIView {
 
     private func setupPortalView() {
         // Obfuscated class name using compile-time macro
+        // The #Obfuscate macro converts to a base64-encoded byte array at compile-time,
+        // then decodes it at runtime to prevent direct string matching in the binary.
+        // Note: Obfuscate package is maintained as part of this project
+        // See: https://github.com/Aeastr/Obfuscate
         let className = #Obfuscate("_UIPortalView")
 
         // Access portal view via runtime with proper error handling
