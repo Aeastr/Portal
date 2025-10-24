@@ -143,11 +143,11 @@ public struct PortalAnimation: PortalAnimationProtocol {
     ///
     /// - Parameters:
     ///   - animation: The SwiftUI animation curve.
-    ///   - delay: Start delay in seconds. Defaults to 0.00s.
+    ///   - delay: Start delay in seconds. Defaults to 0.1s.
     ///   - duration: Animation duration in seconds. Defaults to 0.4s.
     public init(
         _ animation: Animation,
-        delay: TimeInterval = 0.0,
+        delay: TimeInterval = 0.1,
     ) {
         self.value = animation
         self.delay = delay

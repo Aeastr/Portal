@@ -312,7 +312,8 @@ public extension View {
     func portalPrivateTransition(
         id: String,
         isActive: Binding<Bool>,
-        animation: PortalAnimation = .init(),
+        animation: Animation = .smooth(duration: 0.4),
+        completionCriteria: AnimationCompletionCriteria = .removed,
         hidesSource: Bool = false,
         matchesAlpha: Bool = true,
         matchesTransform: Bool = true,
@@ -323,6 +324,7 @@ public extension View {
             PortalPrivateTransitionModifierDirect(
                 id: id,
                 animation: animation,
+                completionCriteria: completionCriteria,
                 isActive: isActive,
                 hidesSource: hidesSource,
                 matchesAlpha: matchesAlpha,
@@ -360,7 +362,8 @@ public extension View {
     /// Triggers a portal transition for a private portal with an optional item
     func portalPrivateTransition<Item: Identifiable>(
         item: Binding<Item?>,
-        animation: PortalAnimation = .init(),
+        animation: Animation = .smooth(duration: 0.4),
+        completionCriteria: AnimationCompletionCriteria = .removed,
         hidesSource: Bool = false,
         matchesAlpha: Bool = true,
         matchesTransform: Bool = true,
@@ -371,6 +374,7 @@ public extension View {
             PortalPrivateItemTransitionModifierDirect(
                 item: item,
                 animation: animation,
+                completionCriteria: completionCriteria,
                 hidesSource: hidesSource,
                 matchesAlpha: matchesAlpha,
                 matchesTransform: matchesTransform,
@@ -1053,7 +1057,8 @@ internal struct DebugOverlayIndicator: View {
 /// Portal private transition modifier with direct parameters
 struct PortalPrivateTransitionModifierDirect: ViewModifier {
     let id: String
-    let animation: PortalAnimation
+    let animation: Animation
+    let completionCriteria: AnimationCompletionCriteria
     @Binding var isActive: Bool
     let hidesSource: Bool
     let matchesAlpha: Bool
@@ -1064,7 +1069,9 @@ struct PortalPrivateTransitionModifierDirect: ViewModifier {
     @Environment(\.portalCorners) private var environmentCorners
 
     func body(content: Content) -> some View {
-        let config = PortalTransitionConfig(animation: animation, corners: environmentCorners)
+        // For now, wrap in PortalAnimation for compatibility
+        let portalAnimation = PortalAnimation(animation)
+        let config = PortalTransitionConfig(animation: portalAnimation, corners: environmentCorners)
 
         return content.modifier(
             PortalPrivateTransitionModifier(
@@ -1084,7 +1091,8 @@ struct PortalPrivateTransitionModifierDirect: ViewModifier {
 /// Portal private item transition modifier with direct parameters
 struct PortalPrivateItemTransitionModifierDirect<Item: Identifiable>: ViewModifier {
     @Binding var item: Item?
-    let animation: PortalAnimation
+    let animation: Animation
+    let completionCriteria: AnimationCompletionCriteria
     let hidesSource: Bool
     let matchesAlpha: Bool
     let matchesTransform: Bool
@@ -1094,8 +1102,9 @@ struct PortalPrivateItemTransitionModifierDirect<Item: Identifiable>: ViewModifi
     @Environment(\.portalCorners) private var environmentCorners
 
     func body(content: Content) -> some View {
-        let config = PortalTransitionConfig(animation: animation, corners: environmentCorners)
-        
+        let portalAnimation = PortalAnimation(animation)
+        let config = PortalTransitionConfig(animation: portalAnimation, corners: environmentCorners)
+
         return content.modifier(
             PortalPrivateItemTransitionModifier(
                 item: $item,

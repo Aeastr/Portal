@@ -2,19 +2,26 @@ import SwiftUI
 
 // MARK: - Direct Parameter Modifiers (New API)
 
-/// Portal transition modifier that uses direct parameters instead of config object
+/// Portal transition modifier that uses direct parameters
 internal struct ConditionalPortalTransitionModifierDirect<LayerView: View>: ViewModifier {
     @Environment(CrossModel.self) private var portalModel
     @Environment(\.portalCorners) private var environmentCorners
 
     public let id: String
-    public let animation: PortalAnimation
+    public let animation: Animation
+    public let completionCriteria: AnimationCompletionCriteria
     @Binding public var isActive: Bool
     public let layerView: () -> LayerView
     public let completion: (Bool) -> Void
 
     func body(content: Content) -> some View {
-        let config = PortalTransitionConfig(animation: animation, corners: environmentCorners)
+        // For now, create a wrapper to work with existing system
+        // TODO: Eventually refactor internal modifiers to use Animation directly
+        let wrapper = AnimationWrapper(
+            animation: animation,
+            completionCriteria: completionCriteria
+        )
+        let config = PortalTransitionConfig(animation: wrapper, corners: environmentCorners)
 
         return content.modifier(
             ConditionalPortalTransitionModifier(
@@ -28,18 +35,42 @@ internal struct ConditionalPortalTransitionModifierDirect<LayerView: View>: View
     }
 }
 
+// Temporary wrapper to bridge new API with old system
+private struct AnimationWrapper: PortalAnimationProtocol {
+    let animation: Animation
+    let completionCriteria: AnimationCompletionCriteria
+
+    var value: Animation { animation }
+    var delay: TimeInterval { 0.1 }
+
+    func performAnimation<T>(
+        _ animationBlock: @escaping () -> T,
+        completion: @escaping @MainActor () -> Void
+    ) {
+        withAnimation(animation, completionCriteria: completionCriteria) {
+            _ = animationBlock()
+        } completion: {
+            Task { @MainActor in
+                completion()
+            }
+        }
+    }
+}
+
 /// Optional item portal transition modifier with direct parameters
 internal struct OptionalPortalTransitionModifierDirect<Item: Identifiable, LayerView: View>: ViewModifier {
     @Environment(CrossModel.self) private var portalModel
     @Environment(\.portalCorners) private var environmentCorners
 
     @Binding public var item: Optional<Item>
-    public let animation: PortalAnimation
+    public let animation: Animation
+    public let completionCriteria: AnimationCompletionCriteria
     public let layerView: (Item) -> LayerView
     public let completion: (Bool) -> Void
 
     func body(content: Content) -> some View {
-        let config = PortalTransitionConfig(animation: animation, corners: environmentCorners)
+        let portalAnimation = PortalAnimation(animation)
+        let config = PortalTransitionConfig(animation: portalAnimation, corners: environmentCorners)
 
         return content.modifier(
             OptionalPortalTransitionModifier(

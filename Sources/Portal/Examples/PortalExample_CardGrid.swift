@@ -107,6 +107,7 @@ public struct PortalExample_CardGrid: View {
             .sheet(item: $selectedCard) { card in
                 PortalExample_CardDetail(card: card)
             }
+            
             .portalTransition(
                 item: $selectedCard
             ) { card in

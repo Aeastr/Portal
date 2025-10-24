@@ -791,13 +791,15 @@ public extension View {
     ///   - id: Unique identifier for the portal transition
     ///   - isActive: Boolean binding that controls the transition state
     ///   - animation: Animation to use for the transition (defaults to smooth animation)
+    ///   - completionCriteria: How to detect animation completion (defaults to .removed)
     ///   - layerView: Closure that returns the view to animate during transition
     ///   - completion: Optional completion handler (defaults to no-op)
     /// - Returns: A view with the portal transition modifier applied
     func portalTransition<LayerView: View>(
         id: String,
         isActive: Binding<Bool>,
-        animation: PortalAnimation = .init(),
+        animation: Animation = .smooth(duration: 0.4),
+        completionCriteria: AnimationCompletionCriteria = .removed,
         @ViewBuilder layerView: @escaping () -> LayerView,
         completion: @escaping (Bool) -> Void = { _ in }
     ) -> some View {
@@ -805,6 +807,7 @@ public extension View {
             ConditionalPortalTransitionModifierDirect(
                 id: id,
                 animation: animation,
+                completionCriteria: completionCriteria,
                 isActive: isActive,
                 layerView: layerView,
                 completion: completion))
@@ -899,12 +902,14 @@ public extension View {
     /// - Parameters:
     ///   - item: Binding to an optional `Identifiable` item that controls the transition
     ///   - animation: Animation to use for the transition (defaults to smooth animation)
+    ///   - completionCriteria: How to detect animation completion (defaults to .removed)
     ///   - layerView: Closure that receives the item and returns the view to animate
     ///   - completion: Optional completion handler (defaults to no-op)
     /// - Returns: A view with the portal transition modifier applied
     func portalTransition<Item: Identifiable, LayerView: View>(
         item: Binding<Optional<Item>>,
-        animation: PortalAnimation = .init(),
+        animation: Animation = .smooth(duration: 0.4),
+        completionCriteria: AnimationCompletionCriteria = .removed,
         @ViewBuilder layerView: @escaping (Item) -> LayerView,
         completion: @escaping (Bool) -> Void = { _ in }
     ) -> some View {
@@ -912,6 +917,7 @@ public extension View {
             OptionalPortalTransitionModifierDirect(
                 item: item,
                 animation: animation,
+                completionCriteria: completionCriteria,
                 layerView: layerView,
                 completion: completion
             )
