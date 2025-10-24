@@ -1,5 +1,15 @@
 import SwiftUI
 
+// MARK: - Portal Corners Environment Key
+
+/// Environment key for default portal corner radius configuration.
+///
+/// This allows setting default corner radii for all portal transitions
+/// in a view hierarchy, which can be overridden by specific transitions.
+private struct PortalCornersKey: EnvironmentKey {
+    nonisolated(unsafe) static let defaultValue: PortalCorners? = nil
+}
+
 // MARK: - Debug Overlays Environment Key
 
 /// Environment key for controlling the visibility of debug overlays.
@@ -12,6 +22,24 @@ private struct PortalDebugOverlaysKey: EnvironmentKey {
 }
 
 public extension EnvironmentValues {
+    /// Default corner radius configuration for portal transitions.
+    ///
+    /// This provides a default corner configuration that will be used
+    /// by all portal transitions in the view hierarchy unless overridden
+    /// by specific transition parameters.
+    ///
+    /// **Default:** `nil` (no corner radius applied)
+    ///
+    /// **Usage:**
+    /// ```swift
+    /// ContentView()
+    ///     .environment(\.portalCorners, PortalCorners(source: 8, destination: 16))
+    /// ```
+    var portalCorners: PortalCorners? {
+        get { self[PortalCornersKey.self] }
+        set { self[PortalCornersKey.self] = newValue }
+    }
+
     /// Controls whether portal debug overlays are shown.
     ///
     /// Debug overlays are only visible in DEBUG builds. This environment value
@@ -31,6 +59,36 @@ public extension EnvironmentValues {
 }
 
 public extension View {
+    /// Sets the default corner radius configuration for portal transitions.
+    ///
+    /// This modifier allows you to set a default corner configuration that will
+    /// be used by all portal transitions in child views unless overridden.
+    ///
+    /// - Parameter corners: The default corner configuration to use.
+    ///
+    /// **Example:**
+    /// ```swift
+    /// ContentView()
+    ///     .portalCorners(source: 8, destination: 16, style: .continuous)
+    /// ```
+    func portalCorners(source: CGFloat, destination: CGFloat, style: RoundedCornerStyle = .circular) -> some View {
+        environment(\.portalCorners, PortalCorners(source: source, destination: destination, style: style))
+    }
+
+    /// Sets the default corner radius configuration for portal transitions.
+    ///
+    /// - Parameter corners: The corner configuration to use.
+    ///
+    /// **Example:**
+    /// ```swift
+    /// let corners = PortalCorners(source: 8, destination: 16)
+    /// ContentView()
+    ///     .portalCorners(corners)
+    /// ```
+    func portalCorners(_ corners: PortalCorners?) -> some View {
+        environment(\.portalCorners, corners)
+    }
+
     /// Controls whether portal debug overlays are shown.
     ///
     /// Debug overlays are visual indicators that show portal sources (blue) and

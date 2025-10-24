@@ -262,23 +262,17 @@ public extension View {
         }
     }
 
-    /// Triggers a portal transition for a private portal using the mirrored view
+    /// Triggers a portal transition for a private portal using the mirrored view (deprecated)
     ///
     /// This modifier triggers the animation for PortalPrivate views.
     /// Unlike regular `.portalTransition`, you don't provide a layer view
     /// since it uses the _UIPortalView mirror of the source.
     ///
-    /// Example:
-    /// ```swift
-    /// .portalPrivateTransition(
-    ///     id: "myView",
-    ///     isActive: $showDetail,
-    ///     hidesSource: true
-    /// )
-    /// ```
+    /// - Deprecated: Use the new API with animation as a direct parameter
+    @available(*, deprecated, message: "Use the new API with animation as a direct parameter instead of config")
     func portalPrivateTransition(
         id: String,
-        config: PortalTransitionConfig = .init(),
+        config: PortalTransitionConfig,
         isActive: Binding<Bool>,
         hidesSource: Bool = false,
         matchesAlpha: Bool = true,
@@ -300,10 +294,50 @@ public extension View {
         )
     }
 
-    /// Triggers a portal transition for a private portal with an optional item
+    /// Triggers a portal transition for a private portal using the mirrored view
+    ///
+    /// This modifier triggers the animation for PortalPrivate views.
+    /// Unlike regular `.portalTransition`, you don't provide a layer view
+    /// since it uses the _UIPortalView mirror of the source.
+    ///
+    /// Example:
+    /// ```swift
+    /// .portalPrivateTransition(
+    ///     id: "myView",
+    ///     isActive: $showDetail,
+    ///     animation: .smooth(duration: 0.5),
+    ///     hidesSource: true
+    /// )
+    /// ```
+    func portalPrivateTransition(
+        id: String,
+        isActive: Binding<Bool>,
+        animation: PortalAnimation = .init(),
+        hidesSource: Bool = false,
+        matchesAlpha: Bool = true,
+        matchesTransform: Bool = true,
+        matchesPosition: Bool = false,
+        completion: @escaping (Bool) -> Void = { _ in }
+    ) -> some View {
+        self.modifier(
+            PortalPrivateTransitionModifierDirect(
+                id: id,
+                animation: animation,
+                isActive: isActive,
+                hidesSource: hidesSource,
+                matchesAlpha: matchesAlpha,
+                matchesTransform: matchesTransform,
+                matchesPosition: matchesPosition,
+                completion: completion
+            )
+        )
+    }
+
+    /// Triggers a portal transition for a private portal with an optional item (deprecated)
+    @available(*, deprecated, message: "Use the new API with animation as a direct parameter instead of config")
     func portalPrivateTransition<Item: Identifiable>(
         item: Binding<Item?>,
-        config: PortalTransitionConfig = .init(),
+        config: PortalTransitionConfig,
         hidesSource: Bool = false,
         matchesAlpha: Bool = true,
         matchesTransform: Bool = true,
@@ -314,6 +348,29 @@ public extension View {
             PortalPrivateItemTransitionModifier(
                 item: item,
                 config: config,
+                hidesSource: hidesSource,
+                matchesAlpha: matchesAlpha,
+                matchesTransform: matchesTransform,
+                matchesPosition: matchesPosition,
+                completion: completion
+            )
+        )
+    }
+
+    /// Triggers a portal transition for a private portal with an optional item
+    func portalPrivateTransition<Item: Identifiable>(
+        item: Binding<Item?>,
+        animation: PortalAnimation = .init(),
+        hidesSource: Bool = false,
+        matchesAlpha: Bool = true,
+        matchesTransform: Bool = true,
+        matchesPosition: Bool = false,
+        completion: @escaping (Bool) -> Void = { _ in }
+    ) -> some View {
+        self.modifier(
+            PortalPrivateItemTransitionModifierDirect(
+                item: item,
+                animation: animation,
                 hidesSource: hidesSource,
                 matchesAlpha: matchesAlpha,
                 matchesTransform: matchesTransform,
@@ -336,10 +393,11 @@ public extension View {
     ///     isActive: $showPortals
     /// )
     /// ```
+    @available(*, deprecated, message: "Use the new API with animation as a direct parameter instead of config")
     func portalPrivateTransition(
         ids: [String],
         groupID: String,
-        config: PortalTransitionConfig = .init(),
+        config: PortalTransitionConfig,
         isActive: Binding<Bool>,
         hidesSource: Bool = false,
         matchesAlpha: Bool = true,
@@ -362,6 +420,32 @@ public extension View {
         )
     }
 
+    func portalPrivateTransition(
+        ids: [String],
+        groupID: String,
+        isActive: Binding<Bool>,
+        animation: PortalAnimation = .init(),
+        hidesSource: Bool = false,
+        matchesAlpha: Bool = true,
+        matchesTransform: Bool = true,
+        matchesPosition: Bool = false,
+        completion: @escaping (Bool) -> Void = { _ in }
+    ) -> some View {
+        self.modifier(
+            MultiIDPortalPrivateTransitionModifierDirect(
+                ids: ids,
+                groupID: groupID,
+                animation: animation,
+                isActive: isActive,
+                hidesSource: hidesSource,
+                matchesAlpha: matchesAlpha,
+                matchesTransform: matchesTransform,
+                matchesPosition: matchesPosition,
+                completion: completion
+            )
+        )
+    }
+
     /// Triggers coordinated portal transitions for multiple private portal items.
     ///
     /// This modifier enables multiple portal animations to run simultaneously as a coordinated group.
@@ -374,10 +458,11 @@ public extension View {
     ///     groupID: "photoStack"
     /// )
     /// ```
+    @available(*, deprecated, message: "Use the new API with animation as a direct parameter instead of config")
     func portalPrivateTransition<Item: Identifiable>(
         items: Binding<[Item]>,
         groupID: String,
-        config: PortalTransitionConfig = .init(),
+        config: PortalTransitionConfig,
         hidesSource: Bool = false,
         matchesAlpha: Bool = true,
         matchesTransform: Bool = true,
@@ -389,6 +474,30 @@ public extension View {
                 items: items,
                 groupID: groupID,
                 config: config,
+                hidesSource: hidesSource,
+                matchesAlpha: matchesAlpha,
+                matchesTransform: matchesTransform,
+                matchesPosition: matchesPosition,
+                completion: completion
+            )
+        )
+    }
+
+    func portalPrivateTransition<Item: Identifiable>(
+        items: Binding<[Item]>,
+        groupID: String,
+        animation: PortalAnimation = .init(),
+        hidesSource: Bool = false,
+        matchesAlpha: Bool = true,
+        matchesTransform: Bool = true,
+        matchesPosition: Bool = false,
+        completion: @escaping (Bool) -> Void = { _ in }
+    ) -> some View {
+        self.modifier(
+            MultiItemPortalPrivateTransitionModifierDirect(
+                items: items,
+                groupID: groupID,
+                animation: animation,
                 hidesSource: hidesSource,
                 matchesAlpha: matchesAlpha,
                 matchesTransform: matchesTransform,
@@ -937,3 +1046,130 @@ internal struct DebugOverlayIndicator: View {
     }
 }
 #endif
+
+
+// MARK: - Direct Parameter Modifiers (New API)
+
+/// Portal private transition modifier with direct parameters
+struct PortalPrivateTransitionModifierDirect: ViewModifier {
+    let id: String
+    let animation: PortalAnimation
+    @Binding var isActive: Bool
+    let hidesSource: Bool
+    let matchesAlpha: Bool
+    let matchesTransform: Bool
+    let matchesPosition: Bool
+    let completion: (Bool) -> Void
+    @Environment(CrossModel.self) private var portalModel
+    @Environment(\.portalCorners) private var environmentCorners
+
+    func body(content: Content) -> some View {
+        let config = PortalTransitionConfig(animation: animation, corners: environmentCorners)
+
+        return content.modifier(
+            PortalPrivateTransitionModifier(
+                id: id,
+                config: config,
+                isActive: $isActive,
+                hidesSource: hidesSource,
+                matchesAlpha: matchesAlpha,
+                matchesTransform: matchesTransform,
+                matchesPosition: matchesPosition,
+                completion: completion
+            )
+        )
+    }
+}
+
+/// Portal private item transition modifier with direct parameters
+struct PortalPrivateItemTransitionModifierDirect<Item: Identifiable>: ViewModifier {
+    @Binding var item: Item?
+    let animation: PortalAnimation
+    let hidesSource: Bool
+    let matchesAlpha: Bool
+    let matchesTransform: Bool
+    let matchesPosition: Bool
+    let completion: (Bool) -> Void
+    @Environment(CrossModel.self) private var portalModel
+    @Environment(\.portalCorners) private var environmentCorners
+
+    func body(content: Content) -> some View {
+        let config = PortalTransitionConfig(animation: animation, corners: environmentCorners)
+        
+        return content.modifier(
+            PortalPrivateItemTransitionModifier(
+                item: $item,
+                config: config,
+                hidesSource: hidesSource,
+                matchesAlpha: matchesAlpha,
+                matchesTransform: matchesTransform,
+                matchesPosition: matchesPosition,
+                completion: completion
+            )
+        )
+    }
+}
+
+/// Multi-ID portal private transition modifier with direct parameters  
+struct MultiIDPortalPrivateTransitionModifierDirect: ViewModifier {
+    let ids: [String]
+    let groupID: String
+    let animation: PortalAnimation
+    @Binding var isActive: Bool
+    let hidesSource: Bool
+    let matchesAlpha: Bool
+    let matchesTransform: Bool
+    let matchesPosition: Bool
+    let completion: (Bool) -> Void
+    @Environment(CrossModel.self) private var portalModel
+    @Environment(\.portalCorners) private var environmentCorners
+
+    func body(content: Content) -> some View {
+        let config = PortalTransitionConfig(animation: animation, corners: environmentCorners)
+        
+        return content.modifier(
+            MultiIDPortalPrivateTransitionModifier(
+                ids: ids,
+                groupID: groupID,
+                config: config,
+                isActive: $isActive,
+                hidesSource: hidesSource,
+                matchesAlpha: matchesAlpha,
+                matchesTransform: matchesTransform,
+                matchesPosition: matchesPosition,
+                completion: completion
+            )
+        )
+    }
+}
+
+/// Multi-item portal private transition modifier with direct parameters
+struct MultiItemPortalPrivateTransitionModifierDirect<Item: Identifiable>: ViewModifier {
+    @Binding var items: [Item]
+    let groupID: String
+    let animation: PortalAnimation
+    let hidesSource: Bool
+    let matchesAlpha: Bool
+    let matchesTransform: Bool
+    let matchesPosition: Bool
+    let completion: (Bool) -> Void
+    @Environment(CrossModel.self) private var portalModel
+    @Environment(\.portalCorners) private var environmentCorners
+
+    func body(content: Content) -> some View {
+        let config = PortalTransitionConfig(animation: animation, corners: environmentCorners)
+        
+        return content.modifier(
+            MultiItemPortalPrivateTransitionModifier(
+                items: $items,
+                groupID: groupID,
+                config: config,
+                hidesSource: hidesSource,
+                matchesAlpha: matchesAlpha,
+                matchesTransform: matchesTransform,
+                matchesPosition: matchesPosition,
+                completion: completion
+            )
+        )
+    }
+}

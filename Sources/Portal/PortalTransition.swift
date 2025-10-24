@@ -768,6 +768,7 @@ public extension View {
     ///   - layerView: Closure that returns the view to animate during transition
     ///   - completion: Optional completion handler (defaults to no-op)
     /// - Returns: A view with the portal transition modifier applied
+    @available(*, deprecated, message: "Use the new API with direct parameters instead of config")
     func portalTransition<LayerView: View>(
         id: String,
         config: PortalTransitionConfig = .init(),
@@ -779,6 +780,31 @@ public extension View {
             ConditionalPortalTransitionModifier(
                 id: id,
                 config: config,
+                isActive: isActive,
+                layerView: layerView,
+                completion: completion))
+    }
+
+    /// Applies a portal transition with direct parameter configuration.
+    ///
+    /// - Parameters:
+    ///   - id: Unique identifier for the portal transition
+    ///   - isActive: Boolean binding that controls the transition state
+    ///   - animation: Animation to use for the transition (defaults to smooth animation)
+    ///   - layerView: Closure that returns the view to animate during transition
+    ///   - completion: Optional completion handler (defaults to no-op)
+    /// - Returns: A view with the portal transition modifier applied
+    func portalTransition<LayerView: View>(
+        id: String,
+        isActive: Binding<Bool>,
+        animation: PortalAnimation = .init(),
+        @ViewBuilder layerView: @escaping () -> LayerView,
+        completion: @escaping (Bool) -> Void = { _ in }
+    ) -> some View {
+        return self.modifier(
+            ConditionalPortalTransitionModifierDirect(
+                id: id,
+                animation: animation,
                 isActive: isActive,
                 layerView: layerView,
                 completion: completion))
@@ -851,6 +877,7 @@ public extension View {
     ///   - layerView: Closure that receives the item and returns the view to animate
     ///   - completion: Optional completion handler (defaults to no-op)
     /// - Returns: A view with the portal transition modifier applied
+    @available(*, deprecated, message: "Use the new API with direct parameters instead of config")
     func portalTransition<Item: Identifiable, LayerView: View>(
         item: Binding<Optional<Item>>,
         config: PortalTransitionConfig = .init(),
@@ -861,6 +888,30 @@ public extension View {
             OptionalPortalTransitionModifier(
                 item: item,
                 config: config,
+                layerView: layerView,
+                completion: completion
+            )
+        )
+    }
+
+    /// Applies a portal transition with direct parameters controlled by an optional item.
+    ///
+    /// - Parameters:
+    ///   - item: Binding to an optional `Identifiable` item that controls the transition
+    ///   - animation: Animation to use for the transition (defaults to smooth animation)
+    ///   - layerView: Closure that receives the item and returns the view to animate
+    ///   - completion: Optional completion handler (defaults to no-op)
+    /// - Returns: A view with the portal transition modifier applied
+    func portalTransition<Item: Identifiable, LayerView: View>(
+        item: Binding<Optional<Item>>,
+        animation: PortalAnimation = .init(),
+        @ViewBuilder layerView: @escaping (Item) -> LayerView,
+        completion: @escaping (Bool) -> Void = { _ in }
+    ) -> some View {
+        return self.modifier(
+            OptionalPortalTransitionModifierDirect(
+                item: item,
+                animation: animation,
                 layerView: layerView,
                 completion: completion
             )
