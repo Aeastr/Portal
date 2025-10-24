@@ -49,7 +49,7 @@ public struct PortalTransitionConfig {
     /// maintaining good default behavior.
     ///
     /// - Parameters:
-    ///   - animation: The animation configuration. Defaults to a smooth 0.3s animation.
+    ///   - animation: The animation configuration. Defaults to a smooth 0.38s animation.
     ///   - corners: The corner styling configuration. Defaults to nil (no clipping).
     public init(animation: PortalAnimation = .init(), corners: PortalCorners? = nil) {
         self.animation = animation
@@ -99,9 +99,16 @@ public protocol PortalAnimationProtocol {
 /// Animation configuration for portal transitions (iOS 15+).
 ///
 /// This struct encapsulates basic timing parameters for portal animations,
-/// including the SwiftUI animation curve and delay timing. It provides 
+/// including the SwiftUI animation curve and delay timing. It provides
 /// control over the temporal behavior of portal transitions while maintaining
 /// compatibility with iOS 15+.
+///
+/// **IMPORTANT - Sheet Timing Consideration:**
+/// When using portal transitions with sheets or other system presentations,
+/// the animation duration must be at least 0.35-0.4 seconds to match iOS
+/// sheet presentation timing. Shorter durations (like 0.1-0.3s) will cause
+/// visible shifts or flickers as the portal completes before the sheet
+/// finishes presenting. The default duration of 0.38s is calibrated for sheets.
 ///
 /// **Key Features:**
 /// - Wraps SwiftUI's `Animation` type for curve definitions
@@ -120,11 +127,15 @@ public struct PortalAnimation: PortalAnimationProtocol {
     
     /// Delay before the animation begins, in seconds.
     public let delay: TimeInterval
-    
-    /// Duration of the animation, used for iOS 15-16 completion timing.
-    /// On iOS 17+, this is ignored in favor of completion criteria.
-    public let duration: TimeInterval
-    
+
+    /// Duration of the animation in seconds.
+    /// - Note: This property is deprecated and no longer used. The duration is now inferred from the Animation object.
+    @available(*, deprecated, message: "Duration is no longer used in iOS 17+. The duration is now inferred from the Animation object itself.")
+    public var duration: TimeInterval {
+        // Return a reasonable default for backwards compatibility
+        0.38
+    }
+
     /// Initializes a new portal animation configuration.
     ///
     /// Creates an animation configuration with specified timing parameters.
@@ -133,15 +144,13 @@ public struct PortalAnimation: PortalAnimationProtocol {
     /// - Parameters:
     ///   - animation: The SwiftUI animation curve.
     ///   - delay: Start delay in seconds. Defaults to 0.06s.
-    ///   - duration: Animation duration in seconds. Defaults to 0.35s.
+    ///   - duration: Animation duration in seconds. Defaults to 0.38s.
     public init(
         _ animation: Animation,
         delay: TimeInterval = 0.1,
-        duration: TimeInterval = 0.35
     ) {
         self.value = animation
         self.delay = delay
-        self.duration = duration
     }
     
     /// Default initializer that works across all iOS versions.
@@ -149,7 +158,7 @@ public struct PortalAnimation: PortalAnimationProtocol {
     /// Creates a PortalAnimation with sensible defaults, automatically selecting
     /// the best animation type for the current iOS version.
     public init() {
-        self.init(.smooth(duration: 0.3, extraBounce: 0.1), delay: 0.06, duration: 0.3)
+        self.init(.smooth(duration: 0.38, extraBounce: 0.1), delay: 0.08)
     }
     
     /// Executes the animation with appropriate completion handling for the iOS version.

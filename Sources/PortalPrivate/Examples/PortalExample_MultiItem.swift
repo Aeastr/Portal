@@ -1,6 +1,6 @@
 #if DEBUG
 import SwiftUI
-
+import Portal
 /// Portal multi-item example showing coordinated transitions for multiple elements
 public struct PortalExample_MultiItem: View {
     @State private var selectedPhotos: [MultiItemPhoto] = []
@@ -26,8 +26,9 @@ public struct PortalExample_MultiItem: View {
                         ForEach(allPhotos) { photo in
                             AnimatedLayer(portalID: photo.id.uuidString, scale: 1.15) {
                                 PhotoThumbnailView(photo: photo)
+                                    .portalPrivate(item: photo, groupID: "photoStack")
                             }
-                            .portal(item: photo, .source, groupID: "photoStack")
+                            .frame(height: 160)
                         }
                     }
                     .padding(.horizontal)
@@ -53,17 +54,10 @@ public struct PortalExample_MultiItem: View {
                     selectedPhotos.removeAll()
                 }
             }
-            .portalTransition(
+            .portalPrivateTransition(
                 items: $selectedPhotos,
-                groupID: "photoStack",
-                config: .init(
-                    animation: PortalAnimation(portal_animationExample)
-                )
-            ) { photo in
-                AnimatedLayer(portalID: photo.id.uuidString, scale: 1.15) {
-                    PhotoView(photo: photo)
-                }
-            }
+                groupID: "photoStack"
+            )
         }
     }
 }
@@ -78,10 +72,7 @@ struct MultiItemDetailView: View {
             ScrollView {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 2), spacing: 12) {
                     ForEach(photos) { photo in
-                        AnimatedLayer(portalID: photo.id.uuidString, scale: 1.15) {
-                            PhotoDetailView(photo: photo)
-                                .portal(item: photo, .destination, groupID: "photoStack")
-                        }
+                        PortalPrivateDestination(id: photo.id.uuidString)
                     }
                 }
                 .padding()
@@ -128,7 +119,6 @@ struct PhotoThumbnailView: View {
     
     var body: some View {
         PhotoView(photo: photo)
-            .aspectRatio(1, contentMode: .fit)
     }
 }
 

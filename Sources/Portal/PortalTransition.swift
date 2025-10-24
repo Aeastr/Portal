@@ -146,7 +146,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
             }
 
             // Configure portal for forward animation
-            portalModel.info[idx].initalized = true
+            portalModel.info[idx].initialized = true
             portalModel.info[idx].animation = config.animation
             portalModel.info[idx].corners = config.corners
             portalModel.info[idx].completion = completion
@@ -194,7 +194,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
                 portalModel.info[idx].animateView = false
             }) {
                 // Complete cleanup after reverse animation
-                portalModel.info[idx].initalized = false
+                portalModel.info[idx].initialized = false
                 portalModel.info[idx].layerView = nil
                 portalModel.info[idx].sourceAnchor = nil
                 portalModel.info[idx].destinationAnchor = nil
@@ -233,8 +233,8 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
 ///   - isActive: A binding that triggers the transition when set to `true`.
 ///   - sourceProgress: The progress value for the source view (default: 0).
 ///   - destinationProgress: The progress value for the destination view (default: 0).
-///   - animation: The animation to use for the transition (default: `.bouncy(duration: 0.3)`).
-///   - animationDuration: The duration of the transition animation (default: 0.3).
+///   - animation: The animation to use for the transition (default: `.bouncy(duration: 0.38)`).
+///   - animationDuration: The duration of the transition animation (default: 0.38).
 ///   - delay: The delay before starting the animation (default: 0.06).
 ///   - layer: A closure that returns the floating overlay view to animate.
 ///   - completion: A closure called when the transition completes, with a `Bool` indicating success.
@@ -355,7 +355,7 @@ internal struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifi
         }
         
         // Configure portal info for any transition
-        portalInfoArray[idx].initalized = true
+        portalInfoArray[idx].initialized = true
         portalInfoArray[idx].animation = config.animation
         portalInfoArray[idx].corners = config.corners
         portalInfoArray[idx].completion = completion
@@ -381,7 +381,7 @@ internal struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifi
                 portalInfoArray[idx].animateView = false
             }) {
                 // Complete cleanup after reverse animation
-                portalInfoArray[idx].initalized = false
+                portalInfoArray[idx].initialized = false
                 portalInfoArray[idx].layerView = nil
                 portalInfoArray[idx].sourceAnchor = nil
                 portalInfoArray[idx].destinationAnchor = nil
@@ -472,7 +472,7 @@ public struct MultiIDPortalTransitionModifier<LayerView: View>: ViewModifier {
             // Forward transition: isActive became true
             for (i, idx) in groupIndices.enumerated() {
                 let portalID = portalModel.info[idx].infoID
-                portalModel.info[idx].initalized = true
+                portalModel.info[idx].initialized = true
                 portalModel.info[idx].animation = config.animation
                 portalModel.info[idx].corners = config.corners
                 portalModel.info[idx].groupID = groupID
@@ -515,7 +515,7 @@ public struct MultiIDPortalTransitionModifier<LayerView: View>: ViewModifier {
                 }
             }) {
                 for idx in groupIndices {
-                    portalModel.info[idx].initalized = false
+                    portalModel.info[idx].initialized = false
                     portalModel.info[idx].layerView = nil
                     portalModel.info[idx].sourceAnchor = nil
                     portalModel.info[idx].destinationAnchor = nil
@@ -633,7 +633,7 @@ public struct MultiItemPortalTransitionModifier<Item: Identifiable, LayerView: V
             
             // Set up group coordination - first item becomes coordinator
             for (i, idx) in groupIndices.enumerated() {
-                portalModel.info[idx].initalized = true
+                portalModel.info[idx].initialized = true
                 portalModel.info[idx].animation = config.animation
                 portalModel.info[idx].corners = config.corners
                 portalModel.info[idx].groupID = groupID
@@ -715,7 +715,7 @@ public struct MultiItemPortalTransitionModifier<Item: Identifiable, LayerView: V
             }) {
                 // Complete cleanup after reverse animation
                 for idx in cleanupIndices {
-                    portalModel.info[idx].initalized = false
+                    portalModel.info[idx].initialized = false
                     portalModel.info[idx].layerView = nil
                     portalModel.info[idx].sourceAnchor = nil
                     portalModel.info[idx].destinationAnchor = nil
@@ -732,8 +732,8 @@ public struct MultiItemPortalTransitionModifier<Item: Identifiable, LayerView: V
     }
     
     public func body(content: Content) -> some View {
-        content.onChange(of: !items.isEmpty) { newValue in
-            onChange(oldValue: items, hasItems: newValue)
+        content.onChange(of: !items.isEmpty) {
+            onChange(oldValue: items, hasItems: !items.isEmpty)
         }
     }
 }
