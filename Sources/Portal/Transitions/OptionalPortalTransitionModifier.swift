@@ -281,7 +281,7 @@ extension View {
     ///   - layerView: Closure that receives the item and returns the view to animate
     ///   - completion: Optional completion handler (defaults to no-op)
     /// - Returns: A view with the portal transition modifier applied
-    @available(*, deprecated, message: "Use the new API with direct parameters instead of config")
+    @available(*, deprecated, message: "Use the new API with direct parameters instead of config. Will be removed in a future version.")
     func portalTransition<Item: Identifiable, LayerView: View>(
         item: Binding<Item?>,
         config: PortalTransitionConfig,

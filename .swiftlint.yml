@@ -121,6 +121,10 @@ file_header:
 custom_rules:
   no_hardcoded_delays:
     name: "No Hardcoded Delays"
+    # Note: This regex is intentionally broad and may flag animation design parameters.
+    # It catches TimeInterval/Double/CGFloat literals to encourage use of PortalConstants.
+    # False positives (e.g., animation choreography values) are acceptable as warnings
+    # since package users won't run SwiftLint on library internals.
     regex: '(?<!PortalConstants\.)(?:TimeInterval|Double|CGFloat)\s*\(\s*0\.[1-9]'
     message: "Use PortalConstants for delay values instead of hardcoding them"
     severity: warning

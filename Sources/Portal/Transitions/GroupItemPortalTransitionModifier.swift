@@ -290,7 +290,7 @@ public extension View {
     ///   - layerView: Closure that receives each item and returns the view to animate for that item
     ///   - completion: Optional completion handler called when all animations finish (defaults to no-op)
     /// - Returns: A view with the multi-item portal transition modifier applied
-    @available(*, deprecated, message: "Use portalTransition with direct animation and corners parameters instead")
+    @available(*, deprecated, message: "Use portalTransition with direct animation and corners parameters instead. Will be removed in a future version.")
     func portalTransition<Item: Identifiable, LayerView: View>(
         items: Binding<[Item]>,
         groupID: String,

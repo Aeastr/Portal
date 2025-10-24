@@ -205,7 +205,7 @@ extension View {
     ///   - layerView: Closure that receives each ID and returns the view to animate for that ID
     ///   - completion: Optional completion handler (defaults to no-op)
     /// - Returns: A view with the multi-ID portal transition modifier applied
-    @available(*, deprecated, message: "Use portalTransition with direct animation and corners parameters instead")
+    @available(*, deprecated, message: "Use portalTransition with direct animation and corners parameters instead. Will be removed in a future version.")
     func portalTransition<LayerView: View>(
         ids: [String],
         groupID: String,
