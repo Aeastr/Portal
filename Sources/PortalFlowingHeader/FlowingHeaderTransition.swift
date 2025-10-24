@@ -124,7 +124,7 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
                     // Debug message if no anchors found
                     if titleSrcAnchor == nil && titleDstAnchor == nil &&
                        accessorySrcAnchor == nil && accessoryDstAnchor == nil {
-                        Text("none found – keys: \\(anchors.keys), looking for \\(title)")
+                        Text("none found – keys: \(anchors.keys), looking for \(title)")
                             .foregroundStyle(.red)
                             .background(.white)
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)

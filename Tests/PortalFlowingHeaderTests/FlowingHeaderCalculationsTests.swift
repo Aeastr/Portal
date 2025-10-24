@@ -74,7 +74,7 @@ struct FlowingHeaderCalculationsTests {
             startOffset: 0,
             range: 0
         )
-        // Should return infinity, but min(1.0, inf) = 1.0
+        // Zero range is guarded to return 1.0 (fully transitioned)
         #expect(progress == 1.0)
     }
 
@@ -86,8 +86,8 @@ struct FlowingHeaderCalculationsTests {
             range: -40
         )
         // Negative range produces negative progress: (10 - 0) / -40 = -0.25
-        // min(1.0, -0.25) = -0.25 (not clamped since it's below 1.0)
-        #expect(progress == -0.25)
+        // Clamped to 0.0 by max(0.0, min(1.0, -0.25))
+        #expect(progress == 0.0)
     }
 
     @Test("Progress calculation with custom values")
@@ -98,6 +98,18 @@ struct FlowingHeaderCalculationsTests {
             range: 100
         )
         #expect(progress == 0.4)
+    }
+
+    @Test("Progress calculation negative clamping")
+    func progressNegativeClamping() {
+        // Test that negative progress values are clamped to 0.0
+        let progress = FlowingHeaderCalculations.calculateProgress(
+            scrollOffset: 50,
+            startOffset: 100,
+            range: 10
+        )
+        // (50 - 100) / 10 = -5.0, clamped to 0.0
+        #expect(progress == 0.0)
     }
 
     // MARK: - Dynamic Offset Tests
@@ -381,6 +393,50 @@ struct FlowingHeaderCalculationsTests {
 
         #expect(scale.x == 0.5)
         #expect(scale.y == 0.5)
+    }
+
+    @Test("Scale calculation with zero source size")
+    func scaleWithZeroSource() {
+        let source = CGSize(width: 0, height: 0)
+        let destination = CGSize(width: 100, height: 100)
+
+        let scale = FlowingHeaderCalculations.calculateScale(
+            sourceSize: source,
+            destinationSize: destination,
+            progress: 0.5
+        )
+
+        // Should return identity scale (1.0, 1.0) to avoid division by zero
+        #expect(scale.x == 1.0)
+        #expect(scale.y == 1.0)
+    }
+
+    @Test("Scale calculation with partially zero source size")
+    func scaleWithPartiallyZeroSource() {
+        // Zero width only
+        let sourceZeroWidth = CGSize(width: 0, height: 100)
+        let destination = CGSize(width: 50, height: 50)
+
+        let scaleZeroWidth = FlowingHeaderCalculations.calculateScale(
+            sourceSize: sourceZeroWidth,
+            destinationSize: destination,
+            progress: 0.5
+        )
+
+        #expect(scaleZeroWidth.x == 1.0)
+        #expect(scaleZeroWidth.y == 1.0)
+
+        // Zero height only
+        let sourceZeroHeight = CGSize(width: 100, height: 0)
+
+        let scaleZeroHeight = FlowingHeaderCalculations.calculateScale(
+            sourceSize: sourceZeroHeight,
+            destinationSize: destination,
+            progress: 0.5
+        )
+
+        #expect(scaleZeroHeight.x == 1.0)
+        #expect(scaleZeroHeight.y == 1.0)
     }
 
     @Test("Scale calculation with identical sizes")

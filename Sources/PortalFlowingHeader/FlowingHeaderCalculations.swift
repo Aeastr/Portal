@@ -51,9 +51,16 @@ public struct FlowingHeaderCalculations {
             return 0.0
         }
 
+        // Guard against division by zero
+        guard range != 0 else {
+            return 1.0 // Consider fully transitioned if range is zero
+        }
+
         // Calculate progress over the transition range
         let rawProgress = (scrollOffset - startOffset) / range
-        return Double(min(1.0, rawProgress))
+
+        // Clamp progress between 0.0 and 1.0
+        return Double(max(0.0, min(1.0, rawProgress)))
     }
 
     // MARK: - Dynamic Offset
@@ -157,6 +164,11 @@ public struct FlowingHeaderCalculations {
         destinationSize: CGSize,
         progress: CGFloat
     ) -> (x: CGFloat, y: CGFloat) {
+        // Guard against division by zero
+        guard sourceSize.width > 0 && sourceSize.height > 0 else {
+            return (1.0, 1.0) // Return identity scale if source size is invalid
+        }
+
         let targetWidth = sourceSize.width + (destinationSize.width - sourceSize.width) * progress
         let targetHeight = sourceSize.height + (destinationSize.height - sourceSize.height) * progress
 
