@@ -1,45 +1,42 @@
 <div align="center">
-  <img width="270" height="270" src="/assets/icon.png" alt="Portal Logo">
+  <img width="200" height="200" src="/Resources/icon/icon.png" alt="Portal Logo">
   <h1><b>Portal</b></h1>
   <p>
     Portal is a SwiftUI package for seamless element transitions between views—including across sheets and navigation pushes (NavigationStack, .navigationDestination, etc)—using a portal metaphor for maximum flexibility.
     <br>
-    <i>Compatible with iOS 15.0 and later</i>
+    <i>Compatible with iOS 17.0 and later*</i>
   </p>
 </div>
 
 <p align="center">
-    <a href="https://www.apple.com/macos/"><img src="https://badgen.net/badge/macOS/14+/blue" alt="macOS"></a>
-    <a href="https://developer.apple.com/xcode/"><img src="https://badgen.net/badge/Xcode/15+/blue" alt="Xcode"></a>
-    <a href="https://swift.org"><img src="https://badgen.net/badge/Swift/5.9/orange" alt="Swift Version"></a>
-    <a href="https://brew.sh"><img src="https://badgen.net/badge/Homebrew/required/yellow" alt="Homebrew"></a>
-    <a href="LICENSE.md"><img src="https://badgen.net/badge/License/MIT/green" alt="License: MIT"></a>
+  <a href="https://developer.apple.com/ios/"><img src="https://img.shields.io/badge/iOS-17%2B-purple.svg" alt="iOS 17+"></a>
+  <a href="https://swift.org/"><img src="https://img.shields.io/badge/Swift-6.0-orange.svg" alt="Swift 6.0"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT"></a>
 </p>
 
-## **Demo**
+<div align="center">
+  <img width="600" src="/Resources/examples/example1.gif" alt="Portal Demo">
+</div>
 
-![Example](/assets/demo.gif)
 
-<details>
-  <summary><strong>Real Examples</strong></summary>
+## Installation
 
-  https://github.com/user-attachments/assets/1658216e-dabd-442f-a7fe-7c2a19bf427d
+Add Portal to your project using Swift Package Manager:
 
-  https://github.com/user-attachments/assets/7bba5836-f6e0-4d0b-95d7-f2c44c86c80a
-</details>
+```swift
+dependencies: [
+    .package(url: "https://github.com/Aeastr/Portal", from: "4.0.0")
+]
+```
 
----
+> Targeting iOS 15/16? Pin your dependency to `v2.1.0` or the `legacy/ios15` branch.
 
-## Documentation
+## Documentation & Wiki
 
-Portal uses a hybrid documentation approach to provide the best developer experience:
+The [Portal Wiki](https://github.com/Aeastr/Portal/wiki) has the detailed docs - full API references, guides, and explanations.
 
-- **Inline DocC comments** - Rich documentation that appears directly in Xcode while coding, providing immediate context and autocomplete assistance
-- **Comprehensive wiki** - Extensive guides, examples, and deep-dive explanations available at the [Portal Wiki](https://github.com/Aeastr/Portal/wiki)
+The wiki is included as a git submodule at `/wiki`, so you get all the docs when you clone. Great for offline reference and LLMs.
 
-This approach keeps the codebase clean and focused while ensuring developers have both quick inline help and comprehensive resources when needed. 
-
----
 
 ## Features
 
@@ -56,42 +53,47 @@ This approach keeps the codebase clean and focused while ensuring developers hav
   Mark any view as a portal source or destination, keyed by static IDs or `Identifiable` items.
 
 - **Easy Integration**  
-  Add portal support to any view hierarchy with a single modifier or wrapper, no custom presentation code required.
+  Install `PortalContainer` once at your root view and every sheet/navigation stack automatically gains portal support—no custom presentation code required.
 
 - **Customizable Animations**  
-  Fine-tune transitions with `PortalTransitionConfig` for control over timing, easing, and corner styling.
+  Fine-tune transitions with `PortalTransitionConfig` and drive bespoke transition layers via the `AnimatedPortalLayer` protocol.
 
 - **Modern SwiftUI Support**  
-  Optimized for iOS 17+ with backward compatibility for iOS 15 and 16. 
+  Built for iOS 17+ with the latest SwiftUI APIs and animation completion criteria
 
----
+- **Debug Overlays**
+  Visual indicators in DEBUG builds showing portal sources, destinations, and animation states. Zero overhead in Release builds.
+
+- **Structured Logging**
+  Built-in diagnostics via [LogOutLoud](https://github.com/Aeastr/LogOutLoud) integration. See the [Debugging Guide](https://github.com/Aeastr/Portal/wiki/Debugging) for details.
+  
+## Package Targets
+
+- **`Portal`** – Core transition system using standard SwiftUI APIs. Separate view instances allow different sizes at source/destination. **✅ App Store safe.**
+
+- **`PortalPrivate`** – Portal transitions powered by view mirroring. Single shared instance with perfect state preservation but same-size constraint. **⚠️ Private API (obfuscated).**
+
+- **`PortalView`** – Low-level `_UIPortalView` wrapper for direct UIKit integration. **⚠️ Private API (obfuscated).**
+
+**For most users:** Just `import Portal`. The other targets are experimental and intended for advanced scenarios requiring view instance sharing.
+
 
 ## Examples
 
-Portal includes several sample projects to help you get started:
+Each target includes example implementations:
 
-- [Static ID](Sources/Portal/Examples/PortalExample_StaticID.swift)
-- [Card Grid](Sources/Portal/Examples/PortalExample_CardGrid.swift)
-- [List](Sources/Portal/Examples/PortalExample_List.swift)
-- [Comparison](Sources/Portal/Examples/PortalExample_Comparison.swift)
+| **Portal** | **PortalPrivate** | **PortalView** |
+|:---|:---|:---|
+| [Static ID](Sources/Portal/Examples/PortalExample_StaticID.swift) | [Static ID](Sources/PortalPrivate/Examples/PortalExample_StaticID.swift) | [UIPortalView Example](Sources/PortalView/UIPortalViewExample.swift) |
+| [Card Grid](Sources/Portal/Examples/PortalExample_CardGrid.swift) | [Card Grid](Sources/PortalPrivate/Examples/PortalExample_CardGrid.swift) | |
+| [List](Sources/Portal/Examples/PortalExample_List.swift) | [List](Sources/PortalPrivate/Examples/PortalExample_List.swift) | |
+| [Comparison](Sources/Portal/Examples/PortalExample_Comparison.swift) | [Comparison](Sources/PortalPrivate/Examples/PortalExample_Comparison.swift) | |
 
-You can find these in the [`Sources/Portal/Examples`](Sources/Portal/Examples) directory, or visit the [Examples documentation](https://github.com/Aeastr/Portal/wiki/Examples) for more details.
+## Contributing & Support
 
----
+Contributions are welcome! Please feel free to submit a Pull Request. See the [Contributing Guide](CONTRIBUTING.md) for details.
 
-## License
-
-This project is released under the MIT License. See [LICENSE](LICENSE.md) for details.
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request. Before you begin, take a moment to review the [Contributing Guide](CONTRIBUTING.md) for details on issue reporting, coding standards, and the PR process.
-
-## Support
-
-If you like this project, please consider giving it a ⭐️
-
----
+This project is released under the [MIT License](LICENSE.md). If you like Portal, please give it a ⭐️.
 
 ## Where to find me:  
 - here, obviously.  
@@ -99,7 +101,5 @@ If you like this project, please consider giving it a ⭐️
 - [Threads](https://www.threads.net/@aetheraurelia)  
 - [Bluesky](https://bsky.app/profile/aethers.world)  
 - [LinkedIn](https://www.linkedin.com/in/willjones24)
-
----
 
 <p align="center">Built with 🍏🌀🚪 by Aether</p>

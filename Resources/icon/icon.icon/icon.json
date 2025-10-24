@@ -1,0 +1,83 @@
+{
+  "fill" : {
+    "automatic-gradient" : "display-p3:0.19608,0.57255,0.97255,1.00000"
+  },
+  "groups" : [
+    {
+      "blur-material" : 0.1,
+      "layers" : [
+        {
+          "glass" : true,
+          "image-name" : "vga-kinetic-export2.png",
+          "name" : "vga-kinetic-export2",
+          "opacity" : 1,
+          "position" : {
+            "scale" : 1.4,
+            "translation-in-points" : [
+              -4.7421875,
+              -314.5
+            ]
+          }
+        },
+        {
+          "glass" : true,
+          "image-name" : "vga-kinetic-export.png",
+          "name" : "vga-kinetic-export",
+          "position" : {
+            "scale" : 1.4,
+            "translation-in-points" : [
+              33.546875,
+              617
+            ]
+          }
+        }
+      ],
+      "shadow" : {
+        "kind" : "layer-color",
+        "opacity" : 0.5
+      },
+      "specular" : true,
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.6
+      }
+    },
+    {
+      "blur-material" : null,
+      "hidden" : false,
+      "layers" : [
+        {
+          "fill" : {
+            "solid" : "extended-gray:1.00000,1.00000"
+          },
+          "hidden" : false,
+          "image-name" : "Grid.png",
+          "name" : "Grid",
+          "opacity" : 0.2,
+          "position" : {
+            "scale" : 1,
+            "translation-in-points" : [
+              0,
+              0
+            ]
+          }
+        }
+      ],
+      "shadow" : {
+        "kind" : "none",
+        "opacity" : 0.5
+      },
+      "specular" : false,
+      "translucency" : {
+        "enabled" : false,
+        "value" : 0.5
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "circles" : [
+      "watchOS"
+    ],
+    "squares" : "shared"
+  }
+}

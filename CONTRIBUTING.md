@@ -46,18 +46,64 @@ If you have an idea for a new feature or enhancement:
 
 ## Development Setup
 
-- Xcode 15 or later  
-- iOS 15.0+ deployment target  
-- Clone & open `Portal.xcodeproj` or use the Swift Package in your own project
+### Prerequisites
+
+- Xcode 15 or later
+- iOS 15.0+ deployment target
+- SwiftLint for code style checking:
+  ```bash
+  brew install swiftlint
+  ```
+
+### Initial Setup
+
+1. Clone & open `Portal.xcodeproj` or use the Swift Package in your own project
+2. Set up Git hooks for automatic code checking:
+   ```bash
+   ./Scripts/setup-hooks.sh
+   ```
 
 ## Coding Guidelines
 
-- Use idiomatic Swift & SwiftUI conventions  
-- Structure code for readability and reuse  
-- Keep public APIs minimal and well-documented  
-- If you introduce new API, add samples under `Sources/Portal/Examples`  
-- Format your code with `swift-format` or Xcode’s built-in formatter  
+- Use idiomatic Swift & SwiftUI conventions
+- Structure code for readability and reuse
+- Keep public APIs minimal and well-documented
+- If you introduce new API, add samples under `Sources/Portal/Examples`
+- Follow SwiftLint rules (see `.swiftlint.yml`)
 - Write unit tests _where applicable_
+
+### Code Style
+
+This project uses SwiftLint to maintain consistent code style. Run checks with:
+```bash
+# Check all files
+swiftlint lint --config .swiftlint.yml
+
+# Auto-fix issues where possible
+swiftlint autocorrect --config .swiftlint.yml
+
+# Or use the provided script
+./Scripts/run-swiftlint.sh
+```
+
+SwiftLint runs automatically:
+- **Pre-commit**: Checks staged Swift files
+- **CI/CD**: On all pushes and pull requests
+- **Xcode**: Can be integrated as a build phase
+
+### Constants & Best Practices
+
+- Use `PortalConstants` for all timing and configuration values
+- Don't hardcode delays or durations
+- All files must end with a newline
+- Example:
+  ```swift
+  // ✅ Good
+  DispatchQueue.main.asyncAfter(deadline: .now() + PortalConstants.animationDelay)
+
+  // ❌ Bad
+  DispatchQueue.main.asyncAfter(deadline: .now() + 0.1)
+  ```
 
 ## Running Tests
 
@@ -87,6 +133,36 @@ All PRs are validated by CI:
 - Lint documentation links
 
 Please address any CI failures before merging.
+
+## Troubleshooting
+
+Common issues and solutions:
+
+### SwiftLint Issues
+
+- **SwiftLint not found**: Install with `brew install swiftlint`
+- **Hooks not running**: Run `./Scripts/setup-hooks.sh` to configure Git hooks
+- **CI failing**: Run `./Scripts/run-swiftlint.sh` locally first to catch issues
+- **Auto-fix not working**: Run `swiftlint --fix --config .swiftlint.yml` manually
+- **Too many violations**: Focus on errors first (red), warnings (yellow) can be addressed later
+
+### Build Issues
+
+- **Swift version mismatch**: Ensure you're using Xcode 15+ with Swift 5.9+
+- **Package resolution failed**: Try `swift package resolve` or clean build folder
+- **Missing dependencies**: Run `swift package update`
+
+### Git Hook Issues
+
+- **Permission denied**: Run `chmod +x .githooks/*` and `chmod +x Scripts/*.sh`
+- **Hooks not executing**: Check that `git config core.hooksPath` points to `.githooks`
+- **Commit blocked by linting**: Use `git commit --no-verify` to bypass (use sparingly!)
+
+### Testing Issues
+
+- **Examples not building**: Ensure `#if DEBUG` wrapper is present
+- **Portal transitions not working**: Check that `PortalContainer` wraps your root view
+- **Memory leaks**: Weak references are intentional for portal cleanup
 
 ## License
 

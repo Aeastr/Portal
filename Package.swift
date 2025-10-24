@@ -5,7 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "Portal",
-    platforms: [.iOS(.v15)],
+    platforms: [.iOS(.v17)],
     products: [
         .library(
             name: "Portal",
@@ -13,20 +13,54 @@ let package = Package(
         .library(
             name: "PortalFlowingHeader",
             targets: ["PortalFlowingHeader"]),
+        .library(
+            name: "PortalView",
+            targets: ["PortalView"]),
+        .library(
+            name: "PortalPrivate",
+            targets: ["PortalPrivate"]),
+    ],
+    dependencies: [
+        .package(url: "https://github.com/Aeastr/LogOutLoud.git", from: "2.1.2")
     ],
     targets: [
         .target(
             name: "Portal",
+            dependencies: [
+                .product(name: "LogOutLoud", package: "LogOutLoud"),
+                .product(name: "LogOutLoudConsole", package: "LogOutLoud")
+            ],
             path: "Sources/Portal"
         ),
         .target(
             name: "PortalFlowingHeader",
             path: "Sources/PortalFlowingHeader"
         ),
+        .target(
+            name: "PortalView",
+            dependencies: [],
+            path: "Sources/PortalView"
+        ),
+        .target(
+            name: "PortalPrivate",
+            dependencies: [
+                "Portal",
+                "PortalView"
+            ],
+            path: "Sources/PortalPrivate"
+        ),
         .testTarget(
             name: "PortalFlowingHeaderTests",
             dependencies: ["PortalFlowingHeader"],
             path: "Tests/PortalFlowingHeaderTests"
+        ),
+        .testTarget(
+            name: "PortalViewTests",
+            dependencies: ["PortalView"]
+        ),
+        .testTarget(
+            name: "PortalPrivateTests",
+            dependencies: ["Portal", "PortalView", "PortalPrivate"]
         ),
     ]
 )

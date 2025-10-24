@@ -1,3 +1,13 @@
+//
+//  AnchorKey.swift
+//  Portal
+//
+//  Created by Aether, 2025.
+//
+//  Copyright © 2025 Aether. All rights reserved.
+//  Licensed under the MIT License.
+//
+
 import SwiftUI
 
 /// A SwiftUI PreferenceKey for collecting and managing Portal anchor information.
@@ -13,13 +23,12 @@ import SwiftUI
 /// This information flows up the view hierarchy and is consumed by the `CrossModel`
 /// to coordinate portal transitions.
 public struct AnchorKey: PreferenceKey {
-    
     /// The default value when no portal anchors have been collected.
     ///
     /// An empty dictionary indicates that no portal views have reported their bounds yet.
     /// This is the starting point before any portal views are rendered or positioned.
     public static let defaultValue: [String: Anchor<CGRect>] = [:]
-    
+
     /// Combines multiple anchor dictionaries as they flow up the view hierarchy.
     ///
     /// This method is called by SwiftUI's preference system when multiple child views
@@ -32,7 +41,7 @@ public struct AnchorKey: PreferenceKey {
     /// - Parameters:
     ///   - value: The current accumulated dictionary of portal anchors (modified in-place)
     ///   - nextValue: A closure that returns the next dictionary of anchors to merge
-    public static func reduce(value: inout [String : Anchor<CGRect>], nextValue: () -> [String : Anchor<CGRect>]) {
+    public static func reduce(value: inout [String: Anchor<CGRect>], nextValue: () -> [String: Anchor<CGRect>]) {
         value.merge(nextValue()) { $1 }
     }
 }

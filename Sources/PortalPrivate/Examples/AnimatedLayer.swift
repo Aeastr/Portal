@@ -10,10 +10,22 @@
 
 #if DEBUG
 import SwiftUI
+import Portal
 
-let portalAnimationDuration: TimeInterval = 0.4
-let portalAnimationExample = Animation.smooth(duration: portalAnimationDuration, extraBounce: 0.25)
-let portalAnimationExampleExtraBounce = Animation.smooth(duration: portalAnimationDuration + 0.12, extraBounce: 0.55)
+// Configuration for animation timing - can be customized via environment or init
+struct AnimatedLayerConfig {
+    let duration: TimeInterval
+    let bounceAnimation: Animation
+    let extraBounceAnimation: Animation
+
+    static let `default` = AnimatedLayerConfig()
+
+    init(duration: TimeInterval = 0.4, extraBounce: Double = 0.65, extraBounceDuration: Double = 0.12) {
+        self.duration = duration
+        self.bounceAnimation = Animation.smooth(duration: duration, extraBounce: extraBounce)
+        self.extraBounceAnimation = Animation.smooth(duration: duration + extraBounceDuration, extraBounce: max(0, extraBounce - 0.1))
+    }
+}
 
 /// A reusable animated layer component for Portal examples.
 /// Provides visual feedback during portal transitions with a scale animation.
@@ -28,7 +40,8 @@ let portalAnimationExampleExtraBounce = Animation.smooth(duration: portalAnimati
 /// these values are meant to be tuned for your specific animation design.
 struct AnimatedLayer<Content: View>: AnimatedPortalLayer {
     let portalID: String
-    var scale: CGFloat = 1.25
+    var scale: CGFloat = 2
+    var animationConfig: AnimatedLayerConfig = .default
     @ViewBuilder let content: () -> Content
 
     @State private var layerScale: CGFloat = 1
@@ -36,6 +49,7 @@ struct AnimatedLayer<Content: View>: AnimatedPortalLayer {
     @ViewBuilder
     func animatedContent(isActive: Bool) -> some View {
         content()
+//            .background(.red.opacity(0.2))
             .scaleEffect(layerScale)
             .onAppear {
                 layerScale = 1
@@ -47,33 +61,27 @@ struct AnimatedLayer<Content: View>: AnimatedPortalLayer {
 
     private func handleActiveChange(oldValue: Bool, newValue: Bool) {
         if newValue {
-            withAnimation(portalAnimationExample) {
+            withAnimation(animationConfig.bounceAnimation) {
                 layerScale = scale
             }
             // Timing calculation: Trigger second bounce slightly before halfway point
             // The 0.1 offset is an animation design parameter for this specific bounce choreography,
             // NOT PortalConstants.animationDelay (which is for portal system timing, not animation design)
-            DispatchQueue.main.asyncAfter(deadline: .now() + (portalAnimationDuration / 2) - 0.1) {
-                withAnimation(portalAnimationExampleExtraBounce) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + (animationConfig.duration / 2) - 0.1) {
+                withAnimation(animationConfig.extraBounceAnimation) {
                     layerScale = 1
                 }
             }
         } else {
-            withAnimation(portalAnimationExample) {
-                layerScale = scale
+            withAnimation(animationConfig.bounceAnimation) {
+                layerScale = 1.5
             }
-            // Same timing calculation for reverse animation
-            DispatchQueue.main.asyncAfter(deadline: .now() + (portalAnimationDuration / 2) - 0.1) {
-                withAnimation(portalAnimationExampleExtraBounce) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + (animationConfig.duration / 2) - PortalConstants.animationDelay) {
+                withAnimation(animationConfig.extraBounceAnimation) {
                     layerScale = 1
                 }
             }
         }
     }
 }
-
-#Preview("Card Grid Example") {
-    PortalExampleCardGrid()
-}
-
 #endif
