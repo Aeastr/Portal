@@ -46,5 +46,13 @@ let package = Package(
             name: "PortalTests",
             dependencies: ["Portal"]
         ),
+        .testTarget(
+            name: "PortalViewTests",
+            dependencies: ["PortalView"]
+        ),
+        .testTarget(
+            name: "PortalPrivateTests",
+            dependencies: ["Portal", "PortalView", "PortalPrivate"]
+        ),
     ]
 )
