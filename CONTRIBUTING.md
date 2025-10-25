@@ -232,6 +232,62 @@ If a release fails after the PR is merged, the workflow includes automatic clean
 
 The workflow will notify you on the PR if anything fails, with links to the relevant logs and common troubleshooting steps.
 
+### Hotfix Releases
+
+For urgent bug fixes that need to bypass the normal dev → main workflow:
+
+1. **Create hotfix branch from main**:
+   ```bash
+   git checkout main
+   git pull origin main
+   git checkout -b hotfix/4.2.3
+   ```
+
+2. **Make your fix** and commit it
+
+3. **Create PR**: `hotfix/4.2.3` → `main`
+   - **Title**: Next patch version (e.g., `4.2.3`)
+   - **Description**: Explain the critical fix
+
+4. **After merge**: Sync the fix back to dev
+   ```bash
+   git checkout dev
+   git merge main
+   git push origin dev
+   ```
+
+**Version Selection for Hotfixes**:
+- Increment **PATCH** version only (e.g., 4.2.2 → 4.2.3)
+- For multiple hotfixes: Continue incrementing patch (4.2.3 → 4.2.4)
+
+### Edge Case Handling
+
+**Wrong PR merged to main**:
+1. **If release hasn't been created yet**: Cancel the workflow run immediately
+2. **If tag was created**: Delete the tag:
+   ```bash
+   git push --delete origin X.Y.Z
+   git tag -d X.Y.Z
+   ```
+3. **Revert the merge commit** on main:
+   ```bash
+   git revert -m 1 <merge-commit-sha>
+   git push origin main
+   ```
+4. **Fix the issue** on dev and create a new release PR
+
+**Modifying a release after publishing**:
+- **Draft releases**: Edit directly on GitHub before publishing
+- **Published releases**:
+  - Edit the release notes on GitHub (doesn't require new tag)
+  - For code changes: Create a new hotfix release with incremented version
+  - **Never** delete or modify published tags/releases with code changes
+
+**Multiple releases on same day**:
+- Each release must have a unique version number
+- Increment patch version for each subsequent release (4.2.2 → 4.2.3 → 4.2.4)
+- The workflow prevents duplicate versions automatically
+
 ## Troubleshooting
 
 Common issues and solutions:

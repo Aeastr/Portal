@@ -56,6 +56,27 @@ jobs:
           exit 1
         fi
 
+        # Extract version components and validate bounds
+        MAJOR=$(echo "$VERSION" | cut -d. -f1)
+        MINOR=$(echo "$VERSION" | cut -d. -f2)
+        PATCH=$(echo "$VERSION" | cut -d. -f3)
+
+        # Validate version components are non-negative and reasonable
+        if [ "$MAJOR" -lt 0 ] || [ "$MAJOR" -gt 999 ]; then
+          echo "::error::Major version '$MAJOR' must be between 0 and 999"
+          exit 1
+        fi
+
+        if [ "$MINOR" -lt 0 ] || [ "$MINOR" -gt 999 ]; then
+          echo "::error::Minor version '$MINOR' must be between 0 and 999"
+          exit 1
+        fi
+
+        if [ "$PATCH" -lt 0 ] || [ "$PATCH" -gt 999 ]; then
+          echo "::error::Patch version '$PATCH' must be between 0 and 999"
+          exit 1
+        fi
+
         echo "Extracted version: $VERSION"
         echo "version=$VERSION" >> $GITHUB_OUTPUT
         echo "tag=$VERSION" >> $GITHUB_OUTPUT
@@ -66,6 +87,8 @@ jobs:
       shell: bash
       run: |
         TAG="${{ steps.version.outputs.tag }}"
+        PR_NUMBER="${{ github.event.pull_request.number }}"
+        REPO="${{ github.repository }}"
 
         # Get the previous release tag
         PREV_TAG=$(git tag -l --sort=-v:refname | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
@@ -80,17 +103,26 @@ jobs:
             echo "## Changes since $PREV_TAG" > changelog.txt
             echo "" >> changelog.txt
             echo "$CHANGELOG" >> changelog.txt
+            echo "" >> changelog.txt
+            echo "" >> changelog.txt
+            echo "_Release PR: #${PR_NUMBER}_" >> changelog.txt
           else
             echo "::warning::No commits found between $PREV_TAG and HEAD"
             echo "::warning::Creating a release with no changes. Verify this is intentional."
             echo "## Changes since $PREV_TAG" > changelog.txt
             echo "" >> changelog.txt
             echo "_No new commits since last release_" >> changelog.txt
+            echo "" >> changelog.txt
+            echo "" >> changelog.txt
+            echo "_Release PR: #${PR_NUMBER}_" >> changelog.txt
           fi
         else
           echo "## Initial Release" > changelog.txt
           echo "" >> changelog.txt
           echo "First release of Portal" >> changelog.txt
+          echo "" >> changelog.txt
+          echo "" >> changelog.txt
+          echo "_Release PR: #${PR_NUMBER}_" >> changelog.txt
         fi
 
         cat changelog.txt
@@ -167,16 +199,25 @@ jobs:
         TAG="${{ steps.version.outputs.tag }}"
 
         git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
         # Create annotated tag
         git tag -a "$TAG" -m "Release ${{ steps.version.outputs.version }}"
 
-        # Push tag with retry logic
+        # Push tag with retry logic and final safety check
         MAX_RETRIES=3
         RETRY_COUNT=0
 
         while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+          # Final safety check: verify tag doesn't exist on remote
+          git fetch --tags
+          if git ls-remote --tags origin | grep -q "refs/tags/$TAG"; then
+            echo "::error::Tag $TAG was created by another process - race condition detected"
+            echo "success=false" >> $GITHUB_OUTPUT
+            git tag -d "$TAG"
+            exit 1
+          fi
+
           if git push origin "$TAG"; then
             echo "Successfully pushed tag $TAG"
             echo "success=true" >> $GITHUB_OUTPUT
