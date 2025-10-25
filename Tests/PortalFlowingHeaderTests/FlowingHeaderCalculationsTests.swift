@@ -14,24 +14,23 @@ import CoreGraphics
 
 @Suite("FlowingHeader Calculations Tests")
 struct FlowingHeaderCalculationsTests {
-
     // MARK: - Progress Calculation Tests
 
     @Test("Progress calculation returns 0 before start offset")
-    func progressBeforeStartOffset() {
+    func progressBeforestartAt() {
         let progress = FlowingHeaderCalculations.calculateProgress(
             scrollOffset: -30,
-            startOffset: -20,
+            startAt: -20,
             range: 40
         )
         #expect(progress == 0.0)
     }
 
     @Test("Progress calculation at start offset")
-    func progressAtStartOffset() {
+    func progressAtstartAt() {
         let progress = FlowingHeaderCalculations.calculateProgress(
             scrollOffset: -20,
-            startOffset: -20,
+            startAt: -20,
             range: 40
         )
         #expect(progress == 0.0)
@@ -41,7 +40,7 @@ struct FlowingHeaderCalculationsTests {
     func progressAtMidpoint() {
         let progress = FlowingHeaderCalculations.calculateProgress(
             scrollOffset: 0,
-            startOffset: -20,
+            startAt: -20,
             range: 40
         )
         #expect(progress == 0.5)
@@ -51,7 +50,7 @@ struct FlowingHeaderCalculationsTests {
     func progressAtEndOffset() {
         let progress = FlowingHeaderCalculations.calculateProgress(
             scrollOffset: 20,
-            startOffset: -20,
+            startAt: -20,
             range: 40
         )
         #expect(progress == 1.0)
@@ -61,7 +60,7 @@ struct FlowingHeaderCalculationsTests {
     func progressClampedAtMaximum() {
         let progress = FlowingHeaderCalculations.calculateProgress(
             scrollOffset: 100,
-            startOffset: -20,
+            startAt: -20,
             range: 40
         )
         #expect(progress == 1.0)
@@ -71,7 +70,7 @@ struct FlowingHeaderCalculationsTests {
     func progressWithZeroRange() {
         let progress = FlowingHeaderCalculations.calculateProgress(
             scrollOffset: 0,
-            startOffset: 0,
+            startAt: 0,
             range: 0
         )
         // Zero range is guarded to return 1.0 (fully transitioned)
@@ -82,7 +81,7 @@ struct FlowingHeaderCalculationsTests {
     func progressWithNegativeRange() {
         let progress = FlowingHeaderCalculations.calculateProgress(
             scrollOffset: 10,
-            startOffset: 0,
+            startAt: 0,
             range: -40
         )
         // Negative range produces negative progress: (10 - 0) / -40 = -0.25
@@ -94,7 +93,7 @@ struct FlowingHeaderCalculationsTests {
     func progressWithCustomValues() {
         let progress = FlowingHeaderCalculations.calculateProgress(
             scrollOffset: 50,
-            startOffset: 10,
+            startAt: 10,
             range: 100
         )
         #expect(progress == 0.4)
@@ -105,94 +104,35 @@ struct FlowingHeaderCalculationsTests {
         // Test that negative progress values are clamped to 0.0
         let progress = FlowingHeaderCalculations.calculateProgress(
             scrollOffset: 50,
-            startOffset: 100,
+            startAt: 100,
             range: 10
         )
         // (50 - 100) / 10 = -5.0, clamped to 0.0
         #expect(progress == 0.0)
     }
 
-    // MARK: - Dynamic Offset Tests
+    // MARK: - Negative Scroll Offset Edge Cases
 
-    @Test("Dynamic offset at start of transition")
-    func dynamicOffsetAtStart() {
-        let offset = FlowingHeaderCalculations.calculateDynamicOffset(
-            progress: 0.0,
-            baseOffset: 20
+    @Test("Progress with negative scroll offset")
+    func progressWithNegativeScrollOffset() {
+        let progress = FlowingHeaderCalculations.calculateProgress(
+            scrollOffset: -50,
+            startAt: -20,
+            range: 40
         )
-        #expect(offset == 0.0)
+        // scrollOffset (-50) < startAt (-20), should return 0.0
+        #expect(progress == 0.0)
     }
 
-    @Test("Dynamic offset at middle of transition")
-    func dynamicOffsetAtMiddle() {
-        let offset = FlowingHeaderCalculations.calculateDynamicOffset(
-            progress: 0.5,
-            baseOffset: 20
+    @Test("Progress when startAt equals scrollOffset")
+    func progressWhenStartAtEqualsScrollOffset() {
+        let progress = FlowingHeaderCalculations.calculateProgress(
+            scrollOffset: 100,
+            startAt: 100,
+            range: 40
         )
-        // sin(0.5 * π) = 1.0, so offset = 20 * 1.0 = 20
-        #expect(abs(offset - 20.0) < 0.001)
-    }
-
-    @Test("Dynamic offset at end of transition")
-    func dynamicOffsetAtEnd() {
-        let offset = FlowingHeaderCalculations.calculateDynamicOffset(
-            progress: 1.0,
-            baseOffset: 20
-        )
-        // sin(π) ≈ 0
-        #expect(abs(offset) < 0.001)
-    }
-
-    @Test("Dynamic offset at quarter progress")
-    func dynamicOffsetAtQuarter() {
-        let offset = FlowingHeaderCalculations.calculateDynamicOffset(
-            progress: 0.25,
-            baseOffset: 20
-        )
-        // sin(0.25 * π) ≈ 0.707
-        #expect(abs(offset - 14.142) < 0.01)
-    }
-
-    @Test("Dynamic offset at three-quarter progress")
-    func dynamicOffsetAtThreeQuarters() {
-        let offset = FlowingHeaderCalculations.calculateDynamicOffset(
-            progress: 0.75,
-            baseOffset: 20
-        )
-        // sin(0.75 * π) ≈ 0.707
-        #expect(abs(offset - 14.142) < 0.01)
-    }
-
-    @Test("Dynamic offset with negative base offset")
-    func dynamicOffsetWithNegativeBase() {
-        let offset = FlowingHeaderCalculations.calculateDynamicOffset(
-            progress: 0.5,
-            baseOffset: -30
-        )
-        #expect(abs(offset - (-30.0)) < 0.001)
-    }
-
-    @Test("Dynamic offset with zero base offset")
-    func dynamicOffsetWithZeroBase() {
-        let offset = FlowingHeaderCalculations.calculateDynamicOffset(
-            progress: 0.5,
-            baseOffset: 0
-        )
-        #expect(offset == 0.0)
-    }
-
-    @Test("Dynamic offset symmetry check")
-    func dynamicOffsetSymmetry() {
-        let offsetAt25 = FlowingHeaderCalculations.calculateDynamicOffset(
-            progress: 0.25,
-            baseOffset: 100
-        )
-        let offsetAt75 = FlowingHeaderCalculations.calculateDynamicOffset(
-            progress: 0.75,
-            baseOffset: 100
-        )
-        // Should be equal due to sine curve symmetry
-        #expect(abs(offsetAt25 - offsetAt75) < 0.001)
+        // At exact start point: (100 - 100) / 40 = 0.0
+        #expect(progress == 0.0)
     }
 
     // MARK: - Position Calculation Tests
@@ -489,12 +429,12 @@ struct FlowingHeaderCalculationsTests {
         let source = CGRect(x: 0, y: 100, width: 100, height: 100)
         let destination = CGRect(x: 200, y: 50, width: 50, height: 50)
         let scrollOffset: CGFloat = 10
-        let startOffset: CGFloat = 0
+        let startAt: CGFloat = 0
         let range: CGFloat = 20
 
         let progress = FlowingHeaderCalculations.calculateProgress(
             scrollOffset: scrollOffset,
-            startOffset: startOffset,
+            startAt: startAt,
             range: range
         )
         #expect(progress == 0.5)
@@ -521,31 +461,48 @@ struct FlowingHeaderCalculationsTests {
         #expect(scale.y == 0.75)
     }
 
-    @Test("Dynamic offset creates smooth arc")
-    func dynamicOffsetSmoothArc() {
-        // Test that offset follows expected sine curve pattern
-        let baseOffset: CGFloat = 100
+    // MARK: - Extreme Value Tests
 
-        let offsets: [(CGFloat, CGFloat)] = [
-            (0.0, 0.0),
-            (0.1, 30.9), // sin(0.1π) ≈ 0.309
-            (0.2, 58.78), // sin(0.2π) ≈ 0.588
-            (0.3, 80.9), // sin(0.3π) ≈ 0.809
-            (0.4, 95.11), // sin(0.4π) ≈ 0.951
-            (0.5, 100.0), // sin(0.5π) = 1.0
-            (0.6, 95.11), // sin(0.6π) ≈ 0.951
-            (0.7, 80.9), // sin(0.7π) ≈ 0.809
-            (0.8, 58.78), // sin(0.8π) ≈ 0.588
-            (0.9, 30.9), // sin(0.9π) ≈ 0.309
-            (1.0, 0.0)
-        ]
+    @Test("Position with extremely large coordinates")
+    func positionWithExtremeLargeCoordinates() {
+        let source = CGRect(x: 10000, y: 10000, width: 100, height: 100)
+        let destination = CGRect(x: 20000, y: 20000, width: 50, height: 50)
 
-        for (progress, expected) in offsets {
-            let offset = FlowingHeaderCalculations.calculateDynamicOffset(
-                progress: progress,
-                baseOffset: baseOffset
-            )
-            #expect(abs(offset - expected) < 0.1, "At progress \(progress), expected \(expected), got \(offset)")
-        }
+        let position = FlowingHeaderCalculations.calculatePosition(
+            sourceRect: source,
+            destinationRect: destination,
+            progress: 0.5
+        )
+
+        // source.midX = 10050, destination.midX = 20025
+        // halfway: 10050 + (20025 - 10050) * 0.5 = 15037.5
+        #expect(position.x == 15037.5)
+        #expect(position.y == 15037.5)
+    }
+
+    @Test("Scale with very small source size")
+    func scaleWithVerySmallSourceSize() {
+        let source = CGSize(width: 0.1, height: 0.1)
+        let destination = CGSize(width: 100, height: 100)
+
+        let scale = FlowingHeaderCalculations.calculateScale(
+            sourceSize: source,
+            destinationSize: destination,
+            progress: 0.5
+        )
+
+        // Should calculate normally for positive non-zero values
+        #expect(scale.x > 1.0)
+        #expect(scale.y > 1.0)
+    }
+
+    @Test("Progress with floating point precision")
+    func progressWithFloatingPointPrecision() {
+        let progress = FlowingHeaderCalculations.calculateProgress(
+            scrollOffset: 1.0 / 3.0,
+            startAt: 0.0,
+            range: 1.0
+        )
+        #expect(abs(progress - 0.333333) < 0.0001)
     }
 }

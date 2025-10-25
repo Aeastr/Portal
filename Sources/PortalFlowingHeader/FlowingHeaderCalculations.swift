@@ -16,7 +16,6 @@ import Foundation
 /// This struct provides testable, stateless functions for computing animation
 /// progress, offsets, and positions used in flowing header transitions.
 public struct FlowingHeaderCalculations {
-
     // MARK: - Progress Calculation
 
     /// Calculates transition progress based on scroll offset.
@@ -26,7 +25,7 @@ public struct FlowingHeaderCalculations {
     ///
     /// - Parameters:
     ///   - scrollOffset: Current scroll offset (positive when scrolled down)
-    ///   - startOffset: Scroll offset where transition begins
+    ///   - startAt: Scroll offset where transition begins
     ///   - range: Distance over which transition occurs
     /// - Returns: Progress value clamped between 0.0 and 1.0
     ///
@@ -36,18 +35,18 @@ public struct FlowingHeaderCalculations {
     /// // Transition starts at -20, completes over 40 points
     /// let progress = FlowingHeaderCalculations.calculateProgress(
     ///     scrollOffset: 0,
-    ///     startOffset: -20,
+    ///     startAt: -20,
     ///     range: 40
     /// )
     /// // Returns: 0.5 (halfway through transition)
     /// ```
     public static func calculateProgress(
         scrollOffset: CGFloat,
-        startOffset: CGFloat,
+        startAt: CGFloat,
         range: CGFloat
     ) -> Double {
         // If we haven't scrolled down enough past the start threshold, return 0
-        guard scrollOffset >= startOffset else {
+        guard scrollOffset >= startAt else {
             return 0.0
         }
 
@@ -57,47 +56,10 @@ public struct FlowingHeaderCalculations {
         }
 
         // Calculate progress over the transition range
-        let rawProgress = (scrollOffset - startOffset) / range
+        let rawProgress = (scrollOffset - startAt) / range
 
         // Clamp progress between 0.0 and 1.0
         return Double(max(0.0, min(1.0, rawProgress)))
-    }
-
-    // MARK: - Dynamic Offset
-
-    /// Calculates dynamic offset during transition using sine curve.
-    ///
-    /// This creates a smooth offset that peaks at mid-transition and returns
-    /// to zero at start and end, useful for collision avoidance animations.
-    ///
-    /// - Parameters:
-    ///   - progress: Current transition progress (0-1)
-    ///   - baseOffset: Base offset amount to multiply by sine curve
-    /// - Returns: Smoothly interpolated offset that peaks at mid-transition
-    ///
-    /// ## Behavior
-    ///
-    /// The sine curve creates a smooth arc:
-    /// - At progress 0.0: offset is 0
-    /// - At progress 0.5: offset peaks at baseOffset
-    /// - At progress 1.0: offset returns to 0
-    ///
-    /// ## Example
-    ///
-    /// ```swift
-    /// let offset = FlowingHeaderCalculations.calculateDynamicOffset(
-    ///     progress: 0.5,
-    ///     baseOffset: 20
-    /// )
-    /// // Returns: 20.0 (peak of sine curve)
-    /// ```
-    public static func calculateDynamicOffset(
-        progress: CGFloat,
-        baseOffset: CGFloat
-    ) -> CGFloat {
-        // sin(π * t) peaks at 0.5, zero at 0 and 1
-        let offsetMultiplier = sin(progress * .pi)
-        return baseOffset * offsetMultiplier
     }
 
     // MARK: - Position Interpolation

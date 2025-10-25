@@ -67,169 +67,134 @@ final class FlowingHeaderAnchorTests: XCTestCase {
     }
 
     // MARK: - Destination Modifier Tests
-    
+
     @MainActor
     func testFlowingHeaderDestinationBasic() {
         let view = Text("Test")
-            .flowingHeaderDestination("Test Title")
+            .flowingHeaderDestination()
 
         XCTAssertNotNil(view)
     }
-    
+
     @MainActor
-    func testFlowingHeaderDestinationWithSystemImage() {
+    func testFlowingHeaderDestinationWithID() {
         let view = Text("Test")
-            .flowingHeaderDestination("Test Title", systemImage: "star.fill")
+            .flowingHeaderDestination(id: "custom-id")
 
         XCTAssertNotNil(view)
     }
-    
+
     @MainActor
-    func testFlowingHeaderDestinationWithOptionalSystemImage() {
-        // Test with non-nil system image
-        let viewWithImage = Text("Test")
-            .flowingHeaderDestination("Test Title", systemImage: "star.fill" as String?)
+    func testFlowingHeaderDestinationWithDisplays() {
+        // Test with title only
+        let viewTitleOnly = Text("Test")
+            .flowingHeaderDestination(displays: [.title])
 
-        XCTAssertNotNil(viewWithImage)
+        XCTAssertNotNil(viewTitleOnly)
 
-        // Test with nil system image
-        let viewWithoutImage = Text("Test")
-            .flowingHeaderDestination("Test Title", systemImage: nil as String?)
+        // Test with title and accessory
+        let viewWithAccessory = Text("Test")
+            .flowingHeaderDestination(displays: [.title, .accessory])
 
-        XCTAssertNotNil(viewWithoutImage)
+        XCTAssertNotNil(viewWithAccessory)
 
-        // Test with empty system image
-        let viewWithEmptyImage = Text("Test")
-            .flowingHeaderDestination("Test Title", systemImage: "" as String?)
+        // Test with accessory only
+        let viewAccessoryOnly = Text("Test")
+            .flowingHeaderDestination(displays: [.accessory])
 
-        XCTAssertNotNil(viewWithEmptyImage)
+        XCTAssertNotNil(viewAccessoryOnly)
     }
-    
+
     @MainActor
-    func testFlowingHeaderDestinationWithImage() {
-        let image = Image(systemName: "star")
+    func testFlowingHeaderDestinationWithIDAndDisplays() {
         let view = Text("Test")
-            .flowingHeaderDestination("Test Title", image: image)
+            .flowingHeaderDestination(id: "custom-id", displays: [.title, .accessory])
 
         XCTAssertNotNil(view)
     }
-    
+
     @MainActor
-    func testFlowingHeaderDestinationWithOptionalImage() {
-        // Test with non-nil image
-        let image = Image(systemName: "star")
-        let viewWithImage = Text("Test")
-            .flowingHeaderDestination("Test Title", image: image as Image?)
-
-        XCTAssertNotNil(viewWithImage)
-
-        // Test with nil image
-        let viewWithoutImage = Text("Test")
-            .flowingHeaderDestination("Test Title", image: nil as Image?)
-
-        XCTAssertNotNil(viewWithoutImage)
-    }
-    
-    @MainActor
-    func testFlowingHeaderDestinationWithCustomView() {
-        let customView = Circle()
-            .fill(Color.blue)
-            .frame(width: 32, height: 32)
-
+    func testFlowingHeaderDestinationWithNilDisplays() {
         let view = Text("Test")
-            .flowingHeaderDestination("Test Title") {
-                customView
-            }
+            .flowingHeaderDestination(id: "test", displays: nil)
 
         XCTAssertNotNil(view)
-    }
-
-    // MARK: - String Validation Tests
-    
-    @MainActor
-    func testSystemImageStringValidation() {
-        // Test that empty strings are handled correctly
-        let viewEmptyString = Text("Test")
-            .flowingHeaderDestination("Test Title", systemImage: "")
-
-        XCTAssertNotNil(viewEmptyString)
-
-        // Test that whitespace-only strings are handled
-        let viewWhitespace = Text("Test")
-            .flowingHeaderDestination("Test Title", systemImage: "   ")
-
-        XCTAssertNotNil(viewWhitespace)
     }
 
     // MARK: - Modifier Chain Tests
-    
+
     @MainActor
     func testModifierChaining() {
         let view = Text("Test")
             .padding()
-            .flowingHeaderDestination("Test Title", systemImage: "star.fill")
+            .flowingHeaderDestination(id: "test")
             .background(Color.blue)
 
         XCTAssertNotNil(view)
     }
-    
+
     @MainActor
     func testMultipleDestinationModifiers() {
         // While not typical usage, this tests that multiple modifiers don't break
         let view = Text("Test")
-            .flowingHeaderDestination("Title 1")
-            .flowingHeaderDestination("Title 2", systemImage: "star")
+            .flowingHeaderDestination(id: "first")
+            .flowingHeaderDestination(id: "second")
 
         XCTAssertNotNil(view)
     }
 
     // MARK: - Edge Cases
-    
+
     @MainActor
-    func testLongTitleHandling() {
-        let longTitle = String(repeating: "Very Long Title ", count: 100)
+    func testLongIDHandling() {
+        let longID = String(repeating: "VeryLongID", count: 100)
         let view = Text("Test")
-            .flowingHeaderDestination(longTitle)
+            .flowingHeaderDestination(id: longID)
 
         XCTAssertNotNil(view)
     }
-    
+
     @MainActor
-    func testSpecialCharactersInTitle() {
-        let specialTitle = "Title with émojis 🌟 and spëcial châractérs!"
+    func testSpecialCharactersInID() {
+        let specialID = "id-with-émojis-🌟-and-spëcial-châractérs"
         let view = Text("Test")
-            .flowingHeaderDestination(specialTitle)
+            .flowingHeaderDestination(id: specialID)
 
         XCTAssertNotNil(view)
     }
-    
+
     @MainActor
-    func testUnicodeSystemImages() {
-        // Test with various SF Symbol names
-        let symbols = [
-            "star.fill",
-            "heart.circle.fill",
-            "person.crop.circle",
-            "photo.on.rectangle.angled",
-            "gearshape.fill"
+    func testVariousDisplayCombinations() {
+        // Test empty set
+        let viewEmpty = Text("Test")
+            .flowingHeaderDestination(displays: [])
+
+        XCTAssertNotNil(viewEmpty)
+
+        // Test all combinations
+        let combinations: [Set<FlowingHeaderDisplayComponent>] = [
+            [],
+            [.title],
+            [.accessory],
+            [.title, .accessory]
         ]
 
-        for symbol in symbols {
+        for combination in combinations {
             let view = Text("Test")
-                .flowingHeaderDestination("Test", systemImage: symbol)
+                .flowingHeaderDestination(id: "test-\(combination.count)", displays: combination)
 
-            XCTAssertNotNil(view, "Failed for symbol: \(symbol)")
+            XCTAssertNotNil(view, "Failed for combination: \(combination)")
         }
     }
 
     // MARK: - Performance Tests
-    
+
     @MainActor
     func testDestinationModifierPerformance() {
         measure {
             for i in 0..<1000 {
                 _ = Text("Test \(i)")
-                    .flowingHeaderDestination("Title \(i)", systemImage: "star.fill")
+                    .flowingHeaderDestination(id: "test-\(i)")
             }
         }
     }

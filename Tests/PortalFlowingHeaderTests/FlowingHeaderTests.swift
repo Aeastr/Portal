@@ -15,64 +15,78 @@ import SwiftUI
 @available(iOS 18.0, *)
 final class FlowingHeaderTests: XCTestCase {
     // MARK: - FlowingHeaderView Tests
-    
+
     @MainActor
     func testFlowingHeaderViewInitialization() {
-        // Test system image initialization
-        let systemImageHeader = FlowingHeaderView(
-            "Test Title",
-            systemImage: "star.fill",
-            subtitle: "Test Subtitle"
+        // Test default initialization
+        let header = FlowingHeaderView()
+        XCTAssertNotNil(header)
+    }
+
+    @MainActor
+    func testFlowingHeaderViewWithCustomID() {
+        // Test initialization with custom ID
+        let header = FlowingHeaderView(id: "custom")
+        XCTAssertNotNil(header)
+    }
+
+    // MARK: - FlowingHeaderContent Tests
+
+    func testFlowingHeaderContentCreation() {
+        let config = FlowingHeaderContent(
+            id: "test",
+            title: "Test Title",
+            subtitle: "Test Subtitle",
+            displays: [.title],
+            layout: .horizontal
         )
 
-        XCTAssertNotNil(systemImageHeader)
+        XCTAssertEqual(config.id, "test")
+        XCTAssertEqual(config.title, "Test Title")
+        XCTAssertEqual(config.subtitle, "Test Subtitle")
+        XCTAssertEqual(config.displays, [.title])
+        XCTAssertEqual(config.layout, .horizontal)
     }
-    
-    @MainActor
-    func testFlowingHeaderViewWithCustomView() {
-        // Test custom view initialization
-        let customViewHeader = FlowingHeaderView(
-            "Custom Title",
-            subtitle: "Custom Subtitle"
-        ) {
-            Image(systemName: "heart")
-        }
 
-        XCTAssertNotNil(customViewHeader)
-    }
-    
-    @MainActor
-    func testFlowingHeaderViewWithImage() {
-        // Test image initialization
-        let imageHeader = FlowingHeaderView(
-            "Image Title",
-            image: Image(systemName: "photo"),
-            subtitle: "Image Subtitle"
+    func testFlowingHeaderContentDefaultValues() {
+        let config = FlowingHeaderContent(
+            title: "Title",
+            subtitle: "Subtitle"
         )
 
-        XCTAssertNotNil(imageHeader)
+        XCTAssertEqual(config.id, "default")
+        XCTAssertEqual(config.displays, [.title])
+        XCTAssertEqual(config.layout, .horizontal)
     }
-    
-    @MainActor
-    func testFlowingHeaderViewTextOnly() {
-        // Test text-only initialization
-        let textOnlyHeader = FlowingHeaderView(
-            "Text Only Title",
-            subtitle: "Text Only Subtitle"
+
+    func testFlowingHeaderContentWithAccessory() {
+        let config = FlowingHeaderContent(
+            title: "Title",
+            subtitle: "Subtitle",
+            displays: [.title, .accessory]
         )
 
-        XCTAssertNotNil(textOnlyHeader)
+        XCTAssertTrue(config.displays.contains(.title))
+        XCTAssertTrue(config.displays.contains(.accessory))
     }
-    
-    @MainActor
-    func testFlowingHeaderViewTitleOnly() {
-        // Test title-only initialization
-        let titleOnlyHeader = FlowingHeaderView(
-            "Title Only",
-            subtitle: ""
-        )
 
-        XCTAssertNotNil(titleOnlyHeader)
+    // MARK: - Display Component Tests
+
+    func testDisplayComponentCases() {
+        let title = FlowingHeaderDisplayComponent.title
+        let accessory = FlowingHeaderDisplayComponent.accessory
+
+        XCTAssertNotEqual(title, accessory)
+    }
+
+    func testDisplayComponentSet() {
+        var displays: Set<FlowingHeaderDisplayComponent> = [.title]
+        XCTAssertTrue(displays.contains(.title))
+        XCTAssertFalse(displays.contains(.accessory))
+
+        displays.insert(.accessory)
+        XCTAssertTrue(displays.contains(.title))
+        XCTAssertTrue(displays.contains(.accessory))
     }
 
     // MARK: - AccessoryLayout Tests
@@ -96,177 +110,333 @@ final class FlowingHeaderTests: XCTestCase {
         XCTAssertEqual(environment.flowingHeaderLayout, .vertical)
     }
 
-    // MARK: - Mock Data Tests
+    func testFlowingHeaderContentEnvironment() {
+        var environment = EnvironmentValues()
 
-    func testMockPhotoCreation() {
-        let photo = FlowingHeaderExample.MockPhoto(
-            name: "Test Photo",
-            category: "Test Category",
-            color: .blue
-        )
+        // Test default value (nil)
+        XCTAssertNil(environment.flowingHeaderContent)
 
-        XCTAssertEqual(photo.name, "Test Photo")
-        XCTAssertEqual(photo.category, "Test Category")
-        XCTAssertNotNil(photo.id)
+        // Test setting config
+        let config = FlowingHeaderContent(title: "Test", subtitle: "Sub")
+        environment.flowingHeaderContent = config
+        XCTAssertNotNil(environment.flowingHeaderContent)
+        XCTAssertEqual(environment.flowingHeaderContent?.title, "Test")
     }
 
-    func testMockUserCreation() {
-        let user = FlowingHeaderExample.MockUser(
-            name: "Test User",
-            username: "@testuser",
-            bio: "Test bio",
-            followers: 100,
-            following: 50,
-            posts: 25,
-            avatar: "person.circle"
-        )
+    func testFlowingHeaderAccessoryViewEnvironment() {
+        var environment = EnvironmentValues()
 
-        XCTAssertEqual(user.name, "Test User")
-        XCTAssertEqual(user.username, "@testuser")
-        XCTAssertEqual(user.followers, 100)
-        XCTAssertEqual(user.following, 50)
-        XCTAssertEqual(user.posts, 25)
+        // Test default value (nil)
+        XCTAssertNil(environment.flowingHeaderAccessoryView)
+
+        // Test setting accessory view
+        let view = AnyView(Image(systemName: "star"))
+        environment.flowingHeaderAccessoryView = view
+        XCTAssertNotNil(environment.flowingHeaderAccessoryView)
     }
 
-    @MainActor
-    func testSampleDataConsistency() {
-        let photos = FlowingHeaderExample.samplePhotos
-        let stats = FlowingHeaderExample.sampleStats
-        let artwork = FlowingHeaderExample.sampleArtwork
+    // MARK: - AnchorKey Tests
 
-        // Verify sample data is not empty
-        XCTAssertFalse(photos.isEmpty, "Sample photos should not be empty")
-        XCTAssertFalse(stats.isEmpty, "Sample stats should not be empty")
-        XCTAssertFalse(artwork.isEmpty, "Sample artwork should not be empty")
+    func testAnchorKeyIDEquality() {
+        let key1 = AnchorKeyID(kind: "source", id: "header1", type: "title")
+        let key2 = AnchorKeyID(kind: "source", id: "header1", type: "title")
+        let key3 = AnchorKeyID(kind: "destination", id: "header1", type: "title")
 
-        // Verify all photos have required properties
-        for photo in photos {
-            XCTAssertFalse(photo.name.isEmpty, "Photo name should not be empty")
-            XCTAssertFalse(photo.category.isEmpty, "Photo category should not be empty")
-            XCTAssertNotNil(photo.id, "Photo should have valid ID")
-        }
-
-        // Verify all stats have required properties
-        for stat in stats {
-            XCTAssertFalse(stat.title.isEmpty, "Stat title should not be empty")
-            XCTAssertFalse(stat.value.isEmpty, "Stat value should not be empty")
-            XCTAssertFalse(stat.change.isEmpty, "Stat change should not be empty")
-        }
-
-        // Verify all artwork has required properties
-        for art in artwork {
-            XCTAssertFalse(art.title.isEmpty, "Artwork title should not be empty")
-            XCTAssertFalse(art.artist.isEmpty, "Artwork artist should not be empty")
-            XCTAssertFalse(art.year.isEmpty, "Artwork year should not be empty")
-            XCTAssertNotNil(art.id, "Artwork should have valid ID")
-        }
+        XCTAssertEqual(key1, key2)
+        XCTAssertNotEqual(key1, key3)
     }
 
-    @MainActor
-    func testSampleDataMemoryEfficiency() {
-        // Test that accessing sample data multiple times doesn't cause excessive memory usage
-        let photos1 = FlowingHeaderExample.samplePhotos
-        let photos2 = FlowingHeaderExample.samplePhotos
+    func testAnchorKeyIDHashability() {
+        let key1 = AnchorKeyID(kind: "source", id: "header1", type: "title")
+        let key2 = AnchorKeyID(kind: "source", id: "header1", type: "title")
 
-        // Should return the same instance (since it's a computed property with static data)
-        XCTAssertEqual(photos1.count, photos2.count)
-        XCTAssertEqual(photos1.first?.name, photos2.first?.name)
+        var dictionary: [AnchorKeyID: String] = [:]
+        dictionary[key1] = "value1"
+        dictionary[key2] = "value2"
+
+        // Same key should overwrite
+        XCTAssertEqual(dictionary.count, 1)
+        XCTAssertEqual(dictionary[key1], "value2")
+    }
+
+    func testAnchorKeyDefaultValue() {
+        let defaultValue = AnchorKey.defaultValue
+        XCTAssertTrue(defaultValue.isEmpty)
+    }
+
+    func testAnchorKeyReduce() {
+        // Create mock anchors (we can't create real Anchor<CGRect> in tests easily)
+        // So we test the merge behavior with empty dictionaries
+        var value: [AnchorKeyID: Anchor<CGRect>] = [:]
+        let nextValue: [AnchorKeyID: Anchor<CGRect>] = [:]
+
+        AnchorKey.reduce(value: &value, nextValue: { nextValue })
+
+        XCTAssertTrue(value.isEmpty)
+    }
+
+    func testAnchorKeyReduceMergesBehavior() {
+        // Test that reduce merges dictionaries and newer values win
+        let key1 = AnchorKeyID(kind: "source", id: "test", type: "title")
+        let key2 = AnchorKeyID(kind: "destination", id: "test", type: "title")
+
+        // We can verify the merge logic with a simple test
+        var testDict: [AnchorKeyID: String] = [key1: "old"]
+        let newDict: [AnchorKeyID: String] = [key1: "new", key2: "value2"]
+
+        // Simulate the reduce behavior
+        testDict.merge(newDict) { _, new in new }
+
+        XCTAssertEqual(testDict[key1], "new")
+        XCTAssertEqual(testDict[key2], "value2")
+        XCTAssertEqual(testDict.count, 2)
     }
 
     // MARK: - Example Component Tests
 
     @MainActor
     func testFlowingHeaderExampleCreation() {
-        let example = FlowingHeaderExample()
+        let example = FlowingHeaderExampleWithAccessory()
         XCTAssertNotNil(example)
-    }
-    
-    @MainActor
-    func testFlowingHeaderCustomViewExampleCreation() {
-        let example = FlowingHeaderCustomViewExample()
-        XCTAssertNotNil(example)
-    }
-
-    @MainActor
-    func testFlowingHeaderTextOnlyExampleCreation() {
-        let example = FlowingHeaderTextOnlyExample()
-        XCTAssertNotNil(example)
-    }
-
-    @MainActor
-    func testFlowingHeaderBundleImageExampleCreation() {
-        let example = FlowingHeaderBundleImageExample()
-        XCTAssertNotNil(example)
-    }
-
-    @MainActor
-    func testFlowingHeaderMultiStyleExampleCreation() {
-        let example = FlowingHeaderMultiStyleExample()
-        XCTAssertNotNil(example)
-    }
-
-    @MainActor
-    func testFlowingHeaderNavigationExampleCreation() {
-        let example = FlowingHeaderNavigationExample()
-        XCTAssertNotNil(example)
-    }
-
-    // MARK: - Header Style Tests
-
-    func testHeaderStyleCaseIterable() {
-        let allStyles = FlowingHeaderExample.HeaderStyle.allCases
-        XCTAssertEqual(allStyles.count, 3)
-        XCTAssertTrue(allStyles.contains(.standard))
-        XCTAssertTrue(allStyles.contains(.compact))
-        XCTAssertTrue(allStyles.contains(.minimal))
     }
 
     // MARK: - Edge Cases Tests
-    
-    @MainActor
+
     func testEmptyStringHandling() {
-        // Test header with empty strings
-        let header = FlowingHeaderView(
-            "",
+        // Test config with empty strings
+        let config = FlowingHeaderContent(
+            title: "",
             subtitle: ""
         )
 
-        XCTAssertNotNil(header)
+        XCTAssertEqual(config.title, "")
+        XCTAssertEqual(config.subtitle, "")
     }
-    
-    @MainActor
-    func testNilSubtitleHandling() {
-        // Test header with empty subtitle
-        let header = FlowingHeaderView(
-            "Title Only",
-            subtitle: ""
+
+    func testConfigEquality() {
+        let config1 = FlowingHeaderContent(
+            id: "test",
+            title: "Title",
+            subtitle: "Subtitle",
+            displays: [.title],
+            layout: .horizontal
         )
 
-        XCTAssertNotNil(header)
+        let config2 = FlowingHeaderContent(
+            id: "test",
+            title: "Title",
+            subtitle: "Subtitle",
+            displays: [.title],
+            layout: .horizontal
+        )
+
+        let config3 = FlowingHeaderContent(
+            id: "different",
+            title: "Title",
+            subtitle: "Subtitle",
+            displays: [.title],
+            layout: .horizontal
+        )
+
+        XCTAssertEqual(config1, config2)
+        XCTAssertNotEqual(config1, config3)
+    }
+
+    // MARK: - Integration Tests
+
+    @MainActor
+    func testHeaderScrollTransitionFlow() {
+        // Test the full flow of header → scroll → navigation bar transition
+        let config = FlowingHeaderContent(
+            id: "integration-test",
+            title: "Integration Test",
+            subtitle: "Testing full transition",
+            displays: [.title],
+            layout: .horizontal
+        )
+
+        // Simulate scroll progression
+        let scrollOffsets: [CGFloat] = [-30, -20, 0, 20, 50]
+        let startAt: CGFloat = -20
+        let range: CGFloat = 40
+
+        for scrollOffset in scrollOffsets {
+            let progress = FlowingHeaderCalculations.calculateProgress(
+                scrollOffset: scrollOffset,
+                startAt: startAt,
+                range: range
+            )
+
+            // Verify progress is bounded
+            XCTAssertGreaterThanOrEqual(progress, 0.0)
+            XCTAssertLessThanOrEqual(progress, 1.0)
+
+            // Calculate position and scale based on progress
+            let sourceRect = CGRect(x: 0, y: 0, width: 200, height: 100)
+            let destRect = CGRect(x: 50, y: 50, width: 100, height: 50)
+
+            let position = FlowingHeaderCalculations.calculatePosition(
+                sourceRect: sourceRect,
+                destinationRect: destRect,
+                progress: CGFloat(progress)
+            )
+
+            let scale = FlowingHeaderCalculations.calculateScale(
+                sourceSize: sourceRect.size,
+                destinationSize: destRect.size,
+                progress: CGFloat(progress)
+            )
+
+            // Verify position interpolates correctly
+            XCTAssertGreaterThanOrEqual(position.x, min(sourceRect.midX, destRect.midX))
+            XCTAssertLessThanOrEqual(position.x, max(sourceRect.midX, destRect.midX))
+
+            // Verify scale interpolates correctly (0.5 to 1.0 in this case)
+            XCTAssertGreaterThanOrEqual(scale.x, 0.5)
+            XCTAssertLessThanOrEqual(scale.x, 1.0)
+        }
+
+        XCTAssertEqual(config.id, "integration-test")
+    }
+
+    @MainActor
+    func testMultipleHeadersWithDifferentIDs() {
+        // Test that multiple headers with different IDs don't interfere
+        let header1 = FlowingHeaderContent(
+            id: "header1",
+            title: "Header 1",
+            subtitle: "First Header"
+        )
+
+        let header2 = FlowingHeaderContent(
+            id: "header2",
+            title: "Header 2",
+            subtitle: "Second Header"
+        )
+
+        let header3 = FlowingHeaderContent(
+            id: "header3",
+            title: "Header 3",
+            subtitle: "Third Header"
+        )
+
+        // Verify unique IDs
+        XCTAssertNotEqual(header1.id, header2.id)
+        XCTAssertNotEqual(header2.id, header3.id)
+        XCTAssertNotEqual(header1.id, header3.id)
+
+        // Create anchor keys for each
+        let key1 = AnchorKeyID(kind: "source", id: header1.id, type: "title")
+        let key2 = AnchorKeyID(kind: "source", id: header2.id, type: "title")
+        let key3 = AnchorKeyID(kind: "source", id: header3.id, type: "title")
+
+        // Verify keys are unique
+        XCTAssertNotEqual(key1, key2)
+        XCTAssertNotEqual(key2, key3)
+        XCTAssertNotEqual(key1, key3)
+    }
+
+    @MainActor
+    func testAccessoryFlowingVsNonFlowing() {
+        // Test accessory in flowing scenario
+        let flowingConfig = FlowingHeaderContent(
+            title: "Flowing",
+            subtitle: "With Accessory",
+            displays: [.title, .accessory],
+            layout: .horizontal
+        )
+
+        XCTAssertTrue(flowingConfig.displays.contains(.title))
+        XCTAssertTrue(flowingConfig.displays.contains(.accessory))
+        XCTAssertEqual(flowingConfig.layout, .horizontal)
+
+        // Test accessory in vertical layout
+        let verticalConfig = FlowingHeaderContent(
+            title: "Vertical",
+            subtitle: "Layout",
+            displays: [.title, .accessory],
+            layout: .vertical
+        )
+
+        XCTAssertTrue(verticalConfig.displays.contains(.accessory))
+        XCTAssertEqual(verticalConfig.layout, .vertical)
+    }
+
+    @MainActor
+    func testCompleteTransitionLifecycle() {
+        // Simulate a complete transition from start to finish
+        let config = FlowingHeaderContent(
+            id: "lifecycle-test",
+            title: "Lifecycle",
+            subtitle: "Complete Transition"
+        )
+
+        let startOffset: CGFloat = 0
+        let range: CGFloat = 100
+
+        // Pre-transition
+        let preProgress = FlowingHeaderCalculations.calculateProgress(
+            scrollOffset: -10,
+            startAt: startOffset,
+            range: range
+        )
+        XCTAssertEqual(preProgress, 0.0)
+
+        // Start of transition
+        let startProgress = FlowingHeaderCalculations.calculateProgress(
+            scrollOffset: 0,
+            startAt: startOffset,
+            range: range
+        )
+        XCTAssertEqual(startProgress, 0.0)
+
+        // Mid-transition
+        let midProgress = FlowingHeaderCalculations.calculateProgress(
+            scrollOffset: 50,
+            startAt: startOffset,
+            range: range
+        )
+        XCTAssertEqual(midProgress, 0.5)
+
+        // End of transition
+        let endProgress = FlowingHeaderCalculations.calculateProgress(
+            scrollOffset: 100,
+            startAt: startOffset,
+            range: range
+        )
+        XCTAssertEqual(endProgress, 1.0)
+
+        // Post-transition
+        let postProgress = FlowingHeaderCalculations.calculateProgress(
+            scrollOffset: 150,
+            startAt: startOffset,
+            range: range
+        )
+        XCTAssertEqual(postProgress, 1.0)
     }
 
     // MARK: - Performance Tests
 
     @MainActor
-    func testLargeSampleDataPerformance() {
-        measure {
-            // Test performance of accessing large sample data
-            let photos = FlowingHeaderExample.samplePhotos
-            _ = photos.count
-            _ = photos.first?.name
-            _ = photos.last?.category
-        }
-    }
-    
-    @MainActor
     func testViewCreationPerformance() {
         measure {
             // Test performance of creating FlowingHeader views
             for i in 0..<100 {
-                _ = FlowingHeaderView(
-                    "Title \(i)",
-                    systemImage: "star.fill",
-                    subtitle: "Subtitle \(i)"
+                _ = FlowingHeaderView(id: "test\(i)")
+            }
+        }
+    }
+
+    func testConfigCreationPerformance() {
+        measure {
+            // Test performance of creating config objects
+            for i in 0..<1000 {
+                _ = FlowingHeaderContent(
+                    id: "test\(i)",
+                    title: "Title \(i)",
+                    subtitle: "Subtitle \(i)",
+                    displays: [.title, .accessory],
+                    layout: .horizontal
                 )
             }
         }
