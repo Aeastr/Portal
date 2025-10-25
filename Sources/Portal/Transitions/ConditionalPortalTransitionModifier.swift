@@ -49,7 +49,7 @@ import SwiftUI
 /// - `onAppear`: Ensures portal info exists in the global model
 /// - `onChange`: Handles forward and reverse transitions
 /// - Automatic cleanup after reverse transitions
-internal struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier {
+public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier {
     /// The shared portal model that manages all portal animations.
     @Environment(CrossModel.self) private var portalModel
 
@@ -267,7 +267,7 @@ internal struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifi
     }
 }
 
-extension View {
+public extension View {
     /// Applies a portal transition controlled by a boolean binding.
     ///
     /// This modifier enables portal transitions based on boolean state changes,
