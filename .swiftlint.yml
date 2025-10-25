@@ -116,7 +116,7 @@ vertical_whitespace:
   max_empty_lines: 2
 
 file_header:
-  required_pattern: "^\\/\\/\\n\\/\\/  .*\\.swift\\n\\/\\/  Portal\\n\\/\\/\\n\\/\\/  Created by .*, [0-9]{4}\\.\\n\\/\\/\\n\\/\\/  Copyright © [0-9]{4} .*\\. All rights reserved\\.\\n\\/\\/  Licensed under the MIT License\\."
+  required_pattern: "^\\/\\/\\n\\/\\/  .*\\.swift\\n\\/\\/  (Portal|PortalFlowingHeader|PortalPrivate|PortalView)\\n\\/\\/\\n\\/\\/  Created by .*, [0-9]{4}\\.\\n\\/\\/\\n\\/\\/  Copyright © [0-9]{4} .*\\. All rights reserved\\.\\n\\/\\/  Licensed under the MIT License\\."
 
 custom_rules:
   no_hardcoded_delays:

@@ -11,6 +11,9 @@ let package = Package(
             name: "Portal",
             targets: ["Portal"]),
         .library(
+            name: "PortalFlowingHeader",
+            targets: ["PortalFlowingHeader"]),
+        .library(
             name: "PortalView",
             targets: ["PortalView"]),
         .library(
@@ -18,7 +21,8 @@ let package = Package(
             targets: ["PortalPrivate"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/Aeastr/LogOutLoud.git", from: "2.1.2")
+        .package(url: "https://github.com/Aeastr/LogOutLoud.git", from: "2.1.2"),
+        .package(url: "https://github.com/Aeastr/Obfuscate.git", branch: "main")
     ],
     targets: [
         .target(
@@ -30,8 +34,14 @@ let package = Package(
             path: "Sources/Portal"
         ),
         .target(
+            name: "PortalFlowingHeader",
+            path: "Sources/PortalFlowingHeader"
+        ),
+        .target(
             name: "PortalView",
-            dependencies: [],
+            dependencies: [
+                .product(name: "Obfuscate", package: "Obfuscate")
+            ],
             path: "Sources/PortalView"
         ),
         .target(
@@ -43,8 +53,9 @@ let package = Package(
             path: "Sources/PortalPrivate"
         ),
         .testTarget(
-            name: "PortalTests",
-            dependencies: ["Portal"]
+            name: "PortalFlowingHeaderTests",
+            dependencies: ["PortalFlowingHeader"],
+            path: "Tests/PortalFlowingHeaderTests"
         ),
         .testTarget(
             name: "PortalViewTests",

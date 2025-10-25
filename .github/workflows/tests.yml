@@ -1,0 +1,59 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: macos-26
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Show Xcode version
+      run: xcodebuild -version
+
+    - name: Find latest iOS Simulator
+      id: find_simulator
+      run: |
+        # Find the latest iOS simulator runtime and an available device
+        RUNTIME_ID=$(xcrun simctl list runtimes ios --json | jq -r '.runtimes | sort_by(.version) | last | .identifier')
+        if [ -z "$RUNTIME_ID" ] || [ "$RUNTIME_ID" == "null" ]; then
+          echo "::error::No iOS runtime found."
+          exit 1
+        fi
+        DEVICE_ID=$(xcrun simctl list devices --json | jq -r --arg RT_ID "$RUNTIME_ID" '.devices[$RT_ID] | map(select(.isAvailable)) | .[0].udid')
+        if [ -z "$DEVICE_ID" ] || [ "$DEVICE_ID" == "null" ]; then
+          echo "::error::No available iOS simulator device found for runtime $RUNTIME_ID."
+          exit 1
+        fi
+        echo "Found iOS Simulator Runtime: $RUNTIME_ID"
+        echo "Found iOS Simulator Device UDID: $DEVICE_ID"
+        echo "SIMULATOR_DESTINATION=platform=iOS Simulator,id=$DEVICE_ID" >> $GITHUB_OUTPUT
+
+    - name: Run all tests
+      run: |
+        set -o pipefail
+        echo "Using simulator destination: ${{ steps.find_simulator.outputs.SIMULATOR_DESTINATION }}"
+        xcodebuild test \
+          -scheme Portal-Package \
+          -destination "${{ steps.find_simulator.outputs.SIMULATOR_DESTINATION }}" \
+          -skipMacroValidation \
+          -enableCodeCoverage YES \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results-${{ matrix.scheme }}
+        path: TestResults-${{ matrix.scheme }}.xcresult
+        retention-days: 30

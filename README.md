@@ -12,6 +12,7 @@
   <a href="https://developer.apple.com/ios/"><img src="https://img.shields.io/badge/iOS-17%2B-purple.svg" alt="iOS 17+"></a>
   <a href="https://swift.org/"><img src="https://img.shields.io/badge/Swift-6.0-orange.svg" alt="Swift 6.0"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT"></a>
+  <a href="https://github.com/Aeastr/Portal/actions/workflows/tests.yml"><img src="https://github.com/Aeastr/Portal/actions/workflows/tests.yml/badge.svg" alt="Tests"></a>
 </p>
 
 <div align="center">
@@ -43,8 +44,11 @@ The wiki is included as a git submodule at `/wiki`, so you get all the docs when
 - **Seamless Transitions**  
   Effortlessly animate floating overlays between source and destination views using simple view modifiers.
 
+- **PortalFlowingHeader**  
+  Smooth, scroll-based header transitions where content flows from the scroll view into the navigation bar. Perfect for polished, native-feeling iOS experiences. (iOS 18.0+)
+
 - **Works with Standard Presentations**  
-  Fully compatible with SwiftUI’s built-in presentation methods like `.sheet` and `.navigationDestination`.
+  Fully compatible with SwiftUI's built-in presentation methods like `.sheet` and `.navigationDestination`.
 
 - **Flexible Anchoring**  
   Mark any view as a portal source or destination, keyed by static IDs or `Identifiable` items.
@@ -66,13 +70,13 @@ The wiki is included as a git submodule at `/wiki`, so you get all the docs when
   
 ## Package Targets
 
-- **`Portal`** – Core transition system using standard SwiftUI APIs. Separate view instances allow different sizes at source/destination. **✅ App Store safe.**
+- **`Portal`** – Core transition system using standard SwiftUI APIs. Separate view instances allow different sizes at source/destination.
 
-- **`PortalPrivate`** – Portal transitions powered by view mirroring. Single shared instance with perfect state preservation but same-size constraint. **⚠️ Private API (obfuscated).**
+- **`PortalFlowingHeader`** – Scroll-based header transitions that flow into the navigation bar. Smooth, native-feeling animations for polished iOS experiences. (iOS 18.0+) 
 
-- **`PortalView`** – Low-level `_UIPortalView` wrapper for direct UIKit integration. **⚠️ Private API (obfuscated).**
+- **`PortalPrivate`** – Portal transitions powered by view mirroring. Single shared instance with perfect state preservation but same-size constraint. (⚠️ Obfuscated Private API)
 
-**For most users:** Just `import Portal`. The other targets are experimental and intended for advanced scenarios requiring view instance sharing.
+- **`PortalView`** – Low-level `_UIPortalView` wrapper for direct UIKit integration.  (⚠️ Obfuscated Private API)
 
 
 ## Examples
