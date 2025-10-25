@@ -201,10 +201,36 @@ All PRs are validated by CI with separate workflows:
 ### Release Workflow (main branch only)
 - Triggers on PR merge to `main`
 - Extracts version from PR title
-- Creates git tag and GitHub release
+- Creates git tag and GitHub draft release
 - Uses PR description as release notes
+- Generates changelog from commits automatically
 
 Please address any CI failures before merging. The build and test badges in the README show current status.
+
+### Failed Release Recovery
+
+If a release fails after the PR is merged, the workflow includes automatic cleanup. However, if manual intervention is needed:
+
+1. **Check the workflow logs**
+   - Go to Actions → Failed workflow run
+   - Review error messages and identify the issue
+
+2. **If the tag was created but release failed**
+   - The workflow automatically attempts to clean up the tag
+   - If cleanup failed, manually delete: `git push --delete origin X.Y.Z`
+   - Delete the local tag if present: `git tag -d X.Y.Z`
+
+3. **Fix and retry**
+   - If version was wrong: Create a new PR with corrected version
+   - If release notes were wrong: Manually create the release from the existing tag
+   - If tag exists but shouldn't: Delete tag and merge a new release PR
+
+4. **Common recovery scenarios**
+   - **Tag exists, no release**: Manually create release from GitHub UI using the existing tag
+   - **Wrong version number**: Delete the tag, create new PR with correct version
+   - **Bad release notes**: Edit the draft release on GitHub before publishing
+
+The workflow will notify you on the PR if anything fails, with links to the relevant logs and common troubleshooting steps.
 
 ## Troubleshooting
 
