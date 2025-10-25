@@ -175,8 +175,8 @@ jobs:
       run: |
         TAG="${{ steps.version.outputs.tag }}"
 
-        # Check if exact tag exists remotely (not pre-release variants)
-        if git ls-remote --tags origin | grep -q "refs/tags/${TAG}$"; then
+        # Check if tag exists remotely
+        if git ls-remote --tags origin | grep -q "refs/tags/$TAG"; then
           echo "::error::Tag $TAG already exists on remote"
           exit 1
         fi
@@ -224,8 +224,8 @@ jobs:
         RETRY_COUNT=0
 
         while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-          # Final safety check: verify exact tag doesn't exist on remote (not pre-release variants)
-          if git ls-remote --tags origin | grep -q "refs/tags/${TAG}$"; then
+          # Final safety check: verify tag doesn't exist on remote
+          if git ls-remote --tags origin | grep -q "refs/tags/$TAG"; then
             echo "::error::Tag $TAG was created by another process - race condition detected"
             echo "success=false" >> $GITHUB_OUTPUT
             git tag -d "$TAG"
