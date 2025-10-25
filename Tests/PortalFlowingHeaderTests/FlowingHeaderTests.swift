@@ -30,10 +30,10 @@ final class FlowingHeaderTests: XCTestCase {
         XCTAssertNotNil(header)
     }
 
-    // MARK: - FlowingHeaderConfig Tests
+    // MARK: - FlowingHeaderContent Tests
 
-    func testFlowingHeaderConfigCreation() {
-        let config = FlowingHeaderConfig(
+    func testFlowingHeaderContentCreation() {
+        let config = FlowingHeaderContent(
             id: "test",
             title: "Test Title",
             subtitle: "Test Subtitle",
@@ -48,8 +48,8 @@ final class FlowingHeaderTests: XCTestCase {
         XCTAssertEqual(config.layout, .horizontal)
     }
 
-    func testFlowingHeaderConfigDefaultValues() {
-        let config = FlowingHeaderConfig(
+    func testFlowingHeaderContentDefaultValues() {
+        let config = FlowingHeaderContent(
             title: "Title",
             subtitle: "Subtitle"
         )
@@ -59,8 +59,8 @@ final class FlowingHeaderTests: XCTestCase {
         XCTAssertEqual(config.layout, .horizontal)
     }
 
-    func testFlowingHeaderConfigWithAccessory() {
-        let config = FlowingHeaderConfig(
+    func testFlowingHeaderContentWithAccessory() {
+        let config = FlowingHeaderContent(
             title: "Title",
             subtitle: "Subtitle",
             displays: [.title, .accessory]
@@ -110,17 +110,17 @@ final class FlowingHeaderTests: XCTestCase {
         XCTAssertEqual(environment.flowingHeaderLayout, .vertical)
     }
 
-    func testFlowingHeaderConfigEnvironment() {
+    func testFlowingHeaderContentEnvironment() {
         var environment = EnvironmentValues()
 
         // Test default value (nil)
-        XCTAssertNil(environment.flowingHeaderConfig)
+        XCTAssertNil(environment.FlowingHeaderContent)
 
         // Test setting config
-        let config = FlowingHeaderConfig(title: "Test", subtitle: "Sub")
-        environment.flowingHeaderConfig = config
-        XCTAssertNotNil(environment.flowingHeaderConfig)
-        XCTAssertEqual(environment.flowingHeaderConfig?.title, "Test")
+        let config = FlowingHeaderContent(title: "Test", subtitle: "Sub")
+        environment.FlowingHeaderContent = config
+        XCTAssertNotNil(environment.FlowingHeaderContent)
+        XCTAssertEqual(environment.FlowingHeaderContent?.title, "Test")
     }
 
     func testFlowingHeaderAccessoryViewEnvironment() {
@@ -264,7 +264,7 @@ final class FlowingHeaderTests: XCTestCase {
 
     func testEmptyStringHandling() {
         // Test config with empty strings
-        let config = FlowingHeaderConfig(
+        let config = FlowingHeaderContent(
             title: "",
             subtitle: ""
         )
@@ -274,7 +274,7 @@ final class FlowingHeaderTests: XCTestCase {
     }
 
     func testConfigEquality() {
-        let config1 = FlowingHeaderConfig(
+        let config1 = FlowingHeaderContent(
             id: "test",
             title: "Title",
             subtitle: "Subtitle",
@@ -282,7 +282,7 @@ final class FlowingHeaderTests: XCTestCase {
             layout: .horizontal
         )
 
-        let config2 = FlowingHeaderConfig(
+        let config2 = FlowingHeaderContent(
             id: "test",
             title: "Title",
             subtitle: "Subtitle",
@@ -290,7 +290,7 @@ final class FlowingHeaderTests: XCTestCase {
             layout: .horizontal
         )
 
-        let config3 = FlowingHeaderConfig(
+        let config3 = FlowingHeaderContent(
             id: "different",
             title: "Title",
             subtitle: "Subtitle",
@@ -329,7 +329,7 @@ final class FlowingHeaderTests: XCTestCase {
         measure {
             // Test performance of creating config objects
             for i in 0..<1000 {
-                _ = FlowingHeaderConfig(
+                _ = FlowingHeaderContent(
                     id: "test\(i)",
                     title: "Title \(i)",
                     subtitle: "Subtitle \(i)",

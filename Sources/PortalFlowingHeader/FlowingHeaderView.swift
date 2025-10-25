@@ -50,10 +50,10 @@ import SwiftUI
 ///   advanced scroll tracking APIs.
 @available(iOS 18.0, *)
 public struct FlowingHeaderView: View {
-    @Environment(\.flowingHeaderConfig) private var config
+    @Environment(\.FlowingHeaderContent) private var config
     @Environment(\.flowingHeaderAccessoryView) private var accessoryView
     @Environment(\.titleProgress) private var titleProgress
-    @Environment(\.customViewFlowing) private var customViewFlowing
+    @Environment(\.accessoryFlowing) private var accessoryFlowing
 
     private let id: String
 
@@ -78,15 +78,15 @@ public struct FlowingHeaderView: View {
     }
 
     @ViewBuilder
-    private func headerContent(config: FlowingHeaderConfig) -> some View {
+    private func headerContent(config: FlowingHeaderContent) -> some View {
         VStack(spacing: hasAccessory ? 12 : 8) {
             let progress = (titleProgress * 4)
 
             // Show accessory if provided
             if let accessoryView = accessoryView {
                 accessoryView
-                    .opacity(customViewFlowing ? 0 : max(0.6, (1 - progress)))
-                    .scaleEffect(customViewFlowing ? 1 : (max(0.6, (1 - progress))), anchor: .top)
+                    .opacity(accessoryFlowing ? 0 : max(0.6, (1 - progress)))
+                    .scaleEffect(accessoryFlowing ? 1 : (max(0.6, (1 - progress))), anchor: .top)
                     .animation(.smooth(duration: FlowingHeaderTokens.transitionDuration), value: progress)
                     .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
                         return [AnchorKeyID(kind: "source", id: config.title, type: "accessory"): anchor]
@@ -97,7 +97,7 @@ public struct FlowingHeaderView: View {
                 // Source title (always invisible for layout)
                 Text(config.title)
                     .font(.title.weight(.semibold))
-//                    .opacity(0)  // Always invisible to maintain layout
+                    .opacity(0)  // Always invisible to maintain layout
                     .accessibilityHidden(true)  // Hide from VoiceOver since actual title is rendered separately
                     .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
                         return [AnchorKeyID(kind: "source", id: config.title, type: "title"): anchor]

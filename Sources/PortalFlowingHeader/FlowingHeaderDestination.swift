@@ -34,7 +34,7 @@ public extension EnvironmentValues {
 /// in the navigation bar that serve as destinations for header elements during scroll transitions.
 @available(iOS 18.0, *)
 internal struct FlowingHeaderDestination: ViewModifier {
-    @Environment(\.flowingHeaderConfig) private var config
+    @Environment(\.FlowingHeaderContent) private var config
     @Environment(\.flowingHeaderAccessoryView) private var accessoryView
     @Environment(\.flowingHeaderLayout) private var layout
 
@@ -53,7 +53,7 @@ internal struct FlowingHeaderDestination: ViewModifier {
     }
 
     @ViewBuilder
-    private func destinationContent(config: FlowingHeaderConfig) -> some View {
+    private func destinationContent(config: FlowingHeaderContent) -> some View {
         let effectiveDisplays = displays ?? config.displays
         let showAccessory = effectiveDisplays.contains(.accessory) && accessoryView != nil
         let showTitle = effectiveDisplays.contains(.title)
@@ -82,7 +82,7 @@ internal struct FlowingHeaderDestination: ViewModifier {
     }
 
     @ViewBuilder
-    private func accessoryDestination(config: FlowingHeaderConfig) -> some View {
+    private func accessoryDestination(config: FlowingHeaderContent) -> some View {
         if let accessoryView = accessoryView {
             accessoryView
                 .opacity(0)
@@ -94,7 +94,7 @@ internal struct FlowingHeaderDestination: ViewModifier {
     }
 
     @ViewBuilder
-    private func titleDestination(config: FlowingHeaderConfig) -> some View {
+    private func titleDestination(config: FlowingHeaderContent) -> some View {
         Text(config.title)
             .font(.headline.weight(.semibold))
             .opacity(0)

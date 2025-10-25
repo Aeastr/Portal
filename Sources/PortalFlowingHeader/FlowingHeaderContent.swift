@@ -1,5 +1,5 @@
 //
-//  FlowingHeaderConfig.swift
+//  FlowingHeaderContent.swift
 //  PortalFlowingHeader
 //
 //  Created by Aether, 2025.
@@ -30,7 +30,7 @@ public enum FlowingHeaderDisplayComponent: Hashable, Sendable {
 
 /// Configuration for a flowing header, provided via environment.
 @available(iOS 18.0, *)
-public struct FlowingHeaderConfig: Sendable {
+public struct FlowingHeaderContent: Sendable {
     /// Unique identifier for this header configuration
     public let id: String
 
@@ -64,8 +64,8 @@ public struct FlowingHeaderConfig: Sendable {
 // MARK: - Equatable Conformance
 
 @available(iOS 18.0, *)
-extension FlowingHeaderConfig: Equatable {
-    public static func == (lhs: FlowingHeaderConfig, rhs: FlowingHeaderConfig) -> Bool {
+extension FlowingHeaderContent: Equatable {
+    public static func == (lhs: FlowingHeaderContent, rhs: FlowingHeaderContent) -> Bool {
         lhs.id == rhs.id &&
         lhs.title == rhs.title &&
         lhs.subtitle == rhs.subtitle &&
@@ -77,8 +77,8 @@ extension FlowingHeaderConfig: Equatable {
 // MARK: - Environment Keys
 
 @available(iOS 18.0, *)
-private struct FlowingHeaderConfigKey: EnvironmentKey {
-    static let defaultValue: FlowingHeaderConfig? = nil
+private struct FlowingHeaderContentKey: EnvironmentKey {
+    static let defaultValue: FlowingHeaderContent? = nil
 }
 
 @available(iOS 18.0, *)
@@ -89,9 +89,9 @@ private struct FlowingHeaderAccessoryViewKey: EnvironmentKey {
 @available(iOS 18.0, *)
 public extension EnvironmentValues {
     /// The current flowing header configuration
-    var flowingHeaderConfig: FlowingHeaderConfig? {
-        get { self[FlowingHeaderConfigKey.self] }
-        set { self[FlowingHeaderConfigKey.self] = newValue }
+    var FlowingHeaderContent: FlowingHeaderContent? {
+        get { self[FlowingHeaderContentKey.self] }
+        set { self[FlowingHeaderContentKey.self] = newValue }
     }
 
     /// The custom accessory view for flowing headers
@@ -106,7 +106,7 @@ public extension EnvironmentValues {
 /// A view modifier that configures a flowing header via environment and applies transitions.
 @available(iOS 18.0, *)
 private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
-    let config: FlowingHeaderConfig
+    let config: FlowingHeaderContent
     let accessoryContent: AccessoryContent?
 
     @State private var titleProgress: Double = 0.0
@@ -115,11 +115,11 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .environment(\.flowingHeaderConfig, config)
+            .environment(\.FlowingHeaderContent, config)
             .environment(\.flowingHeaderAccessoryView, accessoryContent.map { AnyView($0) })
             .environment(\.flowingHeaderLayout, config.layout)
             .environment(\.titleProgress, titleProgress)
-            .environment(\.customViewFlowing, accessoryContent != nil)
+            .environment(\.accessoryFlowing, accessoryContent != nil)
             .onScrollPhaseChange { _, newPhase in
                 isScrolling = [ScrollPhase.interacting, ScrollPhase.decelerating].contains(newPhase)
 
@@ -249,7 +249,7 @@ public extension View {
         displays: Set<FlowingHeaderDisplayComponent> = [.title],
         layout: AccessoryLayout = .horizontal
     ) -> some View {
-        let config = FlowingHeaderConfig(
+        let config = FlowingHeaderContent(
             id: id,
             title: title,
             subtitle: subtitle,
@@ -297,7 +297,7 @@ public extension View {
         layout: AccessoryLayout = .horizontal,
         @ViewBuilder accessory: () -> AccessoryContent
     ) -> some View {
-        let config = FlowingHeaderConfig(
+        let config = FlowingHeaderContent(
             id: id,
             title: title,
             subtitle: subtitle,
