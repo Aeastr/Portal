@@ -15,64 +15,78 @@ import SwiftUI
 @available(iOS 18.0, *)
 final class FlowingHeaderTests: XCTestCase {
     // MARK: - FlowingHeaderView Tests
-    
+
     @MainActor
     func testFlowingHeaderViewInitialization() {
-        // Test system image initialization
-        let systemImageHeader = FlowingHeaderView(
-            "Test Title",
-            systemImage: "star.fill",
-            subtitle: "Test Subtitle"
+        // Test default initialization
+        let header = FlowingHeaderView()
+        XCTAssertNotNil(header)
+    }
+
+    @MainActor
+    func testFlowingHeaderViewWithCustomID() {
+        // Test initialization with custom ID
+        let header = FlowingHeaderView(id: "custom")
+        XCTAssertNotNil(header)
+    }
+
+    // MARK: - FlowingHeaderConfig Tests
+
+    func testFlowingHeaderConfigCreation() {
+        let config = FlowingHeaderConfig(
+            id: "test",
+            title: "Test Title",
+            subtitle: "Test Subtitle",
+            displays: [.title],
+            layout: .horizontal
         )
 
-        XCTAssertNotNil(systemImageHeader)
+        XCTAssertEqual(config.id, "test")
+        XCTAssertEqual(config.title, "Test Title")
+        XCTAssertEqual(config.subtitle, "Test Subtitle")
+        XCTAssertEqual(config.displays, [.title])
+        XCTAssertEqual(config.layout, .horizontal)
     }
-    
-    @MainActor
-    func testFlowingHeaderViewWithCustomView() {
-        // Test custom view initialization
-        let customViewHeader = FlowingHeaderView(
-            "Custom Title",
-            subtitle: "Custom Subtitle"
-        ) {
-            Image(systemName: "heart")
-        }
 
-        XCTAssertNotNil(customViewHeader)
-    }
-    
-    @MainActor
-    func testFlowingHeaderViewWithImage() {
-        // Test image initialization
-        let imageHeader = FlowingHeaderView(
-            "Image Title",
-            image: Image(systemName: "photo"),
-            subtitle: "Image Subtitle"
+    func testFlowingHeaderConfigDefaultValues() {
+        let config = FlowingHeaderConfig(
+            title: "Title",
+            subtitle: "Subtitle"
         )
 
-        XCTAssertNotNil(imageHeader)
+        XCTAssertEqual(config.id, "default")
+        XCTAssertEqual(config.displays, [.title])
+        XCTAssertEqual(config.layout, .horizontal)
     }
-    
-    @MainActor
-    func testFlowingHeaderViewTextOnly() {
-        // Test text-only initialization
-        let textOnlyHeader = FlowingHeaderView(
-            "Text Only Title",
-            subtitle: "Text Only Subtitle"
+
+    func testFlowingHeaderConfigWithAccessory() {
+        let config = FlowingHeaderConfig(
+            title: "Title",
+            subtitle: "Subtitle",
+            displays: [.title, .accessory]
         )
 
-        XCTAssertNotNil(textOnlyHeader)
+        XCTAssertTrue(config.displays.contains(.title))
+        XCTAssertTrue(config.displays.contains(.accessory))
     }
-    
-    @MainActor
-    func testFlowingHeaderViewTitleOnly() {
-        // Test title-only initialization
-        let titleOnlyHeader = FlowingHeaderView(
-            "Title Only",
-            subtitle: ""
-        )
 
-        XCTAssertNotNil(titleOnlyHeader)
+    // MARK: - Display Component Tests
+
+    func testDisplayComponentCases() {
+        let title = FlowingHeaderDisplayComponent.title
+        let accessory = FlowingHeaderDisplayComponent.accessory
+
+        XCTAssertNotEqual(title, accessory)
+    }
+
+    func testDisplayComponentSet() {
+        var displays: Set<FlowingHeaderDisplayComponent> = [.title]
+        XCTAssertTrue(displays.contains(.title))
+        XCTAssertFalse(displays.contains(.accessory))
+
+        displays.insert(.accessory)
+        XCTAssertTrue(displays.contains(.title))
+        XCTAssertTrue(displays.contains(.accessory))
     }
 
     // MARK: - AccessoryLayout Tests
@@ -94,6 +108,31 @@ final class FlowingHeaderTests: XCTestCase {
         // Test setting new value
         environment.flowingHeaderLayout = .vertical
         XCTAssertEqual(environment.flowingHeaderLayout, .vertical)
+    }
+
+    func testFlowingHeaderConfigEnvironment() {
+        var environment = EnvironmentValues()
+
+        // Test default value (nil)
+        XCTAssertNil(environment.flowingHeaderConfig)
+
+        // Test setting config
+        let config = FlowingHeaderConfig(title: "Test", subtitle: "Sub")
+        environment.flowingHeaderConfig = config
+        XCTAssertNotNil(environment.flowingHeaderConfig)
+        XCTAssertEqual(environment.flowingHeaderConfig?.title, "Test")
+    }
+
+    func testFlowingHeaderAccessoryViewEnvironment() {
+        var environment = EnvironmentValues()
+
+        // Test default value (nil)
+        XCTAssertNil(environment.flowingHeaderAccessoryView)
+
+        // Test setting accessory view
+        let view = AnyView(Image(systemName: "star"))
+        environment.flowingHeaderAccessoryView = view
+        XCTAssertNotNil(environment.flowingHeaderAccessoryView)
     }
 
     // MARK: - Mock Data Tests
@@ -180,7 +219,7 @@ final class FlowingHeaderTests: XCTestCase {
         let example = FlowingHeaderExample()
         XCTAssertNotNil(example)
     }
-    
+
     @MainActor
     func testFlowingHeaderCustomViewExampleCreation() {
         let example = FlowingHeaderCustomViewExample()
@@ -194,8 +233,8 @@ final class FlowingHeaderTests: XCTestCase {
     }
 
     @MainActor
-    func testFlowingHeaderBundleImageExampleCreation() {
-        let example = FlowingHeaderBundleImageExample()
+    func testFlowingHeaderTitleOnlyTransitionExampleCreation() {
+        let example = FlowingHeaderTitleOnlyTransitionExample()
         XCTAssertNotNil(example)
     }
 
@@ -222,27 +261,45 @@ final class FlowingHeaderTests: XCTestCase {
     }
 
     // MARK: - Edge Cases Tests
-    
-    @MainActor
+
     func testEmptyStringHandling() {
-        // Test header with empty strings
-        let header = FlowingHeaderView(
-            "",
+        // Test config with empty strings
+        let config = FlowingHeaderConfig(
+            title: "",
             subtitle: ""
         )
 
-        XCTAssertNotNil(header)
+        XCTAssertEqual(config.title, "")
+        XCTAssertEqual(config.subtitle, "")
     }
-    
-    @MainActor
-    func testNilSubtitleHandling() {
-        // Test header with empty subtitle
-        let header = FlowingHeaderView(
-            "Title Only",
-            subtitle: ""
+
+    func testConfigEquality() {
+        let config1 = FlowingHeaderConfig(
+            id: "test",
+            title: "Title",
+            subtitle: "Subtitle",
+            displays: [.title],
+            layout: .horizontal
         )
 
-        XCTAssertNotNil(header)
+        let config2 = FlowingHeaderConfig(
+            id: "test",
+            title: "Title",
+            subtitle: "Subtitle",
+            displays: [.title],
+            layout: .horizontal
+        )
+
+        let config3 = FlowingHeaderConfig(
+            id: "different",
+            title: "Title",
+            subtitle: "Subtitle",
+            displays: [.title],
+            layout: .horizontal
+        )
+
+        XCTAssertEqual(config1, config2)
+        XCTAssertNotEqual(config1, config3)
     }
 
     // MARK: - Performance Tests
@@ -257,16 +314,27 @@ final class FlowingHeaderTests: XCTestCase {
             _ = photos.last?.category
         }
     }
-    
+
     @MainActor
     func testViewCreationPerformance() {
         measure {
             // Test performance of creating FlowingHeader views
             for i in 0..<100 {
-                _ = FlowingHeaderView(
-                    "Title \(i)",
-                    systemImage: "star.fill",
-                    subtitle: "Subtitle \(i)"
+                _ = FlowingHeaderView(id: "test\(i)")
+            }
+        }
+    }
+
+    func testConfigCreationPerformance() {
+        measure {
+            // Test performance of creating config objects
+            for i in 0..<1000 {
+                _ = FlowingHeaderConfig(
+                    id: "test\(i)",
+                    title: "Title \(i)",
+                    subtitle: "Subtitle \(i)",
+                    displays: [.title, .accessory],
+                    layout: .horizontal
                 )
             }
         }

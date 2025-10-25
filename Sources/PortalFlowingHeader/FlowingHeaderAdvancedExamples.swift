@@ -31,23 +31,7 @@ public struct FlowingHeaderMultiStyleExample: View {
                     .padding(.horizontal)
                     .padding(.bottom, 20)
 
-                    // Dynamic header based on selected style
-                    switch currentStyle {
-                    case .standard:
-                        FlowingHeaderView(
-                            "Settings",
-                            systemImage: "gearshape.fill",
-                            subtitle: "Configure your experience"
-                        )
-                    case .compact:
-                        FlowingHeaderView(
-                            "Settings",
-                            systemImage: "gearshape.fill",
-                            subtitle: ""
-                        )
-                    case .minimal:
-                        FlowingHeaderView("Settings", subtitle: "")
-                    }
+                    FlowingHeaderView()
 
                     settingsContent
                 }
@@ -56,9 +40,21 @@ public struct FlowingHeaderMultiStyleExample: View {
                 Text("Detail View")
                     .navigationTitle("Detail")
             }
-            .flowingHeaderDestination("Settings", systemImage: currentStyle != .minimal ? "gearshape.fill" : nil)
+            .flowingHeaderDestination(
+                displays: currentStyle != .minimal ? [.title, .accessory] : [.title]
+            )
         }
-        .flowingHeader("Settings", systemImage: currentStyle != .minimal ? "gearshape.fill" : nil)
+        .flowingHeader(
+            title: "Settings",
+            subtitle: currentStyle == .standard ? "Configure your experience" : "",
+            displays: currentStyle != .minimal ? [.title, .accessory] : [.title]
+        ) {
+            if currentStyle != .minimal {
+                Image(systemName: "gearshape.fill")
+                    .font(.system(size: 64))
+                    .foregroundStyle(.tint)
+            }
+        }
     }
 
     @ViewBuilder
@@ -149,41 +145,51 @@ public struct FlowingHeaderNavigationExample: View {
 
     public var body: some View {
         TabView(selection: $selectedTab) {
+            // Gallery Tab
             NavigationStack {
                 ScrollView {
-                    FlowingHeaderView(
-                        "Gallery",
-                        systemImage: "photo.stack",
-                        subtitle: "Your memories"
-                    )
+                    FlowingHeaderView()
 
                     searchBar
                     photoGrid
                 }
-                .environment(\.flowingHeaderLayout, .horizontal)
-                .flowingHeaderDestination("Gallery", systemImage: "photo.stack")
+                .flowingHeaderDestination(displays: [.title, .accessory])
             }
-            .flowingHeader("Gallery", systemImage: "photo.stack")
+            .flowingHeader(
+                title: "Gallery",
+                subtitle: "Your memories",
+                displays: [.title, .accessory],
+                layout: .horizontal
+            ) {
+                Image(systemName: "photo.stack")
+                    .font(.system(size: 64))
+                    .foregroundStyle(.tint)
+            }
             .tabItem {
                 Image(systemName: "photo.stack")
                 Text("Gallery")
             }
             .tag(0)
 
+            // Profile Tab
             NavigationStack {
                 ScrollView {
-                    FlowingHeaderView(
-                        "Profile",
-                        systemImage: "person.crop.circle",
-                        subtitle: FlowingHeaderExample.sampleUser.username
-                    )
+                    FlowingHeaderView()
 
                     profileContent
                 }
-                .environment(\.flowingHeaderLayout, .vertical)
-                .flowingHeaderDestination("Profile", systemImage: "person.crop.circle")
+                .flowingHeaderDestination(displays: [.title, .accessory])
             }
-            .flowingHeader("Profile", systemImage: "person.crop.circle")
+            .flowingHeader(
+                title: "Profile",
+                subtitle: FlowingHeaderExample.sampleUser.username,
+                displays: [.title, .accessory],
+                layout: .vertical
+            ) {
+                Image(systemName: "person.crop.circle")
+                    .font(.system(size: 64))
+                    .foregroundStyle(.tint)
+            }
             .tabItem {
                 Image(systemName: "person.crop.circle")
                 Text("Profile")

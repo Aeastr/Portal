@@ -12,176 +12,110 @@ import SwiftUI
 
 /// A header view that smoothly transitions to the navigation bar during scroll.
 ///
-/// `FlowingHeaderView` creates a header that contains an accessory (icon, image, or custom view), title, and subtitle.
-/// As the user scrolls, these elements animate toward their corresponding positions in the
-/// navigation bar, creating a fluid transition effect.
+/// `FlowingHeaderView` reads its configuration from the environment, set by the
+/// `.flowingHeader()` modifier applied to the parent NavigationStack.
 ///
 /// ## Basic Usage
 ///
-/// Create a simple accessory-based header:
-///
 /// ```swift
-/// FlowingHeaderView(
-///     icon: "star.fill",
-///     title: "Favorites",
-///     subtitle: "Your starred items"
-/// )
-/// ```
-///
-/// ## Custom View Header
-///
-/// Use a custom view accessory:
-///
-/// ```swift
-/// FlowingHeaderView(
-///     customView: ProfileAvatar(),
-///     title: "Profile",
-///     subtitle: "Account settings"
-/// )
-/// ```
-///
-/// ## Integration
-///
-/// The header must be used with the flowing header modifiers:
-///
-/// ```swift
-/// ScrollView {
-///     FlowingHeaderView(icon: "star", title: "Title", subtitle: "Subtitle")
-///     // Content...
+/// NavigationStack {
+///     ScrollView {
+///         FlowingHeaderView()
+///     }
+///     .flowingHeaderDestination()
 /// }
-/// .flowingHeaderDestination("Title")
+/// .flowingHeader(title: "Favorites", subtitle: "Your starred items")
+/// ```
+///
+/// ## With Accessory
+///
+/// ```swift
+/// NavigationStack {
+///     ScrollView {
+///         FlowingHeaderView()
+///     }
+///     .flowingHeaderDestination(displays: [.title, .accessory])
+/// }
+/// .flowingHeader(
+///     title: "Profile",
+///     subtitle: "Account settings",
+///     displays: [.title, .accessory]
+/// ) {
+///     Image(systemName: "person.circle")
+///         .font(.system(size: 64))
+/// }
 /// ```
 ///
 /// - Important: This view is only available on iOS 18.0 and later due to its use of
 ///   advanced scroll tracking APIs.
 @available(iOS 18.0, *)
-public struct FlowingHeaderView<Content: View>: View {
-    @Environment(\.colorScheme) var colorScheme
-    @Environment(\.titleProgress) var titleProgress
-    @Environment(\.systemImageFlowing) var systemImageFlowing
-    @Environment(\.imageFlowing) var imageFlowing
-    @Environment(\.customViewFlowing) var customViewFlowing
+public struct FlowingHeaderView: View {
+    @Environment(\.flowingHeaderConfig) private var config
+    @Environment(\.flowingHeaderAccessoryView) private var accessoryView
+    @Environment(\.titleProgress) private var titleProgress
+    @Environment(\.customViewFlowing) private var customViewFlowing
 
-    private let title: String
-    private let subtitle: String
-    private let icon: String?
-    private let image: Image?
-    private let content: Content?
+    private let id: String
 
-    /// Creates a flowing header with just title and subtitle.
+    /// Creates a flowing header that reads configuration from environment.
     ///
-    /// - Parameters:
-    ///   - title: The main title text that will flow to the navigation bar
-    ///   - subtitle: Secondary text that appears below the title
-    public init(_ title: String, subtitle: String) where Content == EmptyView {
-        self.title = title
-        self.subtitle = subtitle
-        self.icon = nil
-        self.image = nil
-        self.content = nil
-    }
-
-    /// Creates a flowing header with an SF Symbols accessory.
-    ///
-    /// - Parameters:
-    ///   - title: The main title text that will flow to the navigation bar
-    ///   - systemImage: The SF Symbols name for the header accessory
-    ///   - subtitle: Secondary text that appears below the title
-    public init(_ title: String, systemImage: String, subtitle: String) where Content == EmptyView {
-        self.title = title
-        self.subtitle = subtitle
-        self.icon = systemImage
-        self.image = nil
-        self.content = nil
-    }
-
-    /// Creates a flowing header with an Image accessory.
-    ///
-    /// - Parameters:
-    ///   - title: The main title text that will flow to the navigation bar
-    ///   - image: The Image accessory to display in the header
-    ///   - subtitle: Secondary text that appears below the title
-    public init(_ title: String, image: Image, subtitle: String) where Content == EmptyView {
-        self.title = title
-        self.subtitle = subtitle
-        self.icon = nil
-        self.image = image
-        self.content = nil
-    }
-
-    /// Creates a flowing header with a custom view accessory.
-    ///
-    /// - Parameters:
-    ///   - title: The main title text that will flow to the navigation bar
-    ///   - subtitle: Secondary text that appears below the title
-    ///   - content: A view builder that creates the custom accessory content
-    public init(_ title: String, subtitle: String, @ViewBuilder content: () -> Content) {
-        self.title = title
-        self.subtitle = subtitle
-        self.icon = nil
-        self.image = nil
-        self.content = content()
+    /// - Parameter id: Optional identifier to match specific header config (default: "default")
+    public init(id: String = "default") {
+        self.id = id
     }
 
     public var body: some View {
-        VStack(spacing: hasVisualContent ? 12 : 8) {
+        Group {
+            if let config = config, config.id == id {
+                headerContent(config: config)
+            } else {
+                // Fallback when no config is provided
+                Text("No flowing header configuration found")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func headerContent(config: FlowingHeaderConfig) -> some View {
+        VStack(spacing: hasAccessory ? 12 : 8) {
             let progress = (titleProgress * 4)
 
-            // Show icon, image, or custom content
-            if let content = content {
-                content
+            // Show accessory if provided
+            if let accessoryView = accessoryView {
+                accessoryView
                     .opacity(customViewFlowing ? 0 : max(0.6, (1 - progress)))
                     .scaleEffect(customViewFlowing ? 1 : (max(0.6, (1 - progress))), anchor: .top)
                     .animation(.smooth(duration: FlowingHeaderTokens.transitionDuration), value: progress)
                     .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                        return [AnchorKeyID(kind: "source", id: title, type: "accessory"): anchor]
-                    }
-            } else if let icon = icon {
-                Image(systemName: icon)
-                    .font(.system(size: 64))
-                    .foregroundStyle(.tint)
-                    .opacity(systemImageFlowing ? 0 : max(0.6, (1 - progress)))
-                    .scaleEffect(systemImageFlowing ? 1 : (max(0.6, (1 - progress))), anchor: .top)
-                    .animation(.smooth(duration: FlowingHeaderTokens.transitionDuration), value: progress)
-                    .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                        return [AnchorKeyID(kind: "source", id: title, type: "accessory"): anchor]
-                    }
-            } else if let image = image {
-                image
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 64, height: 64)
-                    .opacity(imageFlowing ? 0 : max(0.6, (1 - progress)))
-                    .scaleEffect(imageFlowing ? 1 : (max(0.6, (1 - progress))), anchor: .top)
-                    .animation(.smooth(duration: FlowingHeaderTokens.transitionDuration), value: progress)
-                    .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                        return [AnchorKeyID(kind: "source", id: title, type: "accessory"): anchor]
+                        return [AnchorKeyID(kind: "source", id: config.title, type: "accessory"): anchor]
                     }
             }
 
             VStack(spacing: 4) {
                 // Source title (always invisible for layout)
-                Text(title)
+                Text(config.title)
                     .font(.title.weight(.semibold))
-                    .opacity(0)  // Always invisible to maintain layout
+//                    .opacity(0)  // Always invisible to maintain layout
                     .accessibilityHidden(true)  // Hide from VoiceOver since actual title is rendered separately
                     .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                        return [AnchorKeyID(kind: "source", id: title, type: "title"): anchor]
+                        return [AnchorKeyID(kind: "source", id: config.title, type: "title"): anchor]
                     }
 
-                Text(subtitle)
+                Text(config.subtitle)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
         }
-        .navigationTitle(title)
+        .navigationTitle(config.title)
         #if canImport(UIKit)
         .navigationBarTitleDisplayMode(.inline)
         #endif
     }
 
-    private var hasVisualContent: Bool {
-        content != nil || icon != nil || image != nil
+    private var hasAccessory: Bool {
+        accessoryView != nil
     }
 }

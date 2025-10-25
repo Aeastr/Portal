@@ -18,11 +18,7 @@ public struct FlowingHeaderExample: View {
     public var body: some View {
         NavigationStack {
             ScrollView {
-                FlowingHeaderView(
-                    "Photos",
-                    systemImage: "photo.on.rectangle.angled",
-                    subtitle: "My Collection"
-                )
+                FlowingHeaderView()
 
                 LazyVStack(spacing: 12) {
                     ForEach(Self.samplePhotos) { photo in
@@ -58,9 +54,16 @@ public struct FlowingHeaderExample: View {
                 }
                 .padding()
             }
-            .flowingHeaderDestination("Photos")
+            .flowingHeaderDestination()
         }
-        .flowingHeader("Photos")
+        .flowingHeader(
+            title: "Photos",
+            subtitle: "My Collection"
+        ) {
+            Image(systemName: "photo.on.rectangle.angled")
+                .font(.system(size: 64))
+                .foregroundStyle(.tint)
+        }
     }
 }
 
@@ -106,9 +109,7 @@ public struct FlowingHeaderCustomViewExample: View {
     public var body: some View {
         NavigationStack {
             ScrollView {
-                FlowingHeaderView(FlowingHeaderExample.sampleUser.name, subtitle: FlowingHeaderExample.sampleUser.username) {
-                    profileAvatar
-                }
+                FlowingHeaderView()
 
                 VStack(alignment: .leading, spacing: 24) {
                     Text(FlowingHeaderExample.sampleUser.bio)
@@ -157,11 +158,15 @@ public struct FlowingHeaderCustomViewExample: View {
                     .padding(.horizontal)
                 }
             }
-            .flowingHeaderDestination(FlowingHeaderExample.sampleUser.name) {
-                compactAvatar
-            }
+            .flowingHeaderDestination(displays: [.title, .accessory])
         }
-        .flowingHeader(FlowingHeaderExample.sampleUser.name, customView: AnyView(compactAvatar))
+        .flowingHeader(
+            title: FlowingHeaderExample.sampleUser.name,
+            subtitle: FlowingHeaderExample.sampleUser.username,
+            displays: [.title, .accessory]
+        ) {
+            compactAvatar
+        }
     }
 }
 
@@ -173,7 +178,7 @@ public struct FlowingHeaderTextOnlyExample: View {
     public var body: some View {
         NavigationStack {
             ScrollView {
-                FlowingHeaderView("Analytics", subtitle: "Business Intelligence Dashboard")
+                FlowingHeaderView()
 
                 LazyVStack(spacing: 16) {
                     ForEach(FlowingHeaderExample.sampleStats, id: \.title) { stat in
@@ -208,25 +213,24 @@ public struct FlowingHeaderTextOnlyExample: View {
                 }
                 .padding()
             }
-            .flowingHeaderDestination("Analytics")
+            .flowingHeaderDestination()
         }
-        .flowingHeader("Analytics")
+        .flowingHeader(
+            title: "Analytics",
+            subtitle: "Business Intelligence Dashboard"
+        )
     }
 }
 
-/// FlowingHeader example using bundled image assets
+/// FlowingHeader example with accessory shown in header but only title flows to nav bar
 @available(iOS 18.0, *)
-public struct FlowingHeaderBundleImageExample: View {
+public struct FlowingHeaderTitleOnlyTransitionExample: View {
     public init() {}
 
     public var body: some View {
         NavigationStack {
             ScrollView {
-                FlowingHeaderView(
-                    "Art Gallery",
-                    image: Image(systemName: "paintbrush.pointed.fill"),
-                    subtitle: "Digital Collection"
-                )
+                FlowingHeaderView()
 
                 LazyVStack(spacing: 16) {
                     ForEach(FlowingHeaderExample.sampleArtwork) { artwork in
@@ -270,9 +274,17 @@ public struct FlowingHeaderBundleImageExample: View {
                 }
                 .padding()
             }
-            .flowingHeaderDestination("Art Gallery", image: Image(systemName: "paintbrush.pointed.fill"))
+            .flowingHeaderDestination(displays: [.title])  // Only title flows
         }
-        .flowingHeader("Art Gallery", image: Image(systemName: "paintbrush.pointed.fill"))
+        .flowingHeader(
+            title: "Art Gallery",
+            subtitle: "Digital Collection",
+            displays: [.title]  // Accessory shown in header, but only title flows
+        ) {
+            Image(systemName: "paintbrush.pointed.fill")
+                .font(.system(size: 64))
+                .foregroundStyle(.tint)
+        }
     }
 }
 
@@ -293,7 +305,7 @@ public struct FlowingHeaderBundleImageExample: View {
 }
 
 @available(iOS 18.0, *)
-#Preview("Bundle Image") {
-    FlowingHeaderBundleImageExample()
+#Preview("Title Only Transition") {
+    FlowingHeaderTitleOnlyTransitionExample()
 }
 #endif
