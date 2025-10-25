@@ -1,0 +1,47 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: macos-14
+
+    strategy:
+      matrix:
+        scheme: ['Portal', 'PortalFlowingHeader', 'PortalPrivate', 'PortalView']
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Select Xcode
+      run: sudo xcode-select -s /Applications/Xcode_16.0.app/Contents/Developer
+
+    - name: Show Xcode version
+      run: xcodebuild -version
+
+    - name: Build and test ${{ matrix.scheme }}
+      run: |
+        set -o pipefail
+        xcodebuild test \
+          -scheme ${{ matrix.scheme }} \
+          -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.0' \
+          -enableCodeCoverage YES \
+          -resultBundlePath TestResults-${{ matrix.scheme }} \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results-${{ matrix.scheme }}
+        path: TestResults-${{ matrix.scheme }}.xcresult
+        retention-days: 30
