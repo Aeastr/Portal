@@ -9,6 +9,7 @@
 //
 
 import SwiftUI
+import os.log
 
 /// Layout style for accessory view positioning in the navigation bar.
 @available(iOS 18.0, *)
@@ -113,6 +114,7 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
     @State private var isScrolling = false
     @State private var scrollOffset: CGFloat = 0
     @State private var accessoryFlowing = false
+    @State private var hasCheckedAnchors = false
 
     func body(content: Content) -> some View {
         content
@@ -164,8 +166,42 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
 
             let t = CGFloat(min(max(abs(titleProgress), 0), 1))
 
+            // Check for missing anchors when accessory is in displays
+            let hasSource = anchors[accessorySrcKey] != nil
+            let hasDestination = anchors[accessoryDstKey] != nil
+            let hasBothAccessoryAnchors = hasSource && hasDestination
+
+            if config.displays.contains(.accessory) && !hasCheckedAnchors {
+                // Only check after we have title anchors (proves preference system is working)
+                let hasTitleDst = anchors[titleDstKey] != nil
+
+                Color.clear
+                    .onChange(of: hasTitleDst) { _, newValue in
+                        if newValue && !hasCheckedAnchors {
+                            hasCheckedAnchors = true
+
+                            #if DEBUG
+                            let log = OSLog(subsystem: "com.apple.runtime-issues", category: "PortalFlowingHeader")
+
+                            if !hasSource && !hasDestination {
+                                let message = "FlowingHeader: '.accessory' is included in displays but no source or destination anchors were found. Ensure FlowingHeaderView() is in the ScrollView and .flowingHeaderDestination() is applied."
+                                os_log(.fault, log: log, "%{public}s", message)
+                                print("⚠️ \(message)")
+                            } else if !hasSource {
+                                let message = "FlowingHeader: '.accessory' is included in displays but no source anchor was found. Ensure FlowingHeaderView() is present in the ScrollView."
+                                os_log(.fault, log: log, "%{public}s", message)
+                                print("⚠️ \(message)")
+                            } else if !hasDestination {
+                                let message = "FlowingHeader: '.accessory' is included in displays but no destination anchor was found. Ensure .flowingHeaderDestination() includes .accessory in its displays parameter."
+                                os_log(.fault, log: log, "%{public}s", message)
+                                print("⚠️ \(message)")
+                            }
+                            #endif
+                        }
+                    }
+            }
+
             // Update accessoryFlowing based on whether both anchors exist
-            let hasBothAccessoryAnchors = anchors[accessorySrcKey] != nil && anchors[accessoryDstKey] != nil
             Color.clear
                 .onAppear {
                     accessoryFlowing = hasBothAccessoryAnchors

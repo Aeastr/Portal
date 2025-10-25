@@ -42,6 +42,8 @@ internal struct FlowingHeaderDestination: ViewModifier {
     let id: String
     let displays: Set<FlowingHeaderDisplayComponent>?
 
+    @State private var accessorySize: CGSize = .zero
+
     func body(content: Content) -> some View {
         content
             .toolbar {
