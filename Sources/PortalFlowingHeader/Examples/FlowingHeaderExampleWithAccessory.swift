@@ -71,8 +71,8 @@ public struct FlowingHeaderExampleWithAccessory: View {
 }
 
 @available(iOS 18.0, *)
-#Preview("All") {
-    FlowingHeaderExample()
+#Preview("With Accessory") {
+    FlowingHeaderExampleWithAccessory()
 }
 
 #endif
