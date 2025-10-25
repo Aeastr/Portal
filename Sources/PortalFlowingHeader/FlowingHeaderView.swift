@@ -94,25 +94,29 @@ public struct FlowingHeaderView: View {
         let createTitleAnchor = flowComponents.contains(.title)
 
         VStack(spacing: showAccessory ? 12 : 8) {
-            let progressFade = (titleProgress * FlowingHeaderTokens.accessoryFadeMultiplier)
+            // Calculate accessory fade using centralized, testable function
+            let fadeValue = FlowingHeaderCalculations.calculateAccessoryFade(
+                progress: titleProgress,
+                fadeMultiplier: FlowingHeaderTokens.accessoryFadeMultiplier
+            )
 
             // Show accessory if in visibleComponents
             if showAccessory, let accessoryView = accessoryView {
                 if createAccessoryAnchor {
                     // Create anchor - hide if actually flowing (has destination)
                     accessoryView
-                        .opacity(accessoryFlowing ? 0 : max(0.6, (1 - progressFade)))
-                        .scaleEffect(accessoryFlowing ? 1 : max(0.6, (1 - progressFade)), anchor: .top)
-                        .animation(.smooth(duration: FlowingHeaderTokens.transitionDuration), value: progressFade)
+                        .opacity(accessoryFlowing ? 0 : fadeValue)
+                        .scaleEffect(accessoryFlowing ? 1 : fadeValue, anchor: .top)
+                        .animation(.smooth(duration: FlowingHeaderTokens.transitionDuration), value: fadeValue)
                         .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
                             return [AnchorKeyID(kind: "source", id: config.id, type: "accessory"): anchor]
                         }
                 } else {
                     // Not creating anchor, but still apply fade/scale effect
                     accessoryView
-                        .opacity(max(0.6, (1 - progressFade)))
-                        .scaleEffect(max(0.6, (1 - progressFade)), anchor: .top)
-                        .animation(.smooth(duration: FlowingHeaderTokens.transitionDuration), value: progressFade)
+                        .opacity(fadeValue)
+                        .scaleEffect(fadeValue, anchor: .top)
+                        .animation(.smooth(duration: FlowingHeaderTokens.transitionDuration), value: fadeValue)
                 }
             }
 

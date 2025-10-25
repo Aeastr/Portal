@@ -38,7 +38,7 @@ public struct FlowingHeaderTokens {
     public static let accessoryStartDivisor: CGFloat = 3
 
     /// Fallback start offset when no accessory height is measured.
-    public static let fallbackStartOffset: CGFloat = 0
+    public static let fallbackStartOffset: CGFloat = 5
 
     // MARK: - Visual Effects
 

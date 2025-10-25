@@ -191,7 +191,8 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
             let accessorySrcKey = AnchorKeyID(kind: "source", id: config.id, type: "accessory")
             let accessoryDstKey = AnchorKeyID(kind: "destination", id: config.id, type: "accessory")
 
-            let progress = CGFloat(min(max(abs(titleProgress), 0), 1))
+            // titleProgress is already clamped 0-1 by FlowingHeaderCalculations.calculateProgress
+            let progress = CGFloat(titleProgress)
             let hasBothAccessoryAnchors = anchors[accessorySrcKey] != nil && anchors[accessoryDstKey] != nil
 
             // Update accessoryFlowing based on whether both anchors exist

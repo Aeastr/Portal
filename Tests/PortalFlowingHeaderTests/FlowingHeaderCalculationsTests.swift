@@ -505,4 +505,122 @@ struct FlowingHeaderCalculationsTests {
         )
         #expect(abs(progress - 0.333333) < 0.0001)
     }
+
+    // MARK: - Accessory Fade Calculation Tests
+
+    @Test("Accessory fade at start of transition")
+    func accessoryFadeAtStart() {
+        let fade = FlowingHeaderCalculations.calculateAccessoryFade(
+            progress: 0.0,
+            fadeMultiplier: 4.0
+        )
+        // 1 - (0.0 * 4) = 1.0
+        #expect(fade == 1.0)
+    }
+
+    @Test("Accessory fade at 10% progress")
+    func accessoryFadeAt10Percent() {
+        let fade = FlowingHeaderCalculations.calculateAccessoryFade(
+            progress: 0.1,
+            fadeMultiplier: 4.0
+        )
+        // 1 - (0.1 * 4) = 0.6, clamped to minimum 0.6
+        #expect(fade == 0.6)
+    }
+
+    @Test("Accessory fade at 25% progress")
+    func accessoryFadeAt25Percent() {
+        let fade = FlowingHeaderCalculations.calculateAccessoryFade(
+            progress: 0.25,
+            fadeMultiplier: 4.0
+        )
+        // 1 - (0.25 * 4) = 0.0, clamped to minimum 0.6
+        #expect(fade == 0.6)
+    }
+
+    @Test("Accessory fade at 50% progress")
+    func accessoryFadeAt50Percent() {
+        let fade = FlowingHeaderCalculations.calculateAccessoryFade(
+            progress: 0.5,
+            fadeMultiplier: 4.0
+        )
+        // 1 - (0.5 * 4) = -1.0, clamped to minimum 0.6
+        #expect(fade == 0.6)
+    }
+
+    @Test("Accessory fade at end of transition")
+    func accessoryFadeAtEnd() {
+        let fade = FlowingHeaderCalculations.calculateAccessoryFade(
+            progress: 1.0,
+            fadeMultiplier: 4.0
+        )
+        // 1 - (1.0 * 4) = -3.0, clamped to minimum 0.6
+        #expect(fade == 0.6)
+    }
+
+    @Test("Accessory fade with custom multiplier")
+    func accessoryFadeWithCustomMultiplier() {
+        let fade = FlowingHeaderCalculations.calculateAccessoryFade(
+            progress: 0.1,
+            fadeMultiplier: 2.0
+        )
+        // 1 - (0.1 * 2) = 0.8
+        #expect(fade == 0.8)
+    }
+
+    @Test("Accessory fade with custom minimum")
+    func accessoryFadeWithCustomMinimum() {
+        let fade = FlowingHeaderCalculations.calculateAccessoryFade(
+            progress: 0.5,
+            fadeMultiplier: 4.0,
+            minimumValue: 0.3
+        )
+        // 1 - (0.5 * 4) = -1.0, clamped to minimum 0.3
+        #expect(fade == 0.3)
+    }
+
+    @Test("Accessory fade maintains minimum floor")
+    func accessoryFadeMaintainsMinimum() {
+        // Test various progress values all result in minimum
+        let progressValues: [Double] = [0.3, 0.5, 0.75, 1.0]
+
+        for progress in progressValues {
+            let fade = FlowingHeaderCalculations.calculateAccessoryFade(
+                progress: progress,
+                fadeMultiplier: 4.0,
+                minimumValue: 0.6
+            )
+            #expect(fade >= 0.6, "Fade should never go below minimum at progress \(progress)")
+        }
+    }
+
+    @Test("Accessory fade with zero multiplier")
+    func accessoryFadeWithZeroMultiplier() {
+        let fade = FlowingHeaderCalculations.calculateAccessoryFade(
+            progress: 0.5,
+            fadeMultiplier: 0.0
+        )
+        // 1 - (0.5 * 0) = 1.0
+        #expect(fade == 1.0)
+    }
+
+    @Test("Accessory fade accelerates correctly")
+    func accessoryFadeAcceleration() {
+        // Verify fade accelerates faster than linear progress
+        let fade5 = FlowingHeaderCalculations.calculateAccessoryFade(
+            progress: 0.05,
+            fadeMultiplier: 4.0
+        )
+        let fade10 = FlowingHeaderCalculations.calculateAccessoryFade(
+            progress: 0.1,
+            fadeMultiplier: 4.0
+        )
+
+        // At 5%: 1 - (0.05 * 4) = 0.8
+        #expect(fade5 == 0.8)
+        // At 10%: 1 - (0.1 * 4) = 0.6 (clamped)
+        #expect(fade10 == 0.6)
+        // Should decrease as progress increases
+        #expect(fade5 > fade10)
+    }
 }

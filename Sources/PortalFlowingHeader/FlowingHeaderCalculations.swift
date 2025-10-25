@@ -143,4 +143,43 @@ public struct FlowingHeaderCalculations {
 
         return (scaleX, scaleY)
     }
+
+    // MARK: - Accessory Fade Calculation
+
+    /// Calculates the fade/scale factor for accessory views during header transitions.
+    ///
+    /// This function creates a non-linear fade effect for accessory views that:
+    /// - Maintains minimum 60% opacity/scale to preserve visual presence
+    /// - Accelerates the fade by applying a multiplier to the progress
+    /// - Ensures accessory fades faster than the title transition
+    ///
+    /// The rationale for the 0.6 minimum:
+    /// - Prevents accessory from becoming completely invisible mid-transition
+    /// - Maintains visual continuity and reduces jarring appearance changes
+    /// - Provides subtle feedback that accessory is transitioning
+    ///
+    /// - Parameters:
+    ///   - progress: Transition progress (0-1) from calculateProgress
+    ///   - fadeMultiplier: Speed multiplier for fade effect (default: 4.0)
+    ///   - minimumValue: Minimum opacity/scale value (default: 0.6)
+    /// - Returns: Fade/scale value clamped between minimumValue and 1.0
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// let fade = FlowingHeaderCalculations.calculateAccessoryFade(
+    ///     progress: 0.25,
+    ///     fadeMultiplier: 4.0
+    /// )
+    /// // Returns: 0.6 (clamped minimum, since 1 - (0.25 * 4) = 0 < 0.6)
+    /// ```
+    public static func calculateAccessoryFade(
+        progress: Double,
+        fadeMultiplier: CGFloat = 4.0,
+        minimumValue: CGFloat = 0.6
+    ) -> CGFloat {
+        let acceleratedProgress = CGFloat(progress) * fadeMultiplier
+        let rawFade = 1.0 - acceleratedProgress
+        return max(minimumValue, rawFade)
+    }
 }
