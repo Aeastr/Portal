@@ -22,7 +22,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/Aeastr/LogOutLoud.git", from: "2.1.2"),
-        .package(url: "https://github.com/Aeastr/Obfuscate.git", branch: "main")
+        .package(url: "https://github.com/Aeastr/Obfuscate.git", from: "1.0.0")
     ],
     targets: [
         .target(
