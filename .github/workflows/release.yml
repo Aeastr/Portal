@@ -14,6 +14,12 @@ permissions:
   contents: write
   pull-requests: read
 
+env:
+  # Toggle between draft and published releases
+  # Set to 'true' to create draft releases (recommended for safety)
+  # Set to 'false' to publish releases immediately
+  DRAFT_RELEASE: 'true'
+
 jobs:
   release:
     name: Create Release
@@ -198,12 +204,25 @@ jobs:
       run: |
         TAG="${{ steps.version.outputs.tag }}"
         RELEASE_NAME="${{ steps.version.outputs.release_name }}"
+        DRAFT="${{ env.DRAFT_RELEASE }}"
+
+        echo "Creating release with draft=$DRAFT"
 
         # Create release using GitHub CLI
-        gh release create "$TAG" \
-          --title "$RELEASE_NAME" \
-          --notes "${{ steps.notes.outputs.notes }}" \
-          --verify-tag
+        if [ "$DRAFT" = "true" ]; then
+          gh release create "$TAG" \
+            --title "$RELEASE_NAME" \
+            --notes "${{ steps.notes.outputs.notes }}" \
+            --draft \
+            --verify-tag
+          echo "draft=true" >> $GITHUB_OUTPUT
+        else
+          gh release create "$TAG" \
+            --title "$RELEASE_NAME" \
+            --notes "${{ steps.notes.outputs.notes }}" \
+            --verify-tag
+          echo "draft=false" >> $GITHUB_OUTPUT
+        fi
 
         echo "success=true" >> $GITHUB_OUTPUT
       env:
@@ -215,14 +234,26 @@ jobs:
       run: |
         VERSION="${{ steps.version.outputs.version }}"
         RELEASE_URL="https://github.com/${{ github.repository }}/releases/tag/${{ steps.version.outputs.tag }}"
+        IS_DRAFT="${{ steps.create_release.outputs.draft }}"
 
         # Comment on PR with success notification
-        gh pr comment "${{ github.event.pull_request.number }}" \
-          --body "✅ **Release $VERSION created successfully!**
+        if [ "$IS_DRAFT" = "true" ]; then
+          gh pr comment "${{ github.event.pull_request.number }}" \
+            --body "✅ **Draft release $VERSION created successfully!**
+
+        View the release: [$VERSION]($RELEASE_URL)
+
+        ⚠️ **This is a draft release** - it needs to be manually published before it's available via Swift Package Manager.
+
+        To publish: Go to the [release page]($RELEASE_URL) and click \"Publish release\"."
+        else
+          gh pr comment "${{ github.event.pull_request.number }}" \
+            --body "✅ **Release $VERSION created and published successfully!**
 
         View the release: [$VERSION]($RELEASE_URL)
 
         The release is now available via Swift Package Manager."
+        fi
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
