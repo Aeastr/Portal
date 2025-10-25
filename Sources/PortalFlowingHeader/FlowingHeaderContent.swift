@@ -112,6 +112,7 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
     @State private var titleProgress: Double = 0.0
     @State private var isScrolling = false
     @State private var scrollOffset: CGFloat = 0
+    @State private var accessoryFlowing = false
 
     func body(content: Content) -> some View {
         content
@@ -119,7 +120,7 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
             .environment(\.flowingHeaderAccessoryView, accessoryContent.map { AnyView($0) })
             .environment(\.flowingHeaderLayout, config.layout)
             .environment(\.titleProgress, titleProgress)
-            .environment(\.accessoryFlowing, accessoryContent != nil)
+            .environment(\.accessoryFlowing, accessoryFlowing)
             .onScrollPhaseChange { _, newPhase in
                 isScrolling = [ScrollPhase.interacting, ScrollPhase.decelerating].contains(newPhase)
 
@@ -162,6 +163,16 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
             let accessoryDstKey = AnchorKeyID(kind: "destination", id: config.title, type: "accessory")
 
             let t = CGFloat(min(max(abs(titleProgress), 0), 1))
+
+            // Update accessoryFlowing based on whether both anchors exist
+            let hasBothAccessoryAnchors = anchors[accessorySrcKey] != nil && anchors[accessoryDstKey] != nil
+            Color.clear
+                .onAppear {
+                    accessoryFlowing = hasBothAccessoryAnchors
+                }
+                .onChange(of: hasBothAccessoryAnchors) { _, newValue in
+                    accessoryFlowing = newValue
+                }
 
             if let titleSrc = anchors[titleSrcKey], let titleDst = anchors[titleDstKey] {
                 renderTitle(geometry: geometry, srcAnchor: titleSrc, dstAnchor: titleDst, progress: t)

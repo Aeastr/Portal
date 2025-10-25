@@ -98,20 +98,21 @@ public struct FlowingHeaderView: View {
 
             // Show accessory if in visibleComponents
             if showAccessory, let accessoryView = accessoryView {
-                Group {
-                    if createAccessoryAnchor {
-                        // If flowing, hide it and create anchor
-                        accessoryView
-                            .opacity(accessoryFlowing ? 0 : max(0.6, (1 - progress)))
-                            .scaleEffect(accessoryFlowing ? 1 : (max(0.6, (1 - progress))), anchor: .top)
-                            .animation(.smooth(duration: FlowingHeaderTokens.transitionDuration), value: progress)
-                            .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                                return [AnchorKeyID(kind: "source", id: config.title, type: "accessory"): anchor]
-                            }
-                    } else {
-                        // If not flowing, just show it (no anchor, no hiding)
-                        accessoryView
-                    }
+                if createAccessoryAnchor {
+                    // Create anchor - hide if actually flowing (has destination)
+                    accessoryView
+                        .opacity(accessoryFlowing ? 0 : max(0.6, (1 - progress)))
+                        .scaleEffect(accessoryFlowing ? 1 : max(0.6, (1 - progress)), anchor: .top)
+                        .animation(.smooth(duration: FlowingHeaderTokens.transitionDuration), value: progress)
+                        .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
+                            return [AnchorKeyID(kind: "source", id: config.title, type: "accessory"): anchor]
+                        }
+                } else {
+                    // Not creating anchor, but still apply fade/scale effect
+                    accessoryView
+                        .opacity(max(0.6, (1 - progress)))
+                        .scaleEffect(max(0.6, (1 - progress)), anchor: .top)
+                        .animation(.smooth(duration: FlowingHeaderTokens.transitionDuration), value: progress)
                 }
             }
 
