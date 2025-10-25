@@ -48,6 +48,39 @@ jobs:
         echo "base_version=$VERSION" >> $GITHUB_OUTPUT
         echo "Extracted base version: $VERSION"
 
+    - name: Validate version is not already released
+      if: steps.version.outputs.is_release_pr == 'true'
+      shell: bash
+      run: |
+        BASE_VERSION="${{ steps.version.outputs.base_version }}"
+
+        # Fetch all tags
+        git fetch --tags
+
+        # Check if the final version already exists (non-prerelease)
+        if git tag -l | grep -qE "^${BASE_VERSION}$"; then
+          echo "::error::Version $BASE_VERSION already exists as a final release"
+          echo "::error::Please update your PR title to use a new version number (e.g., bump to next version)"
+
+          # Comment on PR with helpful message
+          gh pr comment "${{ github.event.pull_request.number }}" \
+            --body "❌ **Cannot create pre-release for $BASE_VERSION**
+
+          Version $BASE_VERSION already exists as a final release.
+
+          **Action required:** Update your PR title to use a new version number.
+
+          Example:
+          - Current: \`Release $BASE_VERSION: ...\`
+          - Update to: \`Release $(($(echo $BASE_VERSION | cut -d. -f3) + 1 | xargs echo $BASE_VERSION | cut -d. -f1-2).): ...\`
+
+          Or manually determine the next appropriate version based on your changes."
+
+          exit 1
+        fi
+
+        echo "Version $BASE_VERSION is available for pre-release"
+
     - name: Check if current commit already has pre-release
       id: check_existing
       if: steps.version.outputs.is_release_pr == 'true'
@@ -56,7 +89,7 @@ jobs:
         BASE_VERSION="${{ steps.version.outputs.base_version }}"
         CURRENT_SHA="${{ github.event.pull_request.head.sha }}"
 
-        # Fetch all tags
+        # Fetch all tags (already fetched above, but keeping for safety)
         git fetch --tags
 
         # Check if current commit already has a pre-release tag
