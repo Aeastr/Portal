@@ -1,30 +1,21 @@
-name: Tests
+name: Build
 
 on:
-  workflow_run:
-    workflows: ["Build"]
-    types:
-      - completed
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
 
 jobs:
-  test:
-    name: Run Tests
+  build:
+    name: Build Package
     runs-on: macos-26
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
         submodules: recursive
-
-    - name: Download build artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: build-artifacts
-        path: DerivedData/Build/Products
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        run-id: ${{ github.event.workflow_run.id }}
 
     - name: Show Xcode version
       run: xcodebuild -version
@@ -47,22 +38,22 @@ jobs:
         echo "Found iOS Simulator Device UDID: $DEVICE_ID"
         echo "SIMULATOR_DESTINATION=platform=iOS Simulator,id=$DEVICE_ID" >> $GITHUB_OUTPUT
 
-    - name: Run tests without building
-      timeout-minutes: 5
+    - name: Build for testing
+      timeout-minutes: 10
       run: |
         set -o pipefail
         echo "Using simulator destination: ${{ steps.find_simulator.outputs.SIMULATOR_DESTINATION }}"
-        xcodebuild test-without-building \
+        xcodebuild build-for-testing \
           -scheme Portal-Package \
           -destination "${{ steps.find_simulator.outputs.SIMULATOR_DESTINATION }}" \
+          -skipMacroValidation \
           -derivedDataPath DerivedData \
-          -enableCodeCoverage YES \
-          -resultBundlePath TestResults.xcresult
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO
 
-    - name: Upload test results
-      if: always()
+    - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: test-results
-        path: TestResults.xcresult
-        retention-days: 30
+        name: build-artifacts
+        path: DerivedData/Build/Products
+        retention-days: 1
