@@ -11,10 +11,6 @@ jobs:
     name: Run Tests
     runs-on: macos-15
 
-    strategy:
-      matrix:
-        scheme: ['Portal', 'PortalFlowingHeader', 'PortalPrivate', 'PortalView']
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -24,15 +20,12 @@ jobs:
     - name: Show Xcode version
       run: xcodebuild -version
 
-    - name: Build and test ${{ matrix.scheme }}
+    - name: Run all tests
       run: |
         set -o pipefail
-        xcodebuild test \
-          -scheme ${{ matrix.scheme }} \
-          -destination 'platform=iOS Simulator,OS=latest' \
-          -enableCodeCoverage YES \
-          CODE_SIGN_IDENTITY="" \
-          CODE_SIGNING_REQUIRED=NO
+        swift test \
+          --parallel \
+          --enable-code-coverage
 
     - name: Upload test results
       if: always()
