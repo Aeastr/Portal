@@ -39,6 +39,7 @@ jobs:
         echo "SIMULATOR_DESTINATION=platform=iOS Simulator,id=$DEVICE_ID" >> $GITHUB_OUTPUT
 
     - name: Run all tests
+      timeout-minutes: 5
       run: |
         set -o pipefail
         echo "Using simulator destination: ${{ steps.find_simulator.outputs.SIMULATOR_DESTINATION }}"
