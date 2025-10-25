@@ -5,6 +5,15 @@ on:
     types: [closed]
     branches: [ main ]
 
+# Prevent concurrent releases
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: read
+
 jobs:
   release:
     name: Create Release
@@ -43,22 +52,56 @@ jobs:
         echo "tag=$VERSION" >> $GITHUB_OUTPUT
         echo "release_name=$PR_TITLE" >> $GITHUB_OUTPUT
 
-    - name: Validate release notes
+    - name: Generate changelog from commits
+      id: changelog
+      run: |
+        TAG="${{ steps.version.outputs.tag }}"
+
+        # Get the previous release tag
+        PREV_TAG=$(git tag -l --sort=-v:refname | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
+
+        if [ -n "$PREV_TAG" ]; then
+          echo "Generating changelog from $PREV_TAG to HEAD"
+
+          # Generate changelog from commits
+          CHANGELOG=$(git log $PREV_TAG..HEAD --pretty=format:"- %s (%h)" --no-merges)
+
+          if [ -n "$CHANGELOG" ]; then
+            echo "## Changes since $PREV_TAG" > changelog.txt
+            echo "" >> changelog.txt
+            echo "$CHANGELOG" >> changelog.txt
+          else
+            echo "No commits found since $PREV_TAG" > changelog.txt
+          fi
+        else
+          echo "## Initial Release" > changelog.txt
+          echo "" >> changelog.txt
+          echo "First release of Portal" >> changelog.txt
+        fi
+
+        cat changelog.txt
+
+    - name: Validate and merge release notes
       id: notes
       run: |
         PR_BODY="${{ github.event.pull_request.body }}"
 
         # Check if PR body is empty or only whitespace
         if [ -z "$(echo "$PR_BODY" | tr -d '[:space:]')" ]; then
-          echo "::warning::PR body is empty. Using default release notes."
-          RELEASE_NOTES="Release ${{ steps.version.outputs.version }}"
+          echo "::warning::PR body is empty. Using generated changelog only."
+          cat changelog.txt > release_notes.txt
         else
-          RELEASE_NOTES="$PR_BODY"
+          # Combine PR body with generated changelog
+          echo "$PR_BODY" > release_notes.txt
+          echo "" >> release_notes.txt
+          echo "---" >> release_notes.txt
+          echo "" >> release_notes.txt
+          cat changelog.txt >> release_notes.txt
         fi
 
         # Save to output (properly escaped for multiline)
         echo "notes<<EOF" >> $GITHUB_OUTPUT
-        echo "$RELEASE_NOTES" >> $GITHUB_OUTPUT
+        cat release_notes.txt >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
 
     - name: Check if tag exists on remote
@@ -155,3 +198,30 @@ jobs:
         git push --delete origin "$TAG" || echo "Failed to delete remote tag"
 
         echo "::error::Release creation failed. Tag has been cleaned up. Please retry the release."
+
+    - name: Notify on failure
+      if: failure()
+      run: |
+        VERSION="${{ steps.version.outputs.version }}"
+        PR_URL="${{ github.event.pull_request.html_url }}"
+        RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+        echo "::error::Release workflow failed for version $VERSION"
+        echo "::error::PR: $PR_URL"
+        echo "::error::Workflow run: $RUN_URL"
+        echo "::error::Please check the logs and retry the release"
+
+        # Create an issue comment to notify about the failure
+        gh pr comment "${{ github.event.pull_request.number }}" \
+          --body "⚠️ **Release workflow failed for version $VERSION**
+
+        The automated release process encountered an error. Please check the [workflow logs]($RUN_URL) for details.
+
+        Common issues:
+        - Tag already exists
+        - Invalid version format
+        - Network/permission issues
+
+        You may need to manually create the release or re-trigger the workflow."
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
