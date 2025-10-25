@@ -63,7 +63,7 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
                 // When scrolling stops, snap to nearest position
                 if !isScrolling {
                     let snapTarget = titleProgress > 0.5 ? 1.0 : 0.0
-                    withAnimation(.smooth(duration: FlowingHeaderConstants.transitionDuration)) {
+                    withAnimation(.smooth(duration: FlowingHeaderTokens.transitionDuration)) {
                         titleProgress = snapTarget
                     }
                 }
@@ -76,7 +76,7 @@ internal struct FlowingHeaderTransition<CustomView: View>: ViewModifier {
                 // Only update progress while actively scrolling
                 if isScrolling {
                     let progress = calculateProgress(for: newValue)
-                    withAnimation(.smooth(duration: FlowingHeaderConstants.scrollAnimationDuration)) {
+                    withAnimation(.smooth(duration: FlowingHeaderTokens.scrollAnimationDuration)) {
                         titleProgress = progress
                     }
                 }

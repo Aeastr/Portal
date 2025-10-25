@@ -132,7 +132,7 @@ public struct FlowingHeaderView<Content: View>: View {
                 content
                     .opacity(customViewFlowing ? 0 : max(0.6, (1 - progress)))
                     .scaleEffect(customViewFlowing ? 1 : (max(0.6, (1 - progress))), anchor: .top)
-                    .animation(.smooth(duration: FlowingHeaderConstants.transitionDuration), value: progress)
+                    .animation(.smooth(duration: FlowingHeaderTokens.transitionDuration), value: progress)
                     .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
                         return [AnchorKeyID(kind: "source", id: title, type: "accessory"): anchor]
                     }
@@ -142,7 +142,7 @@ public struct FlowingHeaderView<Content: View>: View {
                     .foregroundStyle(.tint)
                     .opacity(systemImageFlowing ? 0 : max(0.6, (1 - progress)))
                     .scaleEffect(systemImageFlowing ? 1 : (max(0.6, (1 - progress))), anchor: .top)
-                    .animation(.smooth(duration: FlowingHeaderConstants.transitionDuration), value: progress)
+                    .animation(.smooth(duration: FlowingHeaderTokens.transitionDuration), value: progress)
                     .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
                         return [AnchorKeyID(kind: "source", id: title, type: "accessory"): anchor]
                     }
@@ -153,7 +153,7 @@ public struct FlowingHeaderView<Content: View>: View {
                     .frame(width: 64, height: 64)
                     .opacity(imageFlowing ? 0 : max(0.6, (1 - progress)))
                     .scaleEffect(imageFlowing ? 1 : (max(0.6, (1 - progress))), anchor: .top)
-                    .animation(.smooth(duration: FlowingHeaderConstants.transitionDuration), value: progress)
+                    .animation(.smooth(duration: FlowingHeaderTokens.transitionDuration), value: progress)
                     .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
                         return [AnchorKeyID(kind: "source", id: title, type: "accessory"): anchor]
                     }
