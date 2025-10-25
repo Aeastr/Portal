@@ -21,9 +21,6 @@ jobs:
       with:
         submodules: recursive
 
-    - name: Select Xcode
-      run: sudo xcode-select -s /Applications/Xcode_16.0.app/Contents/Developer
-
     - name: Show Xcode version
       run: xcodebuild -version
 
@@ -32,9 +29,8 @@ jobs:
         set -o pipefail
         xcodebuild test \
           -scheme ${{ matrix.scheme }} \
-          -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.0' \
+          -destination 'platform=iOS Simulator,OS=latest' \
           -enableCodeCoverage YES \
-          -resultBundlePath TestResults-${{ matrix.scheme }} \
           CODE_SIGN_IDENTITY="" \
           CODE_SIGNING_REQUIRED=NO
 
