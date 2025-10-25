@@ -14,7 +14,6 @@ import CoreGraphics
 
 @Suite("FlowingHeader Calculations Tests")
 struct FlowingHeaderCalculationsTests {
-
     // MARK: - Progress Calculation Tests
 
     @Test("Progress calculation returns 0 before start offset")

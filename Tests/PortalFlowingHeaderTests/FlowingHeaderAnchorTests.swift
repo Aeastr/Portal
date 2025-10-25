@@ -67,7 +67,7 @@ final class FlowingHeaderAnchorTests: XCTestCase {
     }
 
     // MARK: - Destination Modifier Tests
-    
+
     @MainActor
     func testFlowingHeaderDestinationBasic() {
         let view = Text("Test")
@@ -75,7 +75,7 @@ final class FlowingHeaderAnchorTests: XCTestCase {
 
         XCTAssertNotNil(view)
     }
-    
+
     @MainActor
     func testFlowingHeaderDestinationWithSystemImage() {
         let view = Text("Test")
@@ -83,7 +83,7 @@ final class FlowingHeaderAnchorTests: XCTestCase {
 
         XCTAssertNotNil(view)
     }
-    
+
     @MainActor
     func testFlowingHeaderDestinationWithOptionalSystemImage() {
         // Test with non-nil system image
@@ -104,7 +104,7 @@ final class FlowingHeaderAnchorTests: XCTestCase {
 
         XCTAssertNotNil(viewWithEmptyImage)
     }
-    
+
     @MainActor
     func testFlowingHeaderDestinationWithImage() {
         let image = Image(systemName: "star")
@@ -113,7 +113,7 @@ final class FlowingHeaderAnchorTests: XCTestCase {
 
         XCTAssertNotNil(view)
     }
-    
+
     @MainActor
     func testFlowingHeaderDestinationWithOptionalImage() {
         // Test with non-nil image
@@ -129,7 +129,7 @@ final class FlowingHeaderAnchorTests: XCTestCase {
 
         XCTAssertNotNil(viewWithoutImage)
     }
-    
+
     @MainActor
     func testFlowingHeaderDestinationWithCustomView() {
         let customView = Circle()
@@ -145,7 +145,7 @@ final class FlowingHeaderAnchorTests: XCTestCase {
     }
 
     // MARK: - String Validation Tests
-    
+
     @MainActor
     func testSystemImageStringValidation() {
         // Test that empty strings are handled correctly
@@ -162,7 +162,7 @@ final class FlowingHeaderAnchorTests: XCTestCase {
     }
 
     // MARK: - Modifier Chain Tests
-    
+
     @MainActor
     func testModifierChaining() {
         let view = Text("Test")
@@ -172,7 +172,7 @@ final class FlowingHeaderAnchorTests: XCTestCase {
 
         XCTAssertNotNil(view)
     }
-    
+
     @MainActor
     func testMultipleDestinationModifiers() {
         // While not typical usage, this tests that multiple modifiers don't break
@@ -184,7 +184,7 @@ final class FlowingHeaderAnchorTests: XCTestCase {
     }
 
     // MARK: - Edge Cases
-    
+
     @MainActor
     func testLongTitleHandling() {
         let longTitle = String(repeating: "Very Long Title ", count: 100)
@@ -193,7 +193,7 @@ final class FlowingHeaderAnchorTests: XCTestCase {
 
         XCTAssertNotNil(view)
     }
-    
+
     @MainActor
     func testSpecialCharactersInTitle() {
         let specialTitle = "Title with émojis 🌟 and spëcial châractérs!"
@@ -202,7 +202,7 @@ final class FlowingHeaderAnchorTests: XCTestCase {
 
         XCTAssertNotNil(view)
     }
-    
+
     @MainActor
     func testUnicodeSystemImages() {
         // Test with various SF Symbol names
@@ -223,7 +223,7 @@ final class FlowingHeaderAnchorTests: XCTestCase {
     }
 
     // MARK: - Performance Tests
-    
+
     @MainActor
     func testDestinationModifierPerformance() {
         measure {

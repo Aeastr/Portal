@@ -16,7 +16,6 @@ import Foundation
 /// This struct provides testable, stateless functions for computing animation
 /// progress, offsets, and positions used in flowing header transitions.
 public struct FlowingHeaderCalculations {
-
     // MARK: - Progress Calculation
 
     /// Calculates transition progress based on scroll offset.

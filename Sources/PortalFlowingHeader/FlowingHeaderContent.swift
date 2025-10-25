@@ -148,7 +148,6 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
             }
             .onScrollGeometryChange(for: CGFloat.self) { geometry in
                 return geometry.contentOffset.y + geometry.contentInsets.top
-
             } action: { _, newValue in
                 scrollOffset = newValue
                 // Only update progress while actively scrolling
