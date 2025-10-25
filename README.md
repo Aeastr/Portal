@@ -2,7 +2,7 @@
   <img width="200" height="200" src="/Resources/icon/icon.png" alt="Portal Logo">
   <h1><b>Portal</b></h1>
   <p>
-    Portal is a SwiftUI package for seamless element transitions between views—including across sheets and navigation pushes (NavigationStack, .navigationDestination, etc)—using a portal metaphor for maximum flexibility.
+    Portal is a SwiftUI package for element transitions across navigation contexts, scroll-based flowing headers, and advanced view mirroring capabilities.
     <br>
     <i>Compatible with iOS 17.0 and later*</i>
   </p>
