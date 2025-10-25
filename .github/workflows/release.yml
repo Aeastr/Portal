@@ -15,6 +15,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
+        ref: ${{ github.event.pull_request.merge_commit_sha }}
         fetch-depth: 0
 
     - name: Extract version from PR title
@@ -33,7 +34,8 @@ jobs:
 
         echo "Extracted version: $VERSION"
         echo "version=$VERSION" >> $GITHUB_OUTPUT
-        echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+        echo "tag=$VERSION" >> $GITHUB_OUTPUT
+        echo "release_name=$PR_TITLE" >> $GITHUB_OUTPUT
 
     - name: Check if tag already exists
       run: |
@@ -55,7 +57,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: ${{ steps.version.outputs.tag }}
-        release_name: Release ${{ steps.version.outputs.version }}
+        release_name: ${{ steps.version.outputs.release_name }}
         body: ${{ github.event.pull_request.body }}
         draft: false
         prerelease: false

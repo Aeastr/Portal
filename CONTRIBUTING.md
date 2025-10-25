@@ -119,20 +119,84 @@ Portal also includes example targets rather than formal unit tests. To verify fu
 
 ## Pull Request Process
 
-1. Link your PR to the relevant issue (if there is one)  
-2. Describe what you’ve changed and why  
-3. Keep PRs focused—one feature or fix per PR  
-4. Ensure all examples build and run without warnings or errors  
+### Branch Strategy
+
+Portal uses a protected `main` branch with the following workflow:
+
+1. **Work on the `dev` branch** for all changes
+2. **Create PR**: `dev` → `main` when ready for release
+3. **PR Format for Releases**:
+   - **Title**: Version number (e.g., `4.3.0` or `Release 4.3.0`)
+   - **Description**: Full changelog/release notes (this becomes the GitHub release notes)
+4. **Merge to `main`**: Automatically creates a GitHub release with the version tag
+
+**Branch Protection**: Direct pushes to `main` are not allowed. All changes must go through pull requests, even for maintainers.
+
+### Standard Pull Requests
+
+For non-release PRs (bug fixes, features):
+
+1. Link your PR to the relevant issue (if there is one)
+2. Describe what you've changed and why
+3. Keep PRs focused—one feature or fix per PR
+4. Ensure all examples build and run without warnings or errors
 5. Be responsive to review feedback
+
+### Release Pull Requests
+
+When creating a release PR (`dev` → `main`):
+
+**Example PR Title:**
+```
+4.3.0
+```
+or
+```
+Release 4.3.0
+```
+
+**Example PR Description:**
+```markdown
+## What's New
+- Added support for custom transition curves
+- Improved performance for large view hierarchies
+- Fixed memory leak in portal cleanup
+
+## Breaking Changes
+- Renamed `PortalTransition` to `PortalEffect` for clarity
+
+## Bug Fixes
+- Fixed issue where portals wouldn't work in nested NavigationStacks
+- Resolved crash on iOS 17.0 when using `.portalDestination` in sheets
+```
+
+Upon merge, this will automatically:
+- Create git tag `4.3.0`
+- Create GitHub release with your description as release notes
+- Make the version available via Swift Package Manager
 
 ## Continuous Integration
 
-All PRs are validated by CI:
-- Build on latest Xcode  
-- Run example targets  
-- Lint documentation links
+All PRs are validated by CI with separate workflows:
 
-Please address any CI failures before merging.
+### Build Workflow
+- Builds the package for testing
+- Uploads build artifacts for test reuse
+- Must pass before tests run
+
+### Test Workflow
+- Runs after successful build
+- Downloads build artifacts (no rebuild)
+- Executes all unit tests with 5-minute timeout
+- Uploads test results
+
+### Release Workflow (main branch only)
+- Triggers on PR merge to `main`
+- Extracts version from PR title
+- Creates git tag and GitHub release
+- Uses PR description as release notes
+
+Please address any CI failures before merging. The build and test badges in the README show current status.
 
 ## Troubleshooting
 
