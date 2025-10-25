@@ -170,7 +170,7 @@ final class FlowingHeaderTests: XCTestCase {
         var value: [AnchorKeyID: Anchor<CGRect>] = [:]
         let nextValue: [AnchorKeyID: Anchor<CGRect>] = [:]
 
-        AnchorKey.reduce(value: &value, nextValue: { nextValue })
+        AnchorKey.reduce(value: &value) { nextValue }
 
         XCTAssertTrue(value.isEmpty)
     }
