@@ -45,6 +45,7 @@ jobs:
         xcodebuild test \
           -scheme Portal-Package \
           -destination "${{ steps.find_simulator.outputs.SIMULATOR_DESTINATION }}" \
+          -skipMacroValidation \
           -enableCodeCoverage YES \
           CODE_SIGN_IDENTITY="" \
           CODE_SIGNING_REQUIRED=NO
