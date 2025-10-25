@@ -35,7 +35,7 @@ If you have an idea for a new feature or enhancement:
    ```bash
    git checkout -b feat/my-new-feature
    ```
-3. Make y changes. Follow the [Development Setup](#development-setup) and [Coding Guidelines](#coding-guidelines).
+3. Make your changes. Follow the [Development Setup](#development-setup) and [Coding Guidelines](#coding-guidelines).
 
 4. Commit with a clear message:
    ```
@@ -119,20 +119,174 @@ Portal also includes example targets rather than formal unit tests. To verify fu
 
 ## Pull Request Process
 
-1. Link your PR to the relevant issue (if there is one)  
-2. Describe what you’ve changed and why  
-3. Keep PRs focused—one feature or fix per PR  
-4. Ensure all examples build and run without warnings or errors  
+### Branch Strategy
+
+Portal uses a protected `main` branch with the following workflow:
+
+1. **Work on the `dev` branch** for all changes
+2. **Create PR**: `dev` → `main` when ready for release
+3. **PR Format for Releases**:
+   - **Title**: Version number (e.g., `4.3.0` or `Release 4.3.0`)
+   - **Description**: Full changelog/release notes (this becomes the GitHub release notes)
+4. **Merge to `main`**: Automatically creates a GitHub release with the version tag
+
+**Branch Protection**: Direct pushes to `main` are not allowed. All changes must go through pull requests, even for maintainers.
+
+### Standard Pull Requests
+
+For non-release PRs (bug fixes, features):
+
+1. Link your PR to the relevant issue (if there is one)
+2. Describe what you've changed and why
+3. Keep PRs focused—one feature or fix per PR
+4. Ensure all examples build and run without warnings or errors
 5. Be responsive to review feedback
+
+### Release Pull Requests
+
+When creating a release PR (`dev` → `main`):
+
+**Example PR Title:**
+```
+4.3.0
+```
+or
+```
+Release 4.3.0
+```
+
+**Example PR Description:**
+```markdown
+## What's New
+- Added support for custom transition curves
+- Improved performance for large view hierarchies
+- Fixed memory leak in portal cleanup
+
+## Breaking Changes
+- Renamed `PortalTransition` to `PortalEffect` for clarity
+
+## Bug Fixes
+- Fixed issue where portals wouldn't work in nested NavigationStacks
+- Resolved crash on iOS 17.0 when using `.portalDestination` in sheets
+```
+
+Upon merge, this will automatically:
+- Create git tag `4.3.0`
+- Create GitHub draft release with your description as release notes
+- Generate automatic changelog from commits since last release
+
+**Note**: Releases are created as **drafts by default** for safety. You need to manually publish them:
+1. Go to the [Releases page](https://github.com/Aeastr/Portal/releases)
+2. Find your draft release
+3. Review the release notes
+4. Click "Publish release"
+
+To change this behavior and auto-publish releases, edit `.github/workflows/release.yml` and set `DRAFT_RELEASE: 'false'`
 
 ## Continuous Integration
 
-All PRs are validated by CI:
-- Build on latest Xcode  
-- Run example targets  
-- Lint documentation links
+All PRs are validated by CI with separate workflows:
 
-Please address any CI failures before merging.
+### Build Workflow
+- Builds the package for testing
+- Uploads build artifacts for test reuse
+- Must pass before tests run
+
+### Test Workflow
+- Runs after successful build
+- Downloads build artifacts (no rebuild)
+- Executes all unit tests with 5-minute timeout
+- Uploads test results
+
+### Release Workflow (main branch only)
+- Triggers on PR merge to `main`
+- Extracts version from PR title
+- Creates git tag and GitHub draft release
+- Uses PR description as release notes
+- Generates changelog from commits automatically
+
+Please address any CI failures before merging. The build and test badges in the README show current status.
+
+### Failed Release Recovery
+
+If a release fails after the PR is merged, the workflow includes automatic cleanup. However, if manual intervention is needed:
+
+1. **Check the workflow logs**
+   - Go to Actions → Failed workflow run
+   - Review error messages and identify the issue
+
+2. **If the tag was created but release failed**
+   - The workflow automatically attempts to clean up the tag
+   - If cleanup failed, manually delete: `git push --delete origin X.Y.Z`
+   - Delete the local tag if present: `git tag -d X.Y.Z`
+
+3. **Fix and retry**
+   - If version was wrong: Create a new PR with corrected version
+   - If release notes were wrong: Manually create the release from the existing tag
+   - If tag exists but shouldn't: Delete tag and merge a new release PR
+
+4. **Common recovery scenarios**
+   - **Tag exists, no release**: Manually create release from GitHub UI using the existing tag
+   - **Wrong version number**: Delete the tag, create new PR with correct version
+   - **Bad release notes**: Edit the draft release on GitHub before publishing
+
+The workflow will notify you on the PR if anything fails, with links to the relevant logs and common troubleshooting steps.
+
+### Hotfix Releases
+
+For urgent bug fixes that need to bypass the normal dev → main workflow:
+
+1. **Create hotfix branch from main**:
+   ```bash
+   git checkout main
+   git pull origin main
+   git checkout -b hotfix/4.2.3
+   ```
+
+2. **Make your fix** and commit it
+
+3. **Create PR**: `hotfix/4.2.3` → `main`
+   - **Title**: Next patch version (e.g., `4.2.3`)
+   - **Description**: Explain the critical fix
+
+4. **After merge**: Sync the fix back to dev
+   ```bash
+   git checkout dev
+   git merge main
+   git push origin dev
+   ```
+
+**Version Selection for Hotfixes**:
+- Increment **PATCH** version only (e.g., 4.2.2 → 4.2.3)
+- For multiple hotfixes: Continue incrementing patch (4.2.3 → 4.2.4)
+
+### Edge Case Handling
+
+**Wrong PR merged to main**:
+1. **If release hasn't been created yet**: Cancel the workflow run immediately
+2. **If tag was created**: Delete the tag:
+   ```bash
+   git push --delete origin X.Y.Z
+   git tag -d X.Y.Z
+   ```
+3. **Revert the merge commit** on main:
+   ```bash
+   git revert -m 1 <merge-commit-sha>
+   git push origin main
+   ```
+4. **Fix the issue** on dev and create a new release PR
+
+**Modifying a release after publishing**:
+- **Draft releases**: Edit directly on GitHub before publishing
+- **Published releases**:
+  - Edit the release notes on GitHub (doesn't require new tag)
+  - For code changes: Create a new hotfix release with incremented version
+  - **Never** delete or modify published tags/releases with code changes
+
+**Multiple releases on same day**:
+- Each release must have a unique version number
+- Increment patch version for each subsequent release (4.2.2 → 4.2.3 → 4.2.4)
+- The workflow prevents duplicate versions automatically
 
 ## Troubleshooting
 
