@@ -1,0 +1,61 @@
+name: Release
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [ main ]
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Extract version from PR title
+      id: version
+      run: |
+        PR_TITLE="${{ github.event.pull_request.title }}"
+        echo "PR Title: $PR_TITLE"
+
+        # Try to extract version number (supports formats like "4.3.0", "Release 4.3.0", "v4.3.0")
+        VERSION=$(echo "$PR_TITLE" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+
+        if [ -z "$VERSION" ]; then
+          echo "::error::No version number found in PR title '$PR_TITLE'. Expected format: '4.3.0' or 'Release 4.3.0'"
+          exit 1
+        fi
+
+        echo "Extracted version: $VERSION"
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+
+    - name: Check if tag already exists
+      run: |
+        if git rev-parse "${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
+          echo "::error::Tag ${{ steps.version.outputs.tag }} already exists"
+          exit 1
+        fi
+
+    - name: Create and push tag
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git tag -a "${{ steps.version.outputs.tag }}" -m "Release ${{ steps.version.outputs.version }}"
+        git push origin "${{ steps.version.outputs.tag }}"
+
+    - name: Create GitHub Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.version.outputs.tag }}
+        release_name: Release ${{ steps.version.outputs.version }}
+        body: ${{ github.event.pull_request.body }}
+        draft: false
+        prerelease: false
