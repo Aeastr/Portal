@@ -20,20 +20,13 @@ jobs:
     - name: Show Xcode version
       run: xcodebuild -version
 
-    - name: Find latest iOS simulator
-      id: find-sim
-      run: |
-        # Get the latest iOS runtime version
-        LATEST_IOS=$(xcrun simctl list runtimes | grep "iOS" | tail -1 | sed -E 's/.*iOS ([0-9]+\.[0-9]+).*/\1/')
-        echo "Latest iOS version: $LATEST_IOS"
-        echo "ios_version=$LATEST_IOS" >> $GITHUB_OUTPUT
-
     - name: Run all tests
       run: |
         set -o pipefail
         xcodebuild test \
           -scheme Portal-Package \
-          -destination "platform=iOS Simulator,OS=${{ steps.find-sim.outputs.ios_version }}" \
+          -sdk iphonesimulator \
+          -destination 'generic/platform=iOS Simulator' \
           -enableCodeCoverage YES \
           CODE_SIGN_IDENTITY="" \
           CODE_SIGNING_REQUIRED=NO
