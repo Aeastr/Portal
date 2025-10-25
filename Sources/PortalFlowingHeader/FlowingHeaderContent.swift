@@ -159,15 +159,15 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
                     let startAt: CGFloat
 
                     if hasFlowingAccessory && accessorySourceHeight > 0 {
-                        startAt = accessorySourceHeight / 3 // Start when accessory is 1/3 scrolled off
+                        startAt = accessorySourceHeight / FlowingHeaderTokens.accessoryStartDivisor
                     } else {
-                        startAt = accessorySourceHeight > 0 ? accessorySourceHeight : 0
+                        startAt = accessorySourceHeight > 0 ? accessorySourceHeight : FlowingHeaderTokens.fallbackStartOffset
                     }
 
                     let progress = FlowingHeaderCalculations.calculateProgress(
                         scrollOffset: newValue,
                         startAt: startAt,
-                        range: 40
+                        range: FlowingHeaderTokens.transitionRange
                     )
                     withAnimation(.smooth(duration: FlowingHeaderTokens.scrollAnimationDuration)) {
                         titleProgress = progress

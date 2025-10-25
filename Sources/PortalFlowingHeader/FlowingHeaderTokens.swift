@@ -26,4 +26,17 @@ public struct FlowingHeaderTokens {
     ///
     /// Shorter duration provides more responsive tracking during active scrolling.
     public static let scrollAnimationDuration: TimeInterval = 0.3
+
+    // MARK: - Scroll Calculation
+
+    /// The range over which the transition progresses (in points).
+    public static let transitionRange: CGFloat = 40
+
+    /// Divisor for accessory height when calculating transition start point.
+    ///
+    /// When the accessory is flowing, the transition starts at `accessoryHeight / accessoryStartDivisor`.
+    public static let accessoryStartDivisor: CGFloat = 3
+
+    /// Fallback start offset when no accessory height is measured.
+    public static let fallbackStartOffset: CGFloat = 0
 }
