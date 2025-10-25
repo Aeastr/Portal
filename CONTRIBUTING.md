@@ -172,8 +172,16 @@ Release 4.3.0
 
 Upon merge, this will automatically:
 - Create git tag `4.3.0`
-- Create GitHub release with your description as release notes
-- Make the version available via Swift Package Manager
+- Create GitHub draft release with your description as release notes
+- Generate automatic changelog from commits since last release
+
+**Note**: Releases are created as **drafts by default** for safety. You need to manually publish them:
+1. Go to the [Releases page](https://github.com/Aeastr/Portal/releases)
+2. Find your draft release
+3. Review the release notes
+4. Click "Publish release"
+
+To change this behavior and auto-publish releases, edit `.github/workflows/release.yml` and set `DRAFT_RELEASE: 'false'`
 
 ## Continuous Integration
 
