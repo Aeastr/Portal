@@ -56,12 +56,16 @@ public struct FlowingHeaderView: View {
     @Environment(\.accessoryFlowing) private var accessoryFlowing
 
     private let id: String
+    private let visibleComponents: Set<FlowingHeaderDisplayComponent>?
 
     /// Creates a flowing header that reads configuration from environment.
     ///
-    /// - Parameter id: Optional identifier to match specific header config (default: "default")
-    public init(id: String = "default") {
+    /// - Parameters:
+    ///   - id: Optional identifier to match specific header config (default: "default")
+    ///   - displays: Optional override for which components to show in the header (default: shows all)
+    public init(id: String = "default", displays: Set<FlowingHeaderDisplayComponent>? = nil) {
         self.id = id
+        self.visibleComponents = displays
     }
 
     public var body: some View {
@@ -79,29 +83,57 @@ public struct FlowingHeaderView: View {
 
     @ViewBuilder
     private func headerContent(config: FlowingHeaderContent) -> some View {
-        VStack(spacing: hasAccessory ? 12 : 8) {
+        // visibleComponents controls what shows in the header
+        // config.displays controls what flows to nav bar (creates anchors)
+        let showComponents = visibleComponents ?? [.title, .accessory]  // Default: show everything
+        let flowComponents = config.displays  // What flows to nav bar
+
+        let showAccessory = showComponents.contains(.accessory) && accessoryView != nil
+        let showTitle = showComponents.contains(.title)
+        let createAccessoryAnchor = flowComponents.contains(.accessory) && accessoryView != nil
+        let createTitleAnchor = flowComponents.contains(.title)
+
+        VStack(spacing: showAccessory ? 12 : 8) {
             let progress = (titleProgress * 4)
 
-            // Show accessory if provided
-            if let accessoryView = accessoryView {
-                accessoryView
-                    .opacity(accessoryFlowing ? 0 : max(0.6, (1 - progress)))
-                    .scaleEffect(accessoryFlowing ? 1 : (max(0.6, (1 - progress))), anchor: .top)
-                    .animation(.smooth(duration: FlowingHeaderTokens.transitionDuration), value: progress)
-                    .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                        return [AnchorKeyID(kind: "source", id: config.title, type: "accessory"): anchor]
+            // Show accessory if in visibleComponents
+            if showAccessory, let accessoryView = accessoryView {
+                Group {
+                    if createAccessoryAnchor {
+                        // If flowing, hide it and create anchor
+                        accessoryView
+                            .opacity(accessoryFlowing ? 0 : max(0.6, (1 - progress)))
+                            .scaleEffect(accessoryFlowing ? 1 : (max(0.6, (1 - progress))), anchor: .top)
+                            .animation(.smooth(duration: FlowingHeaderTokens.transitionDuration), value: progress)
+                            .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
+                                return [AnchorKeyID(kind: "source", id: config.title, type: "accessory"): anchor]
+                            }
+                    } else {
+                        // If not flowing, just show it (no anchor, no hiding)
+                        accessoryView
                     }
+                }
             }
 
             VStack(spacing: 4) {
-                // Source title (always invisible for layout)
-                Text(config.title)
-                    .font(.title.weight(.semibold))
-                    .opacity(0)  // Always invisible to maintain layout
-                    .accessibilityHidden(true)  // Hide from VoiceOver since actual title is rendered separately
-                    .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                        return [AnchorKeyID(kind: "source", id: config.title, type: "title"): anchor]
+                // Source title (invisible for layout, only create anchor if flowing)
+                if showTitle {
+                    if createTitleAnchor {
+                        Text(config.title)
+                            .font(.title.weight(.semibold))
+                            .opacity(0)  // Always invisible to maintain layout
+                            .accessibilityHidden(true)  // Hide from VoiceOver since actual title is rendered separately
+                            .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
+                                return [AnchorKeyID(kind: "source", id: config.title, type: "title"): anchor]
+                            }
+                    } else {
+                        // Show title but don't create anchor (not flowing)
+                        Text(config.title)
+                            .font(.title.weight(.semibold))
+                            .opacity(0)
+                            .accessibilityHidden(true)
                     }
+                }
 
                 Text(config.subtitle)
                     .font(.subheadline)
@@ -113,9 +145,5 @@ public struct FlowingHeaderView: View {
         #if canImport(UIKit)
         .navigationBarTitleDisplayMode(.inline)
         #endif
-    }
-
-    private var hasAccessory: Bool {
-        accessoryView != nil
     }
 }

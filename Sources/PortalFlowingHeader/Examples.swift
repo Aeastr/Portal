@@ -79,7 +79,7 @@ public struct ExampleTitleOnly: View {
     public var body: some View {
         NavigationStack {
             ScrollView {
-                FlowingHeaderView()
+                FlowingHeaderView(displays: [.title, .accessory])
 
                 LazyVStack(spacing: 16) {
                     ForEach(0..<10) { index in
@@ -103,7 +103,7 @@ public struct ExampleTitleOnly: View {
         .flowingHeader(
             title: "Analytics",
             subtitle: "Business Dashboard",
-            displays: [.title]
+            displays: [.title, .accessory]
         ) {
             Image(systemName: "chart.bar.fill")
                 .font(.system(size: 64))

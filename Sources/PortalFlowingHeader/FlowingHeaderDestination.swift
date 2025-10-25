@@ -37,6 +37,7 @@ internal struct FlowingHeaderDestination: ViewModifier {
     @Environment(\.FlowingHeaderContent) private var config
     @Environment(\.flowingHeaderAccessoryView) private var accessoryView
     @Environment(\.flowingHeaderLayout) private var layout
+    @Environment(\.titleProgress) private var titleProgress
 
     let id: String
     let displays: Set<FlowingHeaderDisplayComponent>?
@@ -58,50 +59,72 @@ internal struct FlowingHeaderDestination: ViewModifier {
         let showAccessory = effectiveDisplays.contains(.accessory) && accessoryView != nil
         let showTitle = effectiveDisplays.contains(.title)
 
+        // Components that should flow (have anchors)
+        let flowingComponents = config.displays
+
+        // Components that should be static (visible but no anchor)
+        let staticAccessory = showAccessory && !flowingComponents.contains(.accessory)
+        let staticTitle = showTitle && !flowingComponents.contains(.title)
+
         if showAccessory && showTitle {
             // Both accessory and title
             switch layout {
             case .horizontal:
                 HStack {
-                    accessoryDestination(config: config)
-                    titleDestination(config: config)
+                    accessoryDestination(config: config, isStatic: staticAccessory)
+                    titleDestination(config: config, isStatic: staticTitle)
                 }
             case .vertical:
                 VStack(spacing: 2) {
-                    accessoryDestination(config: config)
-                    titleDestination(config: config)
+                    accessoryDestination(config: config, isStatic: staticAccessory)
+                    titleDestination(config: config, isStatic: staticTitle)
                 }
             }
         } else if showAccessory {
             // Accessory only
-            accessoryDestination(config: config)
+            accessoryDestination(config: config, isStatic: staticAccessory)
         } else if showTitle {
             // Title only
-            titleDestination(config: config)
+            titleDestination(config: config, isStatic: staticTitle)
         }
     }
 
     @ViewBuilder
-    private func accessoryDestination(config: FlowingHeaderContent) -> some View {
+    private func accessoryDestination(config: FlowingHeaderContent, isStatic: Bool) -> some View {
         if let accessoryView = accessoryView {
-            accessoryView
+            if isStatic {
+                // Static display - fades in with scroll progress
+                accessoryView
+                    .opacity(titleProgress)
+            } else {
+                // Flowing - invisible anchor
+                accessoryView
+                    .opacity(0)
+                    .accessibilityHidden(true)
+                    .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
+                        [AnchorKeyID(kind: "destination", id: config.title, type: "accessory"): anchor]
+                    }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func titleDestination(config: FlowingHeaderContent, isStatic: Bool) -> some View {
+        if isStatic {
+            // Static display - fades in with scroll progress
+            Text(config.title)
+                .font(.headline.weight(.semibold))
+                .opacity(titleProgress)
+        } else {
+            // Flowing - invisible anchor
+            Text(config.title)
+                .font(.headline.weight(.semibold))
                 .opacity(0)
                 .accessibilityHidden(true)
                 .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                    [AnchorKeyID(kind: "destination", id: config.title, type: "accessory"): anchor]
+                    [AnchorKeyID(kind: "destination", id: config.title, type: "title"): anchor]
                 }
         }
-    }
-
-    @ViewBuilder
-    private func titleDestination(config: FlowingHeaderContent) -> some View {
-        Text(config.title)
-            .font(.headline.weight(.semibold))
-            .opacity(0)
-            .accessibilityHidden(true)
-            .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                [AnchorKeyID(kind: "destination", id: config.title, type: "title"): anchor]
-            }
     }
 }
 
