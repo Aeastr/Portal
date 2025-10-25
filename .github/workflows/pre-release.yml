@@ -2,7 +2,7 @@ name: Pre-release
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, edited]
     branches: [ main ]
 
 permissions:
