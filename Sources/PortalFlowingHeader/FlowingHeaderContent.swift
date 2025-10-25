@@ -186,10 +186,10 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
     @ViewBuilder
     private func renderTransition(anchors: [AnchorKeyID: Anchor<CGRect>]) -> some View {
         GeometryReader { geometry in
-            let titleSrcKey = AnchorKeyID(kind: "source", id: config.title, type: "title")
-            let titleDstKey = AnchorKeyID(kind: "destination", id: config.title, type: "title")
-            let accessorySrcKey = AnchorKeyID(kind: "source", id: config.title, type: "accessory")
-            let accessoryDstKey = AnchorKeyID(kind: "destination", id: config.title, type: "accessory")
+            let titleSrcKey = AnchorKeyID(kind: "source", id: config.id, type: "title")
+            let titleDstKey = AnchorKeyID(kind: "destination", id: config.id, type: "title")
+            let accessorySrcKey = AnchorKeyID(kind: "source", id: config.id, type: "accessory")
+            let accessoryDstKey = AnchorKeyID(kind: "destination", id: config.id, type: "accessory")
 
             let progress = CGFloat(min(max(abs(titleProgress), 0), 1))
             let hasBothAccessoryAnchors = anchors[accessorySrcKey] != nil && anchors[accessoryDstKey] != nil

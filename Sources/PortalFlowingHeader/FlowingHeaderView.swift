@@ -105,7 +105,7 @@ public struct FlowingHeaderView: View {
                         .scaleEffect(accessoryFlowing ? 1 : max(0.6, (1 - progressFade)), anchor: .top)
                         .animation(.smooth(duration: FlowingHeaderTokens.transitionDuration), value: progressFade)
                         .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                            return [AnchorKeyID(kind: "source", id: config.title, type: "accessory"): anchor]
+                            return [AnchorKeyID(kind: "source", id: config.id, type: "accessory"): anchor]
                         }
                 } else {
                     // Not creating anchor, but still apply fade/scale effect
@@ -125,7 +125,7 @@ public struct FlowingHeaderView: View {
                             .opacity(0)  // Always invisible to maintain layout
                             .accessibilityHidden(true)  // Hide from VoiceOver since actual title is rendered separately
                             .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                                return [AnchorKeyID(kind: "source", id: config.title, type: "title"): anchor]
+                                return [AnchorKeyID(kind: "source", id: config.id, type: "title"): anchor]
                             }
                     } else {
                         // Show title but don't create anchor (not flowing)

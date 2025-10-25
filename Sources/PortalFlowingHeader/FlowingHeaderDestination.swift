@@ -123,7 +123,7 @@ internal struct FlowingHeaderDestination: ViewModifier {
                     .opacity(0)
                     .accessibilityHidden(true)
                     .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                        [AnchorKeyID(kind: "destination", id: config.title, type: "accessory"): anchor]
+                        [AnchorKeyID(kind: "destination", id: config.id, type: "accessory"): anchor]
                     }
             }
         }
@@ -143,7 +143,7 @@ internal struct FlowingHeaderDestination: ViewModifier {
                 .opacity(0)
                 .accessibilityHidden(true)
                 .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                    [AnchorKeyID(kind: "destination", id: config.title, type: "title"): anchor]
+                    [AnchorKeyID(kind: "destination", id: config.id, type: "title"): anchor]
                 }
         }
     }
