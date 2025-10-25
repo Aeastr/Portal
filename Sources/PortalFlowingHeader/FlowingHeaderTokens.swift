@@ -20,10 +20,10 @@ public struct FlowingHeaderTokens {
     /// Default animation duration for flowing header transitions.
     ///
     /// Used for scale, opacity, and position animations as the header flows to the navigation bar.
-    public static let transitionDuration: TimeInterval = 0.3
+    public static let transitionDuration: TimeInterval = 0.4
 
     /// Animation duration for scroll-driven progress updates.
     ///
     /// Shorter duration provides more responsive tracking during active scrolling.
-    public static let scrollAnimationDuration: TimeInterval = 0.2
+    public static let scrollAnimationDuration: TimeInterval = 0.3
 }

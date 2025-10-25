@@ -26,7 +26,7 @@ public struct FlowingHeaderCalculations {
     ///
     /// - Parameters:
     ///   - scrollOffset: Current scroll offset (positive when scrolled down)
-    ///   - startOffset: Scroll offset where transition begins
+    ///   - startAt: Scroll offset where transition begins
     ///   - range: Distance over which transition occurs
     /// - Returns: Progress value clamped between 0.0 and 1.0
     ///
@@ -36,18 +36,18 @@ public struct FlowingHeaderCalculations {
     /// // Transition starts at -20, completes over 40 points
     /// let progress = FlowingHeaderCalculations.calculateProgress(
     ///     scrollOffset: 0,
-    ///     startOffset: -20,
+    ///     startAt: -20,
     ///     range: 40
     /// )
     /// // Returns: 0.5 (halfway through transition)
     /// ```
     public static func calculateProgress(
         scrollOffset: CGFloat,
-        startOffset: CGFloat,
+        startAt: CGFloat,
         range: CGFloat
     ) -> Double {
         // If we haven't scrolled down enough past the start threshold, return 0
-        guard scrollOffset >= startOffset else {
+        guard scrollOffset >= startAt else {
             return 0.0
         }
 
@@ -57,7 +57,7 @@ public struct FlowingHeaderCalculations {
         }
 
         // Calculate progress over the transition range
-        let rawProgress = (scrollOffset - startOffset) / range
+        let rawProgress = (scrollOffset - startAt) / range
 
         // Clamp progress between 0.0 and 1.0
         return Double(max(0.0, min(1.0, rawProgress)))

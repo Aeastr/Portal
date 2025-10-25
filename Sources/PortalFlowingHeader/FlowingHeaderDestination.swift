@@ -94,13 +94,33 @@ internal struct FlowingHeaderDestination: ViewModifier {
     @ViewBuilder
     private func accessoryDestination(config: FlowingHeaderContent, isStatic: Bool) -> some View {
         if let accessoryView = accessoryView {
+            // Target size for nav bar (about the size of a system image in headline font)
+            let targetSize: CGFloat = 25
+
+            // Calculate scale based on measured size
+            let scale = accessorySize.width > 0 ? targetSize / accessorySize.width : 1.0
+
             if isStatic {
                 // Static display - fades in with scroll progress
                 accessoryView
+                    .onGeometryChange(for: CGSize.self) { proxy in
+                        proxy.size
+                    } action: { newSize in
+                        accessorySize = newSize
+                    }
+                    .scaleEffect(scale)
+                    .frame(width: targetSize, height: targetSize)
                     .opacity(titleProgress)
             } else {
                 // Flowing - invisible anchor
                 accessoryView
+                    .onGeometryChange(for: CGSize.self) { proxy in
+                        proxy.size
+                    } action: { newSize in
+                        accessorySize = newSize
+                    }
+                    .scaleEffect(scale)
+                    .frame(width: targetSize, height: targetSize)
                     .opacity(0)
                     .accessibilityHidden(true)
                     .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in

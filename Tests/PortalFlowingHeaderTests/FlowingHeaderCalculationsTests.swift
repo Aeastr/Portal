@@ -18,20 +18,20 @@ struct FlowingHeaderCalculationsTests {
     // MARK: - Progress Calculation Tests
 
     @Test("Progress calculation returns 0 before start offset")
-    func progressBeforeStartOffset() {
+    func progressBeforestartAt() {
         let progress = FlowingHeaderCalculations.calculateProgress(
             scrollOffset: -30,
-            startOffset: -20,
+            startAt: -20,
             range: 40
         )
         #expect(progress == 0.0)
     }
 
     @Test("Progress calculation at start offset")
-    func progressAtStartOffset() {
+    func progressAtstartAt() {
         let progress = FlowingHeaderCalculations.calculateProgress(
             scrollOffset: -20,
-            startOffset: -20,
+            startAt: -20,
             range: 40
         )
         #expect(progress == 0.0)
@@ -41,7 +41,7 @@ struct FlowingHeaderCalculationsTests {
     func progressAtMidpoint() {
         let progress = FlowingHeaderCalculations.calculateProgress(
             scrollOffset: 0,
-            startOffset: -20,
+            startAt: -20,
             range: 40
         )
         #expect(progress == 0.5)
@@ -51,7 +51,7 @@ struct FlowingHeaderCalculationsTests {
     func progressAtEndOffset() {
         let progress = FlowingHeaderCalculations.calculateProgress(
             scrollOffset: 20,
-            startOffset: -20,
+            startAt: -20,
             range: 40
         )
         #expect(progress == 1.0)
@@ -61,7 +61,7 @@ struct FlowingHeaderCalculationsTests {
     func progressClampedAtMaximum() {
         let progress = FlowingHeaderCalculations.calculateProgress(
             scrollOffset: 100,
-            startOffset: -20,
+            startAt: -20,
             range: 40
         )
         #expect(progress == 1.0)
@@ -71,7 +71,7 @@ struct FlowingHeaderCalculationsTests {
     func progressWithZeroRange() {
         let progress = FlowingHeaderCalculations.calculateProgress(
             scrollOffset: 0,
-            startOffset: 0,
+            startAt: 0,
             range: 0
         )
         // Zero range is guarded to return 1.0 (fully transitioned)
@@ -82,7 +82,7 @@ struct FlowingHeaderCalculationsTests {
     func progressWithNegativeRange() {
         let progress = FlowingHeaderCalculations.calculateProgress(
             scrollOffset: 10,
-            startOffset: 0,
+            startAt: 0,
             range: -40
         )
         // Negative range produces negative progress: (10 - 0) / -40 = -0.25
@@ -94,7 +94,7 @@ struct FlowingHeaderCalculationsTests {
     func progressWithCustomValues() {
         let progress = FlowingHeaderCalculations.calculateProgress(
             scrollOffset: 50,
-            startOffset: 10,
+            startAt: 10,
             range: 100
         )
         #expect(progress == 0.4)
@@ -105,7 +105,7 @@ struct FlowingHeaderCalculationsTests {
         // Test that negative progress values are clamped to 0.0
         let progress = FlowingHeaderCalculations.calculateProgress(
             scrollOffset: 50,
-            startOffset: 100,
+            startAt: 100,
             range: 10
         )
         // (50 - 100) / 10 = -5.0, clamped to 0.0
@@ -489,12 +489,12 @@ struct FlowingHeaderCalculationsTests {
         let source = CGRect(x: 0, y: 100, width: 100, height: 100)
         let destination = CGRect(x: 200, y: 50, width: 50, height: 50)
         let scrollOffset: CGFloat = 10
-        let startOffset: CGFloat = 0
+        let startAt: CGFloat = 0
         let range: CGFloat = 20
 
         let progress = FlowingHeaderCalculations.calculateProgress(
             scrollOffset: scrollOffset,
-            startOffset: startOffset,
+            startAt: startAt,
             range: range
         )
         #expect(progress == 0.5)

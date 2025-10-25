@@ -115,6 +115,7 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
     @State private var scrollOffset: CGFloat = 0
     @State private var accessoryFlowing = false
     @State private var hasCheckedAnchors = false
+    @State private var accessorySourceHeight: CGFloat = 0
 
     func body(content: Content) -> some View {
         content
@@ -123,6 +124,7 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
             .environment(\.flowingHeaderLayout, config.layout)
             .environment(\.titleProgress, titleProgress)
             .environment(\.accessoryFlowing, accessoryFlowing)
+            .environment(\.accessorySourceHeight, accessorySourceHeight)
             .onScrollPhaseChange { _, newPhase in
                 isScrolling = [ScrollPhase.interacting, ScrollPhase.decelerating].contains(newPhase)
 
@@ -135,15 +137,16 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
                 }
             }
             .onScrollGeometryChange(for: CGFloat.self) { geometry in
-                geometry.contentOffset.y
+                return geometry.contentOffset.y + geometry.contentInsets.top
+                
             } action: { _, newValue in
                 scrollOffset = newValue
-
+print("\(newValue)")
                 // Only update progress while actively scrolling
                 if isScrolling {
                     let progress = FlowingHeaderCalculations.calculateProgress(
                         scrollOffset: newValue,
-                        startOffset: -20,
+                        startAt: 40,
                         range: 40
                     )
                     withAnimation(.smooth(duration: FlowingHeaderTokens.scrollAnimationDuration)) {
@@ -341,7 +344,7 @@ public extension View {
         title: String,
         subtitle: String,
         displays: Set<FlowingHeaderDisplayComponent> = [.title, .accessory],
-        layout: AccessoryLayout = .horizontal,
+        layout: AccessoryLayout = .vertical,
         @ViewBuilder accessory: () -> AccessoryContent
     ) -> some View {
         let config = FlowingHeaderContent(

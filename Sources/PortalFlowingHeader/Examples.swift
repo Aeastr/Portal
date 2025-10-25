@@ -79,7 +79,7 @@ public struct ExampleTitleOnly: View {
     public var body: some View {
         NavigationStack {
             ScrollView {
-                FlowingHeaderView(displays: [.title])
+                FlowingHeaderView()
 
                 LazyVStack(spacing: 16) {
                     ForEach(0..<10) { index in
@@ -98,7 +98,7 @@ public struct ExampleTitleOnly: View {
                 }
                 .padding()
             }
-            .flowingHeaderDestination(displays: [.title])
+            .flowingHeaderDestination()
         }
         .flowingHeader(
             title: "Analytics",
@@ -137,7 +137,7 @@ public struct ExampleNoAccessory: View {
         }
         .flowingHeader(
             title: "Settings",
-            subtitle: "Configure your preferences"
+            subtitle: "Configure your preferences",
         )
     }
 }
