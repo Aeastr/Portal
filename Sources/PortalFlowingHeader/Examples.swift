@@ -57,12 +57,11 @@ private struct Example: View {
                 }
                 .padding()
             }
-            .flowingHeaderDestination(displays: [.title])
+            .flowingHeaderDestination()
         }
         .flowingHeader(
             title: "Photos",
-            subtitle: "My Collection",
-            displays: [.title, .accessory]
+            subtitle: "My Collection"
         ) {
             Image(systemName: "photo.on.rectangle.angled")
                 .font(.system(size: 64))

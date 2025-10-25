@@ -118,13 +118,23 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
     @State private var accessorySourceHeight: CGFloat = 0
 
     func body(content: Content) -> some View {
+        let measuredAccessory = accessoryContent.map { accessory in
+            AnyView(
+                accessory
+                    .onGeometryChange(for: CGSize.self) { proxy in
+                        proxy.size
+                    } action: { newSize in
+                        accessorySourceHeight = newSize.height
+                    }
+            )
+        }
+
         content
             .environment(\.FlowingHeaderContent, config)
-            .environment(\.flowingHeaderAccessoryView, accessoryContent.map { AnyView($0) })
+            .environment(\.flowingHeaderAccessoryView, measuredAccessory)
             .environment(\.flowingHeaderLayout, config.layout)
             .environment(\.titleProgress, titleProgress)
             .environment(\.accessoryFlowing, accessoryFlowing)
-            .environment(\.accessorySourceHeight, accessorySourceHeight)
             .onScrollPhaseChange { _, newPhase in
                 isScrolling = [ScrollPhase.interacting, ScrollPhase.decelerating].contains(newPhase)
 
@@ -138,15 +148,25 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
             }
             .onScrollGeometryChange(for: CGFloat.self) { geometry in
                 return geometry.contentOffset.y + geometry.contentInsets.top
-                
+
             } action: { _, newValue in
                 scrollOffset = newValue
-print("\(newValue)")
                 // Only update progress while actively scrolling
                 if isScrolling {
+                    // If accessory is flowing, start earlier (when it's partially scrolled)
+                    // Otherwise use full height or fallback
+                    let hasFlowingAccessory = config.displays.contains(.accessory)
+                    let startAt: CGFloat
+
+                    if hasFlowingAccessory && accessorySourceHeight > 0 {
+                        startAt = accessorySourceHeight / 3 // Start when accessory is 1/3 scrolled off
+                    } else {
+                        startAt = accessorySourceHeight > 0 ? accessorySourceHeight : 0
+                    }
+
                     let progress = FlowingHeaderCalculations.calculateProgress(
                         scrollOffset: newValue,
-                        startAt: 40,
+                        startAt: startAt,
                         range: 40
                     )
                     withAnimation(.smooth(duration: FlowingHeaderTokens.scrollAnimationDuration)) {
