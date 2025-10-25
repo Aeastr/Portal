@@ -195,6 +195,8 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
             let hasBothAccessoryAnchors = anchors[accessorySrcKey] != nil && anchors[accessoryDstKey] != nil
 
             // Update accessoryFlowing based on whether both anchors exist
+            // onAppear: Set initial state when view first renders
+            // onChange: Update state when anchors change (e.g., during navigation or config changes)
             Color.clear
                 .onAppear {
                     accessoryFlowing = hasBothAccessoryAnchors
@@ -222,12 +224,16 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
             progress: progress
         )
 
-        let sourceFontSize: CGFloat = 28
-        let destFontSize: CGFloat = 17
-        let currentScale = 1 + ((destFontSize / sourceFontSize) - 1) * progress
+        // Calculate scale based on actual rendered sizes to support Dynamic Type
+        let sourceFont = Font.title.weight(.semibold)
+        let destFont = Font.headline.weight(.semibold)
+
+        // Use ratio of rect heights as proxy for font size ratio
+        let scaleRatio = dstRect.height / srcRect.height
+        let currentScale = 1 + (scaleRatio - 1) * progress
 
         return Text(config.title)
-            .font(.system(size: sourceFontSize, weight: .semibold))
+            .font(sourceFont)
             .foregroundStyle(.primary)
             .scaleEffect(currentScale)
             .position(x: position.x, y: position.y)
