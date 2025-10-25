@@ -48,7 +48,7 @@ internal struct FlowingHeaderDestination: ViewModifier {
         content
             .toolbar {
                 if let config = config, config.id == id {
-                    ToolbarItem(placement: .title) {
+                    ToolbarItem(placement: .principal) {
                         destinationContent(config: config)
                     }
                 }
