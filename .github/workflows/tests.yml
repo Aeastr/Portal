@@ -23,9 +23,12 @@ jobs:
     - name: Run all tests
       run: |
         set -o pipefail
-        swift test \
-          --parallel \
-          --enable-code-coverage
+        xcodebuild test \
+          -scheme Portal-Package \
+          -destination 'platform=iOS Simulator,OS=latest' \
+          -enableCodeCoverage YES \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO
 
     - name: Upload test results
       if: always()
