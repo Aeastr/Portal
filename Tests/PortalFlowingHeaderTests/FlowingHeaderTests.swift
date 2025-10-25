@@ -114,7 +114,7 @@ final class FlowingHeaderTests: XCTestCase {
         var environment = EnvironmentValues()
 
         // Test default value (nil)
-        XCTAssertNil(environment.FlowingHeaderContent)
+        XCTAssertNil(environment.flowingHeaderContent)
 
         // Test setting config
         let config = FlowingHeaderContent(title: "Test", subtitle: "Sub")

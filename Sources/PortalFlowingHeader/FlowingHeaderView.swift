@@ -50,7 +50,7 @@ import SwiftUI
 ///   advanced scroll tracking APIs.
 @available(iOS 18.0, *)
 public struct FlowingHeaderView: View {
-    @Environment(\.FlowingHeaderContent) private var config
+    @Environment(\.flowingHeaderContent) private var config
     @Environment(\.flowingHeaderAccessoryView) private var accessoryView
     @Environment(\.titleProgress) private var titleProgress
     @Environment(\.accessoryFlowing) private var accessoryFlowing

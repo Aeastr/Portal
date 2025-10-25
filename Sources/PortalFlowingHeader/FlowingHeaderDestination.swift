@@ -34,7 +34,7 @@ public extension EnvironmentValues {
 /// in the navigation bar that serve as destinations for header elements during scroll transitions.
 @available(iOS 18.0, *)
 internal struct FlowingHeaderDestination: ViewModifier {
-    @Environment(\.FlowingHeaderContent) private var config
+    @Environment(\.flowingHeaderContent) private var config
     @Environment(\.flowingHeaderAccessoryView) private var accessoryView
     @Environment(\.flowingHeaderLayout) private var layout
     @Environment(\.titleProgress) private var titleProgress

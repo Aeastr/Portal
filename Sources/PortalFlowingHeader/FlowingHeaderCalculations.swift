@@ -62,43 +62,6 @@ public struct FlowingHeaderCalculations {
         return Double(max(0.0, min(1.0, rawProgress)))
     }
 
-    // MARK: - Dynamic Offset
-
-    /// Calculates dynamic offset during transition using sine curve.
-    ///
-    /// This creates a smooth offset that peaks at mid-transition and returns
-    /// to zero at start and end, useful for collision avoidance animations.
-    ///
-    /// - Parameters:
-    ///   - progress: Current transition progress (0-1)
-    ///   - baseOffset: Base offset amount to multiply by sine curve
-    /// - Returns: Smoothly interpolated offset that peaks at mid-transition
-    ///
-    /// ## Behavior
-    ///
-    /// The sine curve creates a smooth arc:
-    /// - At progress 0.0: offset is 0
-    /// - At progress 0.5: offset peaks at baseOffset
-    /// - At progress 1.0: offset returns to 0
-    ///
-    /// ## Example
-    ///
-    /// ```swift
-    /// let offset = FlowingHeaderCalculations.calculateDynamicOffset(
-    ///     progress: 0.5,
-    ///     baseOffset: 20
-    /// )
-    /// // Returns: 20.0 (peak of sine curve)
-    /// ```
-    public static func calculateDynamicOffset(
-        progress: CGFloat,
-        baseOffset: CGFloat
-    ) -> CGFloat {
-        // sin(π * t) peaks at 0.5, zero at 0 and 1
-        let offsetMultiplier = sin(progress * .pi)
-        return baseOffset * offsetMultiplier
-    }
-
     // MARK: - Position Interpolation
 
     /// Calculates interpolated position between source and destination rectangles.

@@ -90,7 +90,7 @@ private struct FlowingHeaderAccessoryViewKey: EnvironmentKey {
 @available(iOS 18.0, *)
 public extension EnvironmentValues {
     /// The current flowing header configuration
-    var FlowingHeaderContent: FlowingHeaderContent? {
+    var flowingHeaderContent: FlowingHeaderContent? {
         get { self[FlowingHeaderContentKey.self] }
         set { self[FlowingHeaderContentKey.self] = newValue }
     }
@@ -114,7 +114,6 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
     @State private var isScrolling = false
     @State private var scrollOffset: CGFloat = 0
     @State private var accessoryFlowing = false
-    @State private var hasCheckedAnchors = false
     @State private var accessorySourceHeight: CGFloat = 0
 
     func body(content: Content) -> some View {
@@ -130,7 +129,7 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
         }
 
         content
-            .environment(\.FlowingHeaderContent, config)
+            .environment(\.flowingHeaderContent, config)
             .environment(\.flowingHeaderAccessoryView, measuredAccessory)
             .environment(\.flowingHeaderLayout, config.layout)
             .environment(\.titleProgress, titleProgress)
@@ -186,42 +185,8 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
             let accessorySrcKey = AnchorKeyID(kind: "source", id: config.title, type: "accessory")
             let accessoryDstKey = AnchorKeyID(kind: "destination", id: config.title, type: "accessory")
 
-            let t = CGFloat(min(max(abs(titleProgress), 0), 1))
-
-            // Check for missing anchors when accessory is in displays
-            let hasSource = anchors[accessorySrcKey] != nil
-            let hasDestination = anchors[accessoryDstKey] != nil
-            let hasBothAccessoryAnchors = hasSource && hasDestination
-
-            if config.displays.contains(.accessory) && !hasCheckedAnchors {
-                // Only check after we have title anchors (proves preference system is working)
-                let hasTitleDst = anchors[titleDstKey] != nil
-
-                Color.clear
-                    .onChange(of: hasTitleDst) { _, newValue in
-                        if newValue && !hasCheckedAnchors {
-                            hasCheckedAnchors = true
-
-                            #if DEBUG
-                            let log = OSLog(subsystem: "com.apple.runtime-issues", category: "PortalFlowingHeader")
-
-                            if !hasSource && !hasDestination {
-                                let message = "FlowingHeader: '.accessory' is included in displays but no source or destination anchors were found. Ensure FlowingHeaderView() is in the ScrollView and .flowingHeaderDestination() is applied."
-                                os_log(.fault, log: log, "%{public}s", message)
-                                print("⚠️ \(message)")
-                            } else if !hasSource {
-                                let message = "FlowingHeader: '.accessory' is included in displays but no source anchor was found. Ensure FlowingHeaderView() is present in the ScrollView."
-                                os_log(.fault, log: log, "%{public}s", message)
-                                print("⚠️ \(message)")
-                            } else if !hasDestination {
-                                let message = "FlowingHeader: '.accessory' is included in displays but no destination anchor was found. Ensure .flowingHeaderDestination() includes .accessory in its displays parameter."
-                                os_log(.fault, log: log, "%{public}s", message)
-                                print("⚠️ \(message)")
-                            }
-                            #endif
-                        }
-                    }
-            }
+            let progress = CGFloat(min(max(abs(titleProgress), 0), 1))
+            let hasBothAccessoryAnchors = anchors[accessorySrcKey] != nil && anchors[accessoryDstKey] != nil
 
             // Update accessoryFlowing based on whether both anchors exist
             Color.clear
@@ -233,11 +198,11 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
                 }
 
             if let titleSrc = anchors[titleSrcKey], let titleDst = anchors[titleDstKey] {
-                renderTitle(geometry: geometry, srcAnchor: titleSrc, dstAnchor: titleDst, progress: t)
+                renderTitle(geometry: geometry, srcAnchor: titleSrc, dstAnchor: titleDst, progress: progress)
             }
 
             if let accessorySrc = anchors[accessorySrcKey], let accessoryDst = anchors[accessoryDstKey] {
-                renderAccessory(geometry: geometry, srcAnchor: accessorySrc, dstAnchor: accessoryDst, progress: t)
+                renderAccessory(geometry: geometry, srcAnchor: accessorySrc, dstAnchor: accessoryDst, progress: progress)
             }
         }
     }
