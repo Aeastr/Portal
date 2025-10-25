@@ -285,6 +285,7 @@ jobs:
 
     - name: Notify on success
       if: steps.create_release.outputs.success == 'true'
+      continue-on-error: true
       shell: bash
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -293,7 +294,7 @@ jobs:
         RELEASE_URL="https://github.com/${{ github.repository }}/releases/tag/${{ steps.version.outputs.tag }}"
         IS_DRAFT="${{ steps.create_release.outputs.draft }}"
 
-        # Comment on PR with success notification
+        # Comment on PR with success notification (may fail if PR is closed)
         if [ "$IS_DRAFT" = "true" ]; then
           gh pr comment "${{ github.event.pull_request.number }}" \
             --body "✅ **Draft release $VERSION created successfully!**
@@ -302,14 +303,14 @@ jobs:
 
         ⚠️ **This is a draft release** - it needs to be manually published before it's available via Swift Package Manager.
 
-        To publish: Go to the [release page]($RELEASE_URL) and click \"Publish release\"."
+        To publish: Go to the [release page]($RELEASE_URL) and click \"Publish release\"." || echo "::warning::Unable to comment on PR (may be closed)"
         else
           gh pr comment "${{ github.event.pull_request.number }}" \
             --body "✅ **Release $VERSION created and published successfully!**
 
         View the release: [$VERSION]($RELEASE_URL)
 
-        The release is now available via Swift Package Manager."
+        The release is now available via Swift Package Manager." || echo "::warning::Unable to comment on PR (may be closed)"
         fi
 
     - name: Cleanup on failure
@@ -326,6 +327,7 @@ jobs:
 
     - name: Notify on failure
       if: failure()
+      continue-on-error: true
       shell: bash
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -339,7 +341,7 @@ jobs:
         echo "::error::Workflow run: $RUN_URL"
         echo "::error::Please check the logs and retry the release"
 
-        # Create an issue comment to notify about the failure
+        # Create an issue comment to notify about the failure (may fail if PR is closed)
         gh pr comment "${{ github.event.pull_request.number }}" \
           --body "⚠️ **Release workflow failed for version $VERSION**
 
@@ -350,4 +352,4 @@ jobs:
         - Invalid version format
         - Network/permission issues
 
-        You may need to manually create the release or re-trigger the workflow."
+        You may need to manually create the release or re-trigger the workflow." || echo "::warning::Unable to comment on PR (may be closed)"
