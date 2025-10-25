@@ -24,6 +24,8 @@ jobs:
   release:
     name: Create Release
     runs-on: ubuntu-latest
+    # 10-minute timeout: Allows time for git operations, tag creation, and GitHub release API calls
+    # Prevents hanging on network issues or API rate limits
     timeout-minutes: 10
     if: github.event.pull_request.merged == true
 
@@ -35,11 +37,18 @@ jobs:
         # Fetch full history for changelog generation
         fetch-depth: 0
 
+    - name: Fetch all tags
+      shell: bash
+      run: |
+        # Fetch all tags once at the beginning to avoid redundant fetches
+        git fetch --tags
+
     - name: Extract and validate version from PR title
       id: version
       shell: bash
+      env:
+        PR_TITLE: ${{ github.event.pull_request.title }}
       run: |
-        PR_TITLE="${{ github.event.pull_request.title }}"
         echo "PR Title: $PR_TITLE"
 
         # Extract version number (supports formats like "4.3.0", "Release 4.3.0", "v4.3.0")
@@ -130,8 +139,16 @@ jobs:
     - name: Validate and merge release notes
       id: notes
       shell: bash
+      env:
+        PR_BODY: ${{ github.event.pull_request.body }}
       run: |
-        PR_BODY="${{ github.event.pull_request.body }}"
+        # Validate PR body length (GitHub limit is 125KB)
+        PR_BODY_LENGTH=$(echo -n "$PR_BODY" | wc -c)
+        if [ "$PR_BODY_LENGTH" -gt 128000 ]; then
+          echo "::error::PR body is too large ($PR_BODY_LENGTH bytes). GitHub limit is 125KB (128000 bytes)."
+          echo "::error::Please reduce the PR description length."
+          exit 1
+        fi
 
         # Check if PR body is empty or only whitespace
         if [ -z "$(echo "$PR_BODY" | tr -d '[:space:]')" ]; then
@@ -156,9 +173,6 @@ jobs:
       shell: bash
       run: |
         TAG="${{ steps.version.outputs.tag }}"
-
-        # Fetch tags from remote
-        git fetch --tags
 
         # Check if tag exists remotely
         if git ls-remote --tags origin | grep -q "refs/tags/$TAG"; then
@@ -210,7 +224,6 @@ jobs:
 
         while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
           # Final safety check: verify tag doesn't exist on remote
-          git fetch --tags
           if git ls-remote --tags origin | grep -q "refs/tags/$TAG"; then
             echo "::error::Tag $TAG was created by another process - race condition detected"
             echo "success=false" >> $GITHUB_OUTPUT
@@ -272,6 +285,8 @@ jobs:
     - name: Notify on success
       if: steps.create_release.outputs.success == 'true'
       shell: bash
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         VERSION="${{ steps.version.outputs.version }}"
         RELEASE_URL="https://github.com/${{ github.repository }}/releases/tag/${{ steps.version.outputs.tag }}"
@@ -295,8 +310,6 @@ jobs:
 
         The release is now available via Swift Package Manager."
         fi
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Cleanup on failure
       if: failure() && steps.create_tag.outputs.success == 'true'
@@ -313,6 +326,8 @@ jobs:
     - name: Notify on failure
       if: failure()
       shell: bash
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         VERSION="${{ steps.version.outputs.version }}"
         PR_URL="${{ github.event.pull_request.html_url }}"
@@ -335,5 +350,3 @@ jobs:
         - Network/permission issues
 
         You may need to manually create the release or re-trigger the workflow."
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

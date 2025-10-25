@@ -13,6 +13,8 @@ jobs:
   pre-release:
     name: Create Pre-release
     runs-on: ubuntu-latest
+    # 10-minute timeout: Allows time for git operations, tag creation, and GitHub release API calls
+    # Prevents hanging on network issues or API rate limits
     timeout-minutes: 10
 
     steps:
@@ -22,11 +24,18 @@ jobs:
         # Fetch full history for changelog generation
         fetch-depth: 0
 
+    - name: Fetch all tags
+      shell: bash
+      run: |
+        # Fetch all tags once at the beginning to avoid redundant fetches
+        git fetch --tags
+
     - name: Extract version from PR title
       id: version
       shell: bash
+      env:
+        PR_TITLE: ${{ github.event.pull_request.title }}
       run: |
-        PR_TITLE="${{ github.event.pull_request.title }}"
         echo "PR Title: $PR_TITLE"
 
         # Try to extract version number (supports formats like "4.3.0", "Release 4.3.0", "v4.3.0")
@@ -51,13 +60,12 @@ jobs:
     - name: Validate version is not already released
       if: steps.version.outputs.is_release_pr == 'true'
       shell: bash
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         BASE_VERSION="${{ steps.version.outputs.base_version }}"
 
-        # Fetch all tags
-        git fetch --tags
-
-        # Check if the final version already exists (non-prerelease)
+        # Check if the final version already exists (non-pre-release)
         if git tag -l | grep -qE "^${BASE_VERSION}$"; then
           echo "::error::Version $BASE_VERSION already exists as a final release"
           echo "::error::Please update your PR title to use a new version number (e.g., bump to next version)"
@@ -89,9 +97,6 @@ jobs:
         BASE_VERSION="${{ steps.version.outputs.base_version }}"
         CURRENT_SHA="${{ github.event.pull_request.head.sha }}"
 
-        # Fetch all tags (already fetched above, but keeping for safety)
-        git fetch --tags
-
         # Check if current commit already has a pre-release tag
         EXISTING_TAG=$(git tag --points-at "$CURRENT_SHA" | grep -E "^${BASE_VERSION}-[0-9]+$" || echo "")
 
@@ -111,18 +116,15 @@ jobs:
       run: |
         BASE_VERSION="${{ steps.version.outputs.base_version }}"
 
-        # Fetch all tags
-        git fetch --tags
-
         # Find existing pre-release tags for this version
-        EXISTING_PRERELEASES=$(git tag -l "${BASE_VERSION}-*" | grep -E "^${BASE_VERSION}-[0-9]+$" || echo "")
+        EXISTING_PRERELEASE_TAGS=$(git tag -l "${BASE_VERSION}-*" | grep -E "^${BASE_VERSION}-[0-9]+$" || echo "")
 
-        if [ -z "$EXISTING_PRERELEASES" ]; then
+        if [ -z "$EXISTING_PRERELEASE_TAGS" ]; then
           # No existing pre-releases, start at 1
           PRERELEASE_NUM=1
         else
           # Find the highest pre-release number
-          HIGHEST=$(echo "$EXISTING_PRERELEASES" | sed "s/${BASE_VERSION}-//" | sort -n | tail -1)
+          HIGHEST=$(echo "$EXISTING_PRERELEASE_TAGS" | sed "s/${BASE_VERSION}-//" | sort -n | tail -1)
           PRERELEASE_NUM=$((HIGHEST + 1))
         fi
 
@@ -138,7 +140,7 @@ jobs:
       run: |
         BASE_VERSION="${{ steps.version.outputs.base_version }}"
 
-        # Get the previous release tag (non-prerelease)
+        # Get the previous release tag (non-pre-release)
         PREV_TAG=$(git tag -l --sort=-v:refname | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
 
         if [ -n "$PREV_TAG" ]; then
@@ -157,7 +159,7 @@ jobs:
             echo "_No new commits since last release_" >> changelog.txt
           fi
         else
-          echo "## Initial Release (Pre-release)" > changelog.txt
+          echo "## Initial Pre-release" > changelog.txt
           echo "" >> changelog.txt
           echo "First pre-release of Portal" >> changelog.txt
         fi
@@ -168,15 +170,22 @@ jobs:
       id: notes
       if: steps.version.outputs.is_release_pr == 'true' && steps.check_existing.outputs.has_prerelease == 'false'
       shell: bash
+      env:
+        PR_BODY: ${{ github.event.pull_request.body }}
       run: |
-        PR_BODY="${{ github.event.pull_request.body }}"
         PRERELEASE_NUM="${{ steps.prerelease.outputs.number }}"
         BASE_VERSION="${{ steps.version.outputs.base_version }}"
 
-        # Start with pre-release header
-        echo "# Pre-release $PRERELEASE_NUM for $BASE_VERSION" > release_notes.txt
-        echo "" >> release_notes.txt
-        echo "⚠️ **This is a pre-release version for testing purposes.**" >> release_notes.txt
+        # Validate PR body length (GitHub limit is 125KB)
+        PR_BODY_LENGTH=$(echo -n "$PR_BODY" | wc -c)
+        if [ "$PR_BODY_LENGTH" -gt 128000 ]; then
+          echo "::error::PR body is too large ($PR_BODY_LENGTH bytes). GitHub limit is 125KB (128000 bytes)."
+          echo "::error::Please reduce the PR description length."
+          exit 1
+        fi
+
+        # Start with pre-release warning
+        echo "⚠️ **This is a pre-release version for testing purposes.**" > release_notes.txt
         echo "" >> release_notes.txt
 
         # Add PR body if present

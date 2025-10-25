@@ -35,7 +35,7 @@ If you have an idea for a new feature or enhancement:
    ```bash
    git checkout -b feat/my-new-feature
    ```
-3. Make y changes. Follow the [Development Setup](#development-setup) and [Coding Guidelines](#coding-guidelines).
+3. Make your changes. Follow the [Development Setup](#development-setup) and [Coding Guidelines](#coding-guidelines).
 
 4. Commit with a clear message:
    ```
