@@ -18,17 +18,23 @@ jobs:
         ref: ${{ github.event.pull_request.merge_commit_sha }}
         fetch-depth: 0
 
-    - name: Extract version from PR title
+    - name: Extract and validate version from PR title
       id: version
       run: |
         PR_TITLE="${{ github.event.pull_request.title }}"
         echo "PR Title: $PR_TITLE"
 
-        # Try to extract version number (supports formats like "4.3.0", "Release 4.3.0", "v4.3.0")
+        # Extract version number (supports formats like "4.3.0", "Release 4.3.0", "v4.3.0")
         VERSION=$(echo "$PR_TITLE" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
 
         if [ -z "$VERSION" ]; then
           echo "::error::No version number found in PR title '$PR_TITLE'. Expected format: '4.3.0' or 'Release 4.3.0'"
+          exit 1
+        fi
+
+        # Validate semantic versioning format (MAJOR.MINOR.PATCH)
+        if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+          echo "::error::Version '$VERSION' is not valid semantic versioning (expected: MAJOR.MINOR.PATCH)"
           exit 1
         fi
 
@@ -37,27 +43,115 @@ jobs:
         echo "tag=$VERSION" >> $GITHUB_OUTPUT
         echo "release_name=$PR_TITLE" >> $GITHUB_OUTPUT
 
-    - name: Check if tag already exists
+    - name: Validate release notes
+      id: notes
       run: |
-        if git rev-parse "${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
-          echo "::error::Tag ${{ steps.version.outputs.tag }} already exists"
+        PR_BODY="${{ github.event.pull_request.body }}"
+
+        # Check if PR body is empty or only whitespace
+        if [ -z "$(echo "$PR_BODY" | tr -d '[:space:]')" ]; then
+          echo "::warning::PR body is empty. Using default release notes."
+          RELEASE_NOTES="Release ${{ steps.version.outputs.version }}"
+        else
+          RELEASE_NOTES="$PR_BODY"
+        fi
+
+        # Save to output (properly escaped for multiline)
+        echo "notes<<EOF" >> $GITHUB_OUTPUT
+        echo "$RELEASE_NOTES" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
+    - name: Check if tag exists on remote
+      run: |
+        TAG="${{ steps.version.outputs.tag }}"
+
+        # Fetch tags from remote
+        git fetch --tags
+
+        # Check if tag exists remotely
+        if git ls-remote --tags origin | grep -q "refs/tags/$TAG"; then
+          echo "::error::Tag $TAG already exists on remote"
           exit 1
         fi
 
-    - name: Create and push tag
+        echo "Tag $TAG is available"
+
+    - name: Check if version is greater than latest release
       run: |
+        CURRENT_VERSION="${{ steps.version.outputs.version }}"
+
+        # Get latest release tag
+        LATEST_TAG=$(git tag -l --sort=-v:refname | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
+
+        if [ -n "$LATEST_TAG" ]; then
+          echo "Latest release: $LATEST_TAG"
+          echo "New version: $CURRENT_VERSION"
+
+          # Simple version comparison (works for semantic versioning)
+          if [ "$(printf '%s\n' "$LATEST_TAG" "$CURRENT_VERSION" | sort -V | tail -1)" != "$CURRENT_VERSION" ]; then
+            echo "::warning::Version $CURRENT_VERSION is not greater than latest release $LATEST_TAG"
+          fi
+        else
+          echo "No previous releases found"
+        fi
+
+    - name: Create and push tag
+      id: create_tag
+      run: |
+        TAG="${{ steps.version.outputs.tag }}"
+
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
-        git tag -a "${{ steps.version.outputs.tag }}" -m "Release ${{ steps.version.outputs.version }}"
-        git push origin "${{ steps.version.outputs.tag }}"
+
+        # Create annotated tag
+        git tag -a "$TAG" -m "Release ${{ steps.version.outputs.version }}"
+
+        # Push tag with retry logic
+        MAX_RETRIES=3
+        RETRY_COUNT=0
+
+        while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+          if git push origin "$TAG"; then
+            echo "Successfully pushed tag $TAG"
+            echo "success=true" >> $GITHUB_OUTPUT
+            exit 0
+          else
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            echo "Failed to push tag (attempt $RETRY_COUNT/$MAX_RETRIES)"
+            if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+              sleep 2
+            fi
+          fi
+        done
+
+        echo "::error::Failed to push tag after $MAX_RETRIES attempts"
+        echo "success=false" >> $GITHUB_OUTPUT
+
+        # Clean up local tag on failure
+        git tag -d "$TAG"
+        exit 1
 
     - name: Create GitHub Release
-      uses: actions/create-release@v1
+      if: steps.create_tag.outputs.success == 'true'
+      run: |
+        TAG="${{ steps.version.outputs.tag }}"
+        RELEASE_NAME="${{ steps.version.outputs.release_name }}"
+
+        # Create release using GitHub CLI
+        gh release create "$TAG" \
+          --title "$RELEASE_NAME" \
+          --notes "${{ steps.notes.outputs.notes }}" \
+          --verify-tag
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ steps.version.outputs.tag }}
-        release_name: ${{ steps.version.outputs.release_name }}
-        body: ${{ github.event.pull_request.body }}
-        draft: false
-        prerelease: false
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Cleanup on failure
+      if: failure() && steps.create_tag.outputs.success == 'true'
+      run: |
+        TAG="${{ steps.version.outputs.tag }}"
+        echo "::warning::Release creation failed. Cleaning up tag $TAG"
+
+        # Delete remote tag
+        git push --delete origin "$TAG" || echo "Failed to delete remote tag"
+
+        echo "::error::Release creation failed. Tag has been cleaned up. Please retry the release."
