@@ -265,21 +265,21 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
 
     @ViewBuilder
     private func renderAccessory(geometry: GeometryProxy, srcAnchor: Anchor<CGRect>, dstAnchor: Anchor<CGRect>, progress: CGFloat) -> some View {
-        let srcRect = geometry[srcAnchor]
-        let dstRect = geometry[dstAnchor]
-        let position = FlowingHeaderCalculations.calculatePosition(
-            sourceRect: srcRect,
-            destinationRect: dstRect,
-            progress: progress
-        )
-        let scale = FlowingHeaderCalculations.calculateScale(
-            sourceSize: srcRect.size,
-            destinationSize: dstRect.size,
-            progress: progress
-        )
+        if let accessory = accessoryContent {
+            let srcRect = geometry[srcAnchor]
+            let dstRect = geometry[dstAnchor]
+            let position = FlowingHeaderCalculations.calculatePosition(
+                sourceRect: srcRect,
+                destinationRect: dstRect,
+                progress: progress
+            )
+            let scale = FlowingHeaderCalculations.calculateScale(
+                sourceSize: srcRect.size,
+                destinationSize: dstRect.size,
+                progress: progress
+            )
 
-        if let accessoryView = accessoryContent.map({ AnyView($0) }) {
-            accessoryView
+            accessory
                 .frame(width: srcRect.size.width, height: srcRect.size.height)
                 .scaleEffect(x: scale.x, y: scale.y)
                 .position(x: position.x, y: position.y)
