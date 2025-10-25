@@ -74,7 +74,7 @@ public struct FlowingHeaderView: View {
                 headerContent(config: config)
             } else {
                 // Fallback when no config is provided
-                Text("No flowing header configuration found")
+                Text("No flowing header configuration found (expected id: \"\(id)\")")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -94,25 +94,25 @@ public struct FlowingHeaderView: View {
         let createTitleAnchor = flowComponents.contains(.title)
 
         VStack(spacing: showAccessory ? 12 : 8) {
-            let progress = (titleProgress * 4)
+            let progressFade = (titleProgress * FlowingHeaderTokens.accessoryFadeMultiplier)
 
             // Show accessory if in visibleComponents
             if showAccessory, let accessoryView = accessoryView {
                 if createAccessoryAnchor {
                     // Create anchor - hide if actually flowing (has destination)
                     accessoryView
-                        .opacity(accessoryFlowing ? 0 : max(0.6, (1 - progress)))
-                        .scaleEffect(accessoryFlowing ? 1 : max(0.6, (1 - progress)), anchor: .top)
-                        .animation(.smooth(duration: FlowingHeaderTokens.transitionDuration), value: progress)
+                        .opacity(accessoryFlowing ? 0 : max(0.6, (1 - progressFade)))
+                        .scaleEffect(accessoryFlowing ? 1 : max(0.6, (1 - progressFade)), anchor: .top)
+                        .animation(.smooth(duration: FlowingHeaderTokens.transitionDuration), value: progressFade)
                         .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
                             return [AnchorKeyID(kind: "source", id: config.title, type: "accessory"): anchor]
                         }
                 } else {
                     // Not creating anchor, but still apply fade/scale effect
                     accessoryView
-                        .opacity(max(0.6, (1 - progress)))
-                        .scaleEffect(max(0.6, (1 - progress)), anchor: .top)
-                        .animation(.smooth(duration: FlowingHeaderTokens.transitionDuration), value: progress)
+                        .opacity(max(0.6, (1 - progressFade)))
+                        .scaleEffect(max(0.6, (1 - progressFade)), anchor: .top)
+                        .animation(.smooth(duration: FlowingHeaderTokens.transitionDuration), value: progressFade)
                 }
             }
 

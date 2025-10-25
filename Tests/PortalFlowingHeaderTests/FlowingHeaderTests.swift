@@ -118,9 +118,9 @@ final class FlowingHeaderTests: XCTestCase {
 
         // Test setting config
         let config = FlowingHeaderContent(title: "Test", subtitle: "Sub")
-        environment.FlowingHeaderContent = config
-        XCTAssertNotNil(environment.FlowingHeaderContent)
-        XCTAssertEqual(environment.FlowingHeaderContent?.title, "Test")
+        environment.flowingHeaderContent = config
+        XCTAssertNotNil(environment.flowingHeaderContent)
+        XCTAssertEqual(environment.flowingHeaderContent?.title, "Test")
     }
 
     func testFlowingHeaderAccessoryViewEnvironment() {
@@ -135,129 +135,12 @@ final class FlowingHeaderTests: XCTestCase {
         XCTAssertNotNil(environment.flowingHeaderAccessoryView)
     }
 
-    // MARK: - Mock Data Tests
-
-    func testMockPhotoCreation() {
-        let photo = FlowingHeaderExample.MockPhoto(
-            name: "Test Photo",
-            category: "Test Category",
-            color: .blue
-        )
-
-        XCTAssertEqual(photo.name, "Test Photo")
-        XCTAssertEqual(photo.category, "Test Category")
-        XCTAssertNotNil(photo.id)
-    }
-
-    func testMockUserCreation() {
-        let user = FlowingHeaderExample.MockUser(
-            name: "Test User",
-            username: "@testuser",
-            bio: "Test bio",
-            followers: 100,
-            following: 50,
-            posts: 25,
-            avatar: "person.circle"
-        )
-
-        XCTAssertEqual(user.name, "Test User")
-        XCTAssertEqual(user.username, "@testuser")
-        XCTAssertEqual(user.followers, 100)
-        XCTAssertEqual(user.following, 50)
-        XCTAssertEqual(user.posts, 25)
-    }
-
-    @MainActor
-    func testSampleDataConsistency() {
-        let photos = FlowingHeaderExample.samplePhotos
-        let stats = FlowingHeaderExample.sampleStats
-        let artwork = FlowingHeaderExample.sampleArtwork
-
-        // Verify sample data is not empty
-        XCTAssertFalse(photos.isEmpty, "Sample photos should not be empty")
-        XCTAssertFalse(stats.isEmpty, "Sample stats should not be empty")
-        XCTAssertFalse(artwork.isEmpty, "Sample artwork should not be empty")
-
-        // Verify all photos have required properties
-        for photo in photos {
-            XCTAssertFalse(photo.name.isEmpty, "Photo name should not be empty")
-            XCTAssertFalse(photo.category.isEmpty, "Photo category should not be empty")
-            XCTAssertNotNil(photo.id, "Photo should have valid ID")
-        }
-
-        // Verify all stats have required properties
-        for stat in stats {
-            XCTAssertFalse(stat.title.isEmpty, "Stat title should not be empty")
-            XCTAssertFalse(stat.value.isEmpty, "Stat value should not be empty")
-            XCTAssertFalse(stat.change.isEmpty, "Stat change should not be empty")
-        }
-
-        // Verify all artwork has required properties
-        for art in artwork {
-            XCTAssertFalse(art.title.isEmpty, "Artwork title should not be empty")
-            XCTAssertFalse(art.artist.isEmpty, "Artwork artist should not be empty")
-            XCTAssertFalse(art.year.isEmpty, "Artwork year should not be empty")
-            XCTAssertNotNil(art.id, "Artwork should have valid ID")
-        }
-    }
-
-    @MainActor
-    func testSampleDataMemoryEfficiency() {
-        // Test that accessing sample data multiple times doesn't cause excessive memory usage
-        let photos1 = FlowingHeaderExample.samplePhotos
-        let photos2 = FlowingHeaderExample.samplePhotos
-
-        // Should return the same instance (since it's a computed property with static data)
-        XCTAssertEqual(photos1.count, photos2.count)
-        XCTAssertEqual(photos1.first?.name, photos2.first?.name)
-    }
-
     // MARK: - Example Component Tests
 
     @MainActor
     func testFlowingHeaderExampleCreation() {
-        let example = FlowingHeaderExample()
+        let example = FlowingHeaderExampleWithAccessory()
         XCTAssertNotNil(example)
-    }
-
-    @MainActor
-    func testFlowingHeaderCustomViewExampleCreation() {
-        let example = FlowingHeaderCustomViewExample()
-        XCTAssertNotNil(example)
-    }
-
-    @MainActor
-    func testFlowingHeaderTextOnlyExampleCreation() {
-        let example = FlowingHeaderTextOnlyExample()
-        XCTAssertNotNil(example)
-    }
-
-    @MainActor
-    func testFlowingHeaderTitleOnlyTransitionExampleCreation() {
-        let example = FlowingHeaderTitleOnlyTransitionExample()
-        XCTAssertNotNil(example)
-    }
-
-    @MainActor
-    func testFlowingHeaderMultiStyleExampleCreation() {
-        let example = FlowingHeaderMultiStyleExample()
-        XCTAssertNotNil(example)
-    }
-
-    @MainActor
-    func testFlowingHeaderNavigationExampleCreation() {
-        let example = FlowingHeaderNavigationExample()
-        XCTAssertNotNil(example)
-    }
-
-    // MARK: - Header Style Tests
-
-    func testHeaderStyleCaseIterable() {
-        let allStyles = FlowingHeaderExample.HeaderStyle.allCases
-        XCTAssertEqual(allStyles.count, 3)
-        XCTAssertTrue(allStyles.contains(.standard))
-        XCTAssertTrue(allStyles.contains(.compact))
-        XCTAssertTrue(allStyles.contains(.minimal))
     }
 
     // MARK: - Edge Cases Tests
@@ -303,17 +186,6 @@ final class FlowingHeaderTests: XCTestCase {
     }
 
     // MARK: - Performance Tests
-
-    @MainActor
-    func testLargeSampleDataPerformance() {
-        measure {
-            // Test performance of accessing large sample data
-            let photos = FlowingHeaderExample.samplePhotos
-            _ = photos.count
-            _ = photos.first?.name
-            _ = photos.last?.category
-        }
-    }
 
     @MainActor
     func testViewCreationPerformance() {

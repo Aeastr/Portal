@@ -39,4 +39,14 @@ public struct FlowingHeaderTokens {
 
     /// Fallback start offset when no accessory height is measured.
     public static let fallbackStartOffset: CGFloat = 0
+
+    // MARK: - Visual Effects
+
+    /// Multiplier for accelerating accessory fade/scale effects relative to scroll progress.
+    ///
+    /// Higher values make the accessory fade and scale more quickly during the transition.
+    public static let accessoryFadeMultiplier: CGFloat = 4
+
+    /// Target size for accessory views in the navigation bar (in points).
+    public static let navigationBarAccessorySize: CGFloat = 25
 }

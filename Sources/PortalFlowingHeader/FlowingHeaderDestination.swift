@@ -94,8 +94,7 @@ internal struct FlowingHeaderDestination: ViewModifier {
     @ViewBuilder
     private func accessoryDestination(config: FlowingHeaderContent, isStatic: Bool) -> some View {
         if let accessoryView = accessoryView {
-            // Target size for nav bar (about the size of a system image in headline font)
-            let targetSize: CGFloat = 25
+            let targetSize = FlowingHeaderTokens.navigationBarAccessorySize
 
             // Calculate scale based on measured size
             let scale = accessorySize.width > 0 ? targetSize / accessorySize.width : 1.0

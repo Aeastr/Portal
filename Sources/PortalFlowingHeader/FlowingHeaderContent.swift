@@ -82,6 +82,12 @@ private struct FlowingHeaderContentKey: EnvironmentKey {
     static let defaultValue: FlowingHeaderContent? = nil
 }
 
+/// Environment key for the accessory view.
+///
+/// - Note: Uses `AnyView` for type erasure to simplify the API. This allows
+///   users to provide any accessory view type without threading generics through
+///   the entire view hierarchy. The performance impact is minimal since this is
+///   a single view rendered in the navigation bar.
 @available(iOS 18.0, *)
 private struct FlowingHeaderAccessoryViewKey: EnvironmentKey {
     nonisolated(unsafe) static let defaultValue: AnyView? = nil
