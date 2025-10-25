@@ -25,7 +25,7 @@ jobs:
         set -o pipefail
         xcodebuild test \
           -scheme Portal-Package \
-          -destination 'platform=iOS Simulator,OS=latest' \
+          -destination 'platform=iOS Simulator' \
           -enableCodeCoverage YES \
           CODE_SIGN_IDENTITY="" \
           CODE_SIGNING_REQUIRED=NO
