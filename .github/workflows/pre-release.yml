@@ -5,6 +5,11 @@ on:
     types: [opened, synchronize, reopened, edited]
     branches: [ main ]
 
+# Prevent concurrent pre-releases for the same PR
+concurrency:
+  group: pre-release-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 permissions:
   contents: write
   pull-requests: write
@@ -35,6 +40,7 @@ jobs:
       shell: bash
       env:
         PR_TITLE: ${{ github.event.pull_request.title }}
+        PR_BODY: ${{ github.event.pull_request.body }}
       run: |
         echo "PR Title: $PR_TITLE"
 
@@ -50,6 +56,14 @@ jobs:
         # Validate semantic versioning format
         if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
           echo "::error::Version '$VERSION' is not valid semantic versioning (expected: MAJOR.MINOR.PATCH)"
+          exit 1
+        fi
+
+        # Validate PR body length early (GitHub limit is 125 KiB = 128000 bytes)
+        PR_BODY_LENGTH=$(echo -n "$PR_BODY" | wc -c)
+        if [ "$PR_BODY_LENGTH" -gt 128000 ]; then
+          echo "::error::PR body is too large ($PR_BODY_LENGTH bytes). GitHub limit is 125 KiB (128000 bytes)."
+          echo "::error::Please reduce the PR description length."
           exit 1
         fi
 
@@ -78,11 +92,7 @@ jobs:
 
           **Action required:** Update your PR title to use a new version number.
 
-          Example:
-          - Current: \`Release $BASE_VERSION: ...\`
-          - Update to: \`Release $(($(echo $BASE_VERSION | cut -d. -f3) + 1 | xargs echo $BASE_VERSION | cut -d. -f1-2).): ...\`
-
-          Or manually determine the next appropriate version based on your changes."
+          Example: If current version is \`4.2.3\`, update to \`4.2.4\` or \`4.3.0\` depending on your changes."
 
           exit 1
         fi
@@ -176,14 +186,6 @@ jobs:
         PRERELEASE_NUM="${{ steps.prerelease.outputs.number }}"
         BASE_VERSION="${{ steps.version.outputs.base_version }}"
 
-        # Validate PR body length (GitHub limit is 125KB)
-        PR_BODY_LENGTH=$(echo -n "$PR_BODY" | wc -c)
-        if [ "$PR_BODY_LENGTH" -gt 128000 ]; then
-          echo "::error::PR body is too large ($PR_BODY_LENGTH bytes). GitHub limit is 125KB (128000 bytes)."
-          echo "::error::Please reduce the PR description length."
-          exit 1
-        fi
-
         # Start with pre-release warning
         echo "⚠️ **This is a pre-release version for testing purposes.**" > release_notes.txt
         echo "" >> release_notes.txt
@@ -206,20 +208,6 @@ jobs:
         echo "notes<<$DELIMITER" >> $GITHUB_OUTPUT
         cat release_notes.txt >> $GITHUB_OUTPUT
         echo "$DELIMITER" >> $GITHUB_OUTPUT
-
-    - name: Check if pre-release tag already exists
-      if: steps.version.outputs.is_release_pr == 'true' && steps.check_existing.outputs.has_prerelease == 'false'
-      shell: bash
-      run: |
-        TAG="${{ steps.prerelease.outputs.tag }}"
-
-        # Check if tag exists remotely (shouldn't happen with auto-increment, but safety check)
-        if git ls-remote --tags origin | grep -q "refs/tags/$TAG"; then
-          echo "::error::Pre-release tag $TAG already exists. This shouldn't happen - check tag generation logic."
-          exit 1
-        fi
-
-        echo "Pre-release tag $TAG is available"
 
     - name: Create and push pre-release tag
       id: create_tag

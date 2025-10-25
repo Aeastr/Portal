@@ -48,6 +48,7 @@ jobs:
       shell: bash
       env:
         PR_TITLE: ${{ github.event.pull_request.title }}
+        PR_BODY: ${{ github.event.pull_request.body }}
       run: |
         echo "PR Title: $PR_TITLE"
 
@@ -62,6 +63,14 @@ jobs:
         # Validate semantic versioning format (MAJOR.MINOR.PATCH)
         if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
           echo "::error::Version '$VERSION' is not valid semantic versioning (expected: MAJOR.MINOR.PATCH)"
+          exit 1
+        fi
+
+        # Validate PR body length early (GitHub limit is 125 KiB = 128000 bytes)
+        PR_BODY_LENGTH=$(echo -n "$PR_BODY" | wc -c)
+        if [ "$PR_BODY_LENGTH" -gt 128000 ]; then
+          echo "::error::PR body is too large ($PR_BODY_LENGTH bytes). GitHub limit is 125 KiB (128000 bytes)."
+          echo "::error::Please reduce the PR description length."
           exit 1
         fi
 
@@ -142,14 +151,6 @@ jobs:
       env:
         PR_BODY: ${{ github.event.pull_request.body }}
       run: |
-        # Validate PR body length (GitHub limit is 125KB)
-        PR_BODY_LENGTH=$(echo -n "$PR_BODY" | wc -c)
-        if [ "$PR_BODY_LENGTH" -gt 128000 ]; then
-          echo "::error::PR body is too large ($PR_BODY_LENGTH bytes). GitHub limit is 125KB (128000 bytes)."
-          echo "::error::Please reduce the PR description length."
-          exit 1
-        fi
-
         # Check if PR body is empty or only whitespace
         if [ -z "$(echo "$PR_BODY" | tr -d '[:space:]')" ]; then
           echo "::warning::PR body is empty. Using generated changelog only."
@@ -213,7 +214,7 @@ jobs:
         TAG="${{ steps.version.outputs.tag }}"
 
         git config user.name "github-actions[bot]"
-        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
 
         # Create annotated tag
         git tag -a "$TAG" -m "Release ${{ steps.version.outputs.version }}"
