@@ -9,7 +9,7 @@ on:
 jobs:
   test:
     name: Run Tests
-    runs-on: macos-15
+    runs-on: macos-latest
 
     steps:
     - name: Checkout code
