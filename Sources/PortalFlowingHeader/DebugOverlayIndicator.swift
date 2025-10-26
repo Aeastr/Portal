@@ -10,6 +10,8 @@
 
 import SwiftUI
 
+// MARK: - Debug Overlay Label
+
 internal struct DebugOverlayIndicator: View {
     let text: String
     let color: Color
@@ -40,5 +42,44 @@ internal struct DebugOverlayIndicator: View {
             }
         }
         .allowsHitTesting(false)
+    }
+}
+
+// MARK: - Complete Debug Overlay
+
+@available(iOS 18.0, *)
+internal struct FlowingHeaderDebugOverlay: View {
+    let text: String
+    let color: Color
+    let components: FlowingHeaderDebugOverlayComponent
+
+    init(_ text: String, color: Color, showing components: FlowingHeaderDebugOverlayComponent) {
+        self.text = text
+        self.color = color
+        self.components = components
+    }
+
+    var body: some View {
+        Group {
+            if components.contains(.border) {
+                RoundedRectangle(cornerRadius: 4)
+                    .stroke(color, lineWidth: 2)
+                    .overlay(
+                        Group {
+                            if components.contains(.label) {
+                                DebugOverlayIndicator(text, color: color)
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+                                    .padding(5)
+                            }
+                        }
+                    )
+            }
+
+            if components.contains(.label) && !components.contains(.border) {
+                DebugOverlayIndicator(text, color: color)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+                    .padding(5)
+            }
+        }
     }
 }

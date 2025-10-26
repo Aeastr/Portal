@@ -112,15 +112,7 @@ public struct FlowingHeaderView: View {
                         .overlay(
                             Group {
                                 #if DEBUG
-                                if debugOverlaysEnabled {
-                                    RoundedRectangle(cornerRadius: 4)
-                                        .stroke(Color.blue, lineWidth: 2)
-                                        .overlay(
-                                            DebugOverlayIndicator("Source", color: .blue)
-                                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
-                                                .padding(5)
-                                        )
-                                }
+                                FlowingHeaderDebugOverlay("Source", color: .blue, showing: debugOverlaysEnabled)
                                 #endif
                             }
                         )
@@ -147,15 +139,7 @@ public struct FlowingHeaderView: View {
                             .overlay(
                                 Group {
                                     #if DEBUG
-                                    if debugOverlaysEnabled {
-                                        RoundedRectangle(cornerRadius: 4)
-                                            .stroke(Color.blue, lineWidth: 2)
-                                            .overlay(
-                                                DebugOverlayIndicator("Source", color: .blue)
-                                                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
-                                                    .padding(5)
-                                            )
-                                    }
+                                    FlowingHeaderDebugOverlay("Source", color: .blue, showing: debugOverlaysEnabled)
                                     #endif
                                 }
                             )
@@ -182,4 +166,36 @@ public struct FlowingHeaderView: View {
         .navigationBarTitleDisplayMode(.inline)
         #endif
     }
+}
+
+// MARK: - Preview
+
+@available(iOS 18.0, *)
+#Preview {
+    NavigationStack {
+        ScrollView {
+            FlowingHeaderView()
+                .padding(.top, 20)
+
+            ForEach(0..<20) { index in
+                Text("Item \(index)")
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(8)
+                    .padding(.horizontal)
+            }
+        }
+        .flowingHeaderDestination()
+    }
+    .flowingHeader(
+        title: "Preview Title",
+        subtitle: "This is a preview of the flowing header",
+        displays: [.title]
+    ) {
+        Image(systemName: "star.fill")
+            .font(.system(size: 64))
+            .foregroundStyle(.yellow)
+    }
+    .flowingHeaderDebugOverlays(showing: [.border])
 }

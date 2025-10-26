@@ -66,15 +66,7 @@ public struct Portal<Content: View>: View {
             .overlay(
                 Group {
                     #if DEBUG
-                    if debugOverlaysEnabled {
-                        RoundedRectangle(cornerRadius: 4)
-                            .stroke(isSource ? Color.blue : Color.orange, lineWidth: 2)
-                            .overlay(
-                                DebugOverlayIndicator(isSource ? "Source" : "Destination", color: isSource ? .blue : .orange)
-                                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
-                                    .padding(5)
-                            )
-                    }
+                    PortalDebugOverlay(isSource ? "Source" : "Destination", color: isSource ? .blue : .orange, showing: debugOverlaysEnabled)
                     #endif
                 }
             )

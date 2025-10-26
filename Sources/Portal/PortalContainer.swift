@@ -140,7 +140,7 @@ final class OverlayWindowManager {
     func addOverlayWindow(
         with portalModel: CrossModel,
         hideStatusBar: Bool,
-        debugOverlaysEnabled: Bool
+        debugOverlaysEnabled: PortalDebugOverlayComponent
     ) {
         guard overlayWindow == nil else {
             PortalLogs.logger.log(
@@ -161,7 +161,7 @@ final class OverlayWindowManager {
                     tags: [PortalLogs.Tags.overlay],
                     metadata: [
                         "hideStatusBar": hideStatusBar,
-                        "debugOverlays": debugOverlaysEnabled,
+                        "debugOverlays": !debugOverlaysEnabled.isEmpty,
                         "scene": windowScene.session.persistentIdentifier
                     ]
                 )
@@ -270,6 +270,43 @@ internal struct DebugOverlayIndicator: View {
     }
 }
 
+/// Complete debug overlay component with border and label
+internal struct PortalDebugOverlay: View {
+    let text: String
+    let color: Color
+    let components: PortalDebugOverlayComponent
+
+    init(_ text: String, color: Color, showing components: PortalDebugOverlayComponent) {
+        self.text = text
+        self.color = color
+        self.components = components
+    }
+
+    var body: some View {
+        Group {
+            if components.contains(.border) {
+                RoundedRectangle(cornerRadius: 4)
+                    .stroke(color, lineWidth: 2)
+                    .overlay(
+                        Group {
+                            if components.contains(.label) {
+                                DebugOverlayIndicator(text, color: color)
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+                                    .padding(5)
+                            }
+                        }
+                    )
+            }
+
+            if components.contains(.label) && !components.contains(.border) {
+                DebugOverlayIndicator(text, color: color)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+                    .padding(5)
+            }
+        }
+    }
+}
+
 #Preview{
     DebugOverlayIndicator("PortalContainerOverlay")
         .padding(20)
@@ -281,7 +318,7 @@ internal struct DebugOverlayIndicator: View {
 
 private struct PortalContainerRootView: View {
     let portalModel: CrossModel
-    let debugOverlaysEnabled: Bool
+    let debugOverlaysEnabled: PortalDebugOverlayComponent
 
     var body: some View {
         ZStack {
@@ -289,7 +326,7 @@ private struct PortalContainerRootView: View {
                 .environment(portalModel)
                 .environment(\.portalDebugOverlays, debugOverlaysEnabled)
             #if DEBUG
-            if debugOverlaysEnabled {
+            if !debugOverlaysEnabled.isEmpty {
                 DebugOverlayIndicator("PortalContainerOverlay")
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
                     .padding(20)

@@ -126,15 +126,7 @@ internal struct FlowingHeaderDestination: ViewModifier {
                     .overlay(
                         Group {
                             #if DEBUG
-                            if debugOverlaysEnabled {
-                                RoundedRectangle(cornerRadius: 4)
-                                    .stroke(Color.orange, lineWidth: 2)
-                                    .overlay(
-                                        DebugOverlayIndicator("Destination", color: .orange)
-                                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
-                                            .padding(5)
-                                    )
-                            }
+                            FlowingHeaderDebugOverlay("Destination", color: .orange, showing: debugOverlaysEnabled)
                             #endif
                         }
                     )
@@ -161,15 +153,7 @@ internal struct FlowingHeaderDestination: ViewModifier {
                 .overlay(
                     Group {
                         #if DEBUG
-                        if debugOverlaysEnabled {
-                            RoundedRectangle(cornerRadius: 4)
-                                .stroke(Color.orange, lineWidth: 2)
-                                .overlay(
-                                    DebugOverlayIndicator("Destination", color: .orange)
-                                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
-                                        .padding(5)
-                                )
-                        }
+                        FlowingHeaderDebugOverlay("Destination", color: .orange, showing: debugOverlaysEnabled)
                         #endif
                     }
                 )

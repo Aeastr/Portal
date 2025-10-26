@@ -10,33 +10,49 @@
 
 import SwiftUI
 
+// MARK: - Debug Overlay Component
+
+/// Components that can be shown in debug overlays.
+@available(iOS 18.0, *)
+public struct FlowingHeaderDebugOverlayComponent: OptionSet, Sendable {
+    public let rawValue: Int
+
+    public init(rawValue: Int) {
+        self.rawValue = rawValue
+    }
+
+    /// Show the text label indicator
+    public static let label = FlowingHeaderDebugOverlayComponent(rawValue: 1 << 0)
+    /// Show the border outline
+    public static let border = FlowingHeaderDebugOverlayComponent(rawValue: 1 << 1)
+
+    /// Show all debug overlay components
+    public static let all: FlowingHeaderDebugOverlayComponent = [.label, .border]
+}
+
 // MARK: - Debug Overlays Environment Key
 
-/// Environment key for controlling the visibility of flowing header debug overlays.
-///
-/// Debug overlays show visual indicators for header sources and destinations
-/// with labels. By default, overlays are shown in DEBUG builds but can be disabled
-/// using the `.flowingHeaderDebugOverlays(enabled:)` modifier.
+/// Environment key for controlling which debug overlay components are shown.
 @available(iOS 18.0, *)
 private struct FlowingHeaderDebugOverlaysKey: EnvironmentKey {
-    static let defaultValue: Bool = true
+    static let defaultValue: FlowingHeaderDebugOverlayComponent = .all
 }
 
 @available(iOS 18.0, *)
 public extension EnvironmentValues {
-    /// Controls whether flowing header debug overlays are shown.
+    /// Controls which flowing header debug overlay components are shown.
     ///
     /// Debug overlays are only visible in DEBUG builds. This environment value
-    /// provides an additional control to hide them even in DEBUG builds.
+    /// provides control over which components to show.
     ///
-    /// **Default:** `true` (overlays shown in DEBUG builds)
+    /// **Default:** `.all` (both label and border shown in DEBUG builds)
     ///
     /// **Usage:**
     /// ```swift
     /// ContentView()
-    ///     .environment(\.flowingHeaderDebugOverlays, false)
+    ///     .environment(\.flowingHeaderDebugOverlays, [.label])  // Label only
     /// ```
-    var flowingHeaderDebugOverlays: Bool {
+    var flowingHeaderDebugOverlays: FlowingHeaderDebugOverlayComponent {
         get { self[FlowingHeaderDebugOverlaysKey.self] }
         set { self[FlowingHeaderDebugOverlaysKey.self] = newValue }
     }
@@ -44,6 +60,31 @@ public extension EnvironmentValues {
 
 @available(iOS 18.0, *)
 public extension View {
+    /// Controls which flowing header debug overlay components are shown.
+    ///
+    /// Debug overlays are visual indicators that show header sources and
+    /// destinations. They are only visible in DEBUG builds.
+    ///
+    /// - Parameter showing: The set of debug overlay components to show.
+    ///
+    /// **Examples:**
+    /// ```swift
+    /// // Show both label and border (default)
+    /// ContentView()
+    ///     .flowingHeaderDebugOverlays(showing: [.label, .border])
+    ///
+    /// // Show only labels
+    /// ContentView()
+    ///     .flowingHeaderDebugOverlays(showing: [.label])
+    ///
+    /// // Hide all overlays
+    /// ContentView()
+    ///     .flowingHeaderDebugOverlays(showing: [])
+    /// ```
+    func flowingHeaderDebugOverlays(showing: FlowingHeaderDebugOverlayComponent) -> some View {
+        environment(\.flowingHeaderDebugOverlays, showing)
+    }
+
     /// Controls whether flowing header debug overlays are shown.
     ///
     /// Debug overlays are visual indicators that show header sources and
@@ -58,6 +99,6 @@ public extension View {
     ///     .flowingHeaderDebugOverlays(enabled: false)
     /// ```
     func flowingHeaderDebugOverlays(enabled: Bool) -> some View {
-        environment(\.flowingHeaderDebugOverlays, enabled)
+        environment(\.flowingHeaderDebugOverlays, enabled ? .all : [])
     }
 }
