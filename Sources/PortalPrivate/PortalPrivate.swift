@@ -149,7 +149,7 @@ public struct PortalPrivate<Content: View>: View {
                 .overlay(
                     Group {
                         #if DEBUG
-                        if debugOverlaysEnabled {
+                        if !debugOverlaysEnabled.isEmpty {
                             RoundedRectangle(cornerRadius: 4)
                                 .stroke(Color.purple, lineWidth: 2)
                                 .overlay(
@@ -1046,7 +1046,7 @@ public struct PortalPrivateDestination: View {
                 .overlay(
                     Group {
                         #if DEBUG
-                        if debugOverlaysEnabled {
+                        if !debugOverlaysEnabled.isEmpty {
                             RoundedRectangle(cornerRadius: 4)
                                 .stroke(Color.purple.opacity(0.5), lineWidth: 2)
                                 .overlay(
@@ -1079,7 +1079,7 @@ public struct PortalPrivateDestination: View {
                     .overlay(
                         Group {
                             #if DEBUG
-                            if debugOverlaysEnabled {
+                            if !debugOverlaysEnabled.isEmpty {
                                 Text("Awaiting PortalPrivate: \(id)")
                                     .font(.caption)
                                     .foregroundColor(.purple)
