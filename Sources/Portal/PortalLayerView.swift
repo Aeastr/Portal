@@ -124,7 +124,7 @@ private struct PortalLayerContentView: View {
             .overlay(
                 Group {
                     #if DEBUG
-                    if debugOverlaysEnabled {
+                    if !debugOverlaysEnabled.isEmpty {
                         DebugOverlayIndicator("Portal Layer", color: .green)
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                             .padding(5)

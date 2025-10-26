@@ -54,6 +54,7 @@ public struct FlowingHeaderView: View {
     @Environment(\.flowingHeaderAccessoryView) private var accessoryView
     @Environment(\.titleProgress) private var titleProgress
     @Environment(\.accessoryFlowing) private var accessoryFlowing
+    @Environment(\.flowingHeaderDebugOverlays) private var debugOverlaysEnabled
 
     private let id: String
     private let visibleComponents: Set<FlowingHeaderDisplayComponent>?
@@ -108,6 +109,13 @@ public struct FlowingHeaderView: View {
                         .opacity(accessoryFlowing ? 0 : fadeValue)
                         .scaleEffect(accessoryFlowing ? 1 : fadeValue, anchor: .top)
                         .animation(.smooth(duration: FlowingHeaderTokens.transitionDuration), value: fadeValue)
+                        .overlay(
+                            Group {
+                                #if DEBUG
+                                FlowingHeaderDebugOverlay("Source", color: .blue, showing: debugOverlaysEnabled)
+                                #endif
+                            }
+                        )
                         .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
                             return [AnchorKeyID(kind: "source", id: config.id, type: "accessory"): anchor]
                         }
@@ -128,6 +136,13 @@ public struct FlowingHeaderView: View {
                             .font(.title.weight(.semibold))
                             .opacity(0)  // Always invisible to maintain layout
                             .accessibilityHidden(true)  // Hide from VoiceOver since actual title is rendered separately
+                            .overlay(
+                                Group {
+                                    #if DEBUG
+                                    FlowingHeaderDebugOverlay("Source", color: .blue, showing: debugOverlaysEnabled)
+                                    #endif
+                                }
+                            )
                             .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
                                 return [AnchorKeyID(kind: "source", id: config.id, type: "title"): anchor]
                             }
@@ -151,4 +166,36 @@ public struct FlowingHeaderView: View {
         .navigationBarTitleDisplayMode(.inline)
         #endif
     }
+}
+
+// MARK: - Preview
+
+@available(iOS 18.0, *)
+#Preview {
+    NavigationStack {
+        ScrollView {
+            FlowingHeaderView()
+                .padding(.top, 20)
+
+            ForEach(0..<20) { index in
+                Text("Item \(index)")
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(8)
+                    .padding(.horizontal)
+            }
+        }
+        .flowingHeaderDestination()
+    }
+    .flowingHeader(
+        title: "Preview Title",
+        subtitle: "This is a preview of the flowing header",
+        displays: [.title]
+    ) {
+        Image(systemName: "star.fill")
+            .font(.system(size: 64))
+            .foregroundStyle(.yellow)
+    }
+    .flowingHeaderDebugOverlays(showing: [.border])
 }
