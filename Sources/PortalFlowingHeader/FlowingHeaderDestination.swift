@@ -38,6 +38,7 @@ internal struct FlowingHeaderDestination: ViewModifier {
     @Environment(\.flowingHeaderAccessoryView) private var accessoryView
     @Environment(\.flowingHeaderLayout) private var layout
     @Environment(\.titleProgress) private var titleProgress
+    @Environment(\.flowingHeaderDebugOverlays) private var debugOverlaysEnabled
 
     let id: String
     let displays: Set<FlowingHeaderDisplayComponent>?
@@ -122,6 +123,21 @@ internal struct FlowingHeaderDestination: ViewModifier {
                     .frame(width: targetSize, height: targetSize)
                     .opacity(0)
                     .accessibilityHidden(true)
+                    .overlay(
+                        Group {
+                            #if DEBUG
+                            if debugOverlaysEnabled {
+                                RoundedRectangle(cornerRadius: 4)
+                                    .stroke(Color.orange, lineWidth: 2)
+                                    .overlay(
+                                        DebugOverlayIndicator("Destination", color: .orange)
+                                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+                                            .padding(5)
+                                    )
+                            }
+                            #endif
+                        }
+                    )
                     .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
                         [AnchorKeyID(kind: "destination", id: config.id, type: "accessory"): anchor]
                     }
@@ -142,6 +158,21 @@ internal struct FlowingHeaderDestination: ViewModifier {
                 .font(.headline.weight(.semibold))
                 .opacity(0)
                 .accessibilityHidden(true)
+                .overlay(
+                    Group {
+                        #if DEBUG
+                        if debugOverlaysEnabled {
+                            RoundedRectangle(cornerRadius: 4)
+                                .stroke(Color.orange, lineWidth: 2)
+                                .overlay(
+                                    DebugOverlayIndicator("Destination", color: .orange)
+                                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+                                        .padding(5)
+                                )
+                        }
+                        #endif
+                    }
+                )
                 .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
                     [AnchorKeyID(kind: "destination", id: config.id, type: "title"): anchor]
                 }

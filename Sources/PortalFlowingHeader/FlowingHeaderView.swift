@@ -54,6 +54,7 @@ public struct FlowingHeaderView: View {
     @Environment(\.flowingHeaderAccessoryView) private var accessoryView
     @Environment(\.titleProgress) private var titleProgress
     @Environment(\.accessoryFlowing) private var accessoryFlowing
+    @Environment(\.flowingHeaderDebugOverlays) private var debugOverlaysEnabled
 
     private let id: String
     private let visibleComponents: Set<FlowingHeaderDisplayComponent>?
@@ -108,6 +109,21 @@ public struct FlowingHeaderView: View {
                         .opacity(accessoryFlowing ? 0 : fadeValue)
                         .scaleEffect(accessoryFlowing ? 1 : fadeValue, anchor: .top)
                         .animation(.smooth(duration: FlowingHeaderTokens.transitionDuration), value: fadeValue)
+                        .overlay(
+                            Group {
+                                #if DEBUG
+                                if debugOverlaysEnabled {
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .stroke(Color.blue, lineWidth: 2)
+                                        .overlay(
+                                            DebugOverlayIndicator("Source", color: .blue)
+                                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+                                                .padding(5)
+                                        )
+                                }
+                                #endif
+                            }
+                        )
                         .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
                             return [AnchorKeyID(kind: "source", id: config.id, type: "accessory"): anchor]
                         }
@@ -128,6 +144,21 @@ public struct FlowingHeaderView: View {
                             .font(.title.weight(.semibold))
                             .opacity(0)  // Always invisible to maintain layout
                             .accessibilityHidden(true)  // Hide from VoiceOver since actual title is rendered separately
+                            .overlay(
+                                Group {
+                                    #if DEBUG
+                                    if debugOverlaysEnabled {
+                                        RoundedRectangle(cornerRadius: 4)
+                                            .stroke(Color.blue, lineWidth: 2)
+                                            .overlay(
+                                                DebugOverlayIndicator("Source", color: .blue)
+                                                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+                                                    .padding(5)
+                                            )
+                                    }
+                                    #endif
+                                }
+                            )
                             .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
                                 return [AnchorKeyID(kind: "source", id: config.id, type: "title"): anchor]
                             }
