@@ -142,6 +142,8 @@ private struct PortalLayerContentView: View {
                     layer
                 }
             }
+            .compositingGroup()
+            .transition(.asymmetric(insertion: .identity, removal: .opacity.animation(.easeOut(duration: 0.1))))
             .overlay(
                 Group {
                     #if DEBUG
