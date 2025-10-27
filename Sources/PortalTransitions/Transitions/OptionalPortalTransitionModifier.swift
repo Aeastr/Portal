@@ -233,6 +233,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
             portalModel.info[idx].corners = corners
             portalModel.info[idx].completion = completion
             portalModel.info[idx].layerView = AnyView(layerView(unwrapped))
+            portalModel.info[idx].showLayer = true
 
             PortalLogs.logger.log(
                 "Starting forward portal transition",
@@ -249,10 +250,17 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
                 withAnimation(animation, completionCriteria: completionCriteria) {
                     portalModel.info[idx].animateView = true
                 } completion: {
-                    Task { @MainActor in
-                        // Hide destination view and notify completion
-                        portalModel.info[idx].hideView = true
-                        portalModel.info[idx].completion(true)
+                    // Show destination first, then hide layer on next frame to prevent flicker
+                    portalModel.info[idx].hideView = true
+
+                    DispatchQueue.main.async {
+                        // Hide layer after destination is visible
+                        portalModel.info[idx].showLayer = false
+
+                        Task { @MainActor in
+                            // Notify completion after handoff
+                            portalModel.info[idx].completion(true)
+                        }
                     }
                 }
             }
@@ -264,6 +272,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
 
             // Prepare for reverse animation
             portalModel.info[idx].hideView = false
+            portalModel.info[idx].showLayer = true
 
             PortalLogs.logger.log(
                 "Reversing portal transition",
@@ -278,6 +287,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
             } completion: {
                 Task { @MainActor in
                     // Complete cleanup after reverse animation
+                    portalModel.info[idx].showLayer = false
                     portalModel.info[idx].initialized = false
                     portalModel.info[idx].layerView = nil
                     portalModel.info[idx].sourceAnchor = nil

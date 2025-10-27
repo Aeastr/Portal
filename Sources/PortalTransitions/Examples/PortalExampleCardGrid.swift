@@ -20,7 +20,11 @@ public struct PortalExampleCardGrid: View {
         PortalExampleCard(title: "Animation", subtitle: "Smooth Motion", color: .green, icon: "waveform.path"),
         PortalExampleCard(title: "Design", subtitle: "Beautiful Interfaces", color: .orange, icon: "paintbrush.fill"),
         PortalExampleCard(title: "Code", subtitle: "Clean Architecture", color: .red, icon: "chevron.left.forwardslash.chevron.right"),
-        PortalExampleCard(title: "iOS", subtitle: "Native Platform", color: .cyan, icon: "iphone")
+        PortalExampleCard(title: "iOS", subtitle: "Native Platform", color: .cyan, icon: "iphone"),
+        PortalExampleCard(title: "Xcode", subtitle: "Development IDE", color: .indigo, icon: "hammer.fill"),
+        PortalExampleCard(title: "TestFlight", subtitle: "Beta Testing", color: .mint, icon: "airplane"),
+        PortalExampleCard(title: "Core Data", subtitle: "Data Persistence", color: .brown, icon: "cylinder.fill"),
+        PortalExampleCard(title: "CloudKit", subtitle: "Cloud Sync", color: .teal, icon: "cloud.fill")
     ]
 
     private let randomCards: [PortalExampleCard] = [

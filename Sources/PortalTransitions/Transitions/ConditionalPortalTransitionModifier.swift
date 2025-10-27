@@ -226,26 +226,35 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
 
         if newValue {
             // Forward transition: isActive became true
+            portalModel.info[idx].showLayer = true
+
             DispatchQueue.main.asyncAfter(deadline: .now() + PortalConstants.animationDelay) {
                 withAnimation(animation, completionCriteria: completionCriteria) {
                     portalModel.info[idx].animateView = true
                 } completion: {
-                    Task { @MainActor in
-                        // Hide destination view and notify completion
-                        portalModel.info[idx].hideView = true
-                        portalModel.info[idx].completion(true)
+                    // Show destination first, then hide layer on next frame to prevent flicker
+                    portalModel.info[idx].hideView = true
+
+                    DispatchQueue.main.async {
+                        portalModel.info[idx].showLayer = false
+
+                        Task { @MainActor in
+                            portalModel.info[idx].completion(true)
+                        }
                     }
                 }
             }
         } else {
             // Reverse transition: isActive became false
             portalModel.info[idx].hideView = false
+            portalModel.info[idx].showLayer = true
 
             withAnimation(animation, completionCriteria: completionCriteria) {
                 portalModel.info[idx].animateView = false
             } completion: {
                 Task { @MainActor in
                     // Complete cleanup after reverse animation
+                    portalModel.info[idx].showLayer = false
                     portalModel.info[idx].initialized = false
                     portalModel.info[idx].layerView = nil
                     portalModel.info[idx].sourceAnchor = nil

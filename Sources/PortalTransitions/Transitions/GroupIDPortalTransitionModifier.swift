@@ -115,6 +115,7 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
                 portalModel.info[idx].corners = corners
                 portalModel.info[idx].groupID = groupID
                 portalModel.info[idx].isGroupCoordinator = (i == 0)
+                portalModel.info[idx].showLayer = true
                 portalModel.info[idx].layerView = AnyView(layerView(portalID))
 
                 // Only coordinator gets completion callback
@@ -132,11 +133,19 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
                         portalModel.info[idx].animateView = true
                     }
                 } completion: {
-                    Task { @MainActor in
+                    // Show destinations first, then hide layers on next frame to prevent flicker
+                    for idx in groupIndices {
+                        portalModel.info[idx].hideView = true
+                    }
+
+                    DispatchQueue.main.async {
                         for idx in groupIndices {
-                            portalModel.info[idx].hideView = true
-                            if portalModel.info[idx].isGroupCoordinator {
-                                portalModel.info[idx].completion(true)
+                            portalModel.info[idx].showLayer = false
+                        }
+
+                        Task { @MainActor in
+                            if let coordinatorIdx = groupIndices.first(where: { portalModel.info[$0].isGroupCoordinator }) {
+                                portalModel.info[coordinatorIdx].completion(true)
                             }
                         }
                     }
@@ -146,6 +155,7 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
             // Reverse transition: isActive became false
             for idx in groupIndices {
                 portalModel.info[idx].hideView = false
+                portalModel.info[idx].showLayer = true
             }
 
             withAnimation(animation, completionCriteria: completionCriteria) {
@@ -155,6 +165,7 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
             } completion: {
                 Task { @MainActor in
                     for idx in groupIndices {
+                        portalModel.info[idx].showLayer = false
                         portalModel.info[idx].initialized = false
                         portalModel.info[idx].layerView = nil
                         portalModel.info[idx].sourceAnchor = nil

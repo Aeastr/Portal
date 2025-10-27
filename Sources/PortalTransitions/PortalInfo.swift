@@ -61,6 +61,13 @@ public struct PortalInfo: Identifiable {
     /// usually after the transition layer has completed its movement.
     public var hideView = false
 
+    /// Flag controlling the visibility of the transition layer.
+    ///
+    /// When `true`, the transition layer is visible and animating. When `false`, the layer is hidden.
+    /// This is separate from `hideView` to allow independent control of layer and destination visibility,
+    /// preventing flicker during handoff by ensuring the destination is visible before the layer disappears.
+    public var showLayer = false
+
     /// Anchor bounds information for the source (origin) view.
     ///
     /// Contains the geometric bounds of the source view in the coordinate space

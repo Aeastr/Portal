@@ -182,6 +182,7 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
             portalModel.info[idx].corners = corners
             portalModel.info[idx].groupID = groupID
             portalModel.info[idx].isGroupCoordinator = (i == 0)
+            portalModel.info[idx].showLayer = true
 
             if let item = items.first(where: { "\($0.id)" == portalModel.info[idx].infoID }) {
                 portalModel.info[idx].layerView = AnyView(layerView(item))
@@ -200,13 +201,18 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
                 withAnimation(animation, completionCriteria: completionCriteria) {
                     portalModel.info[idx].animateView = true
                 } completion: {
-                    Task { @MainActor in
-                        portalModel.info[idx].hideView = true
+                    // Show destination first, then hide layer on next frame to prevent flicker
+                    portalModel.info[idx].hideView = true
+
+                    DispatchQueue.main.async {
+                        portalModel.info[idx].showLayer = false
 
                         if portalModel.info[idx].isGroupCoordinator {
                             let lastItemDelay = TimeInterval(indices.count - 1) * staggerDelay
                             DispatchQueue.main.asyncAfter(deadline: .now() + lastItemDelay) {
-                                portalModel.info[idx].completion(true)
+                                Task { @MainActor in
+                                    portalModel.info[idx].completion(true)
+                                }
                             }
                         }
                     }
@@ -223,11 +229,19 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
                     portalModel.info[idx].animateView = true
                 }
             } completion: {
-                Task { @MainActor in
+                // Show destinations first, then hide layers on next frame to prevent flicker
+                for idx in indices {
+                    portalModel.info[idx].hideView = true
+                }
+
+                DispatchQueue.main.async {
                     for idx in indices {
-                        portalModel.info[idx].hideView = true
-                        if portalModel.info[idx].isGroupCoordinator {
-                            portalModel.info[idx].completion(true)
+                        portalModel.info[idx].showLayer = false
+                    }
+
+                    Task { @MainActor in
+                        if let coordinatorIdx = indices.first(where: { portalModel.info[$0].isGroupCoordinator }) {
+                            portalModel.info[coordinatorIdx].completion(true)
                         }
                     }
                 }
@@ -243,6 +257,7 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
 
         for idx in cleanupIndices {
             portalModel.info[idx].hideView = false
+            portalModel.info[idx].showLayer = true
         }
 
         withAnimation(animation, completionCriteria: completionCriteria) {
@@ -252,6 +267,7 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
         } completion: {
             Task { @MainActor in
                 for idx in cleanupIndices {
+                    portalModel.info[idx].showLayer = false
                     portalModel.info[idx].initialized = false
                     portalModel.info[idx].layerView = nil
                     portalModel.info[idx].sourceAnchor = nil

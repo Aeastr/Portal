@@ -97,7 +97,7 @@ private struct PortalLayerContentView: View {
         if let source = info.sourceAnchor,
            let destination = info.destinationAnchor,
            let layer = info.layerView,
-           !info.hideView {
+           info.showLayer {
             // Convert anchor bounds to concrete rectangles in global coordinate space
             let sRect = proxy[source]
             let dRect = proxy[destination]
