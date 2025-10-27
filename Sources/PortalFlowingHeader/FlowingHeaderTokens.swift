@@ -49,4 +49,12 @@ public struct FlowingHeaderTokens {
 
     /// Target size for accessory views in the navigation bar (in points).
     public static let navigationBarAccessorySize: CGFloat = 25
+
+    // MARK: - Snapping Behavior
+
+    /// Minimum scroll distance threshold to register a direction change (in points).
+    ///
+    /// Scroll movements smaller than this threshold are ignored to prevent
+    /// direction flickering from minor scroll jitter or floating-point precision issues.
+    public static let scrollDirectionThreshold: CGFloat = 0.1
 }
