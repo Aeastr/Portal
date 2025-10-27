@@ -162,24 +162,6 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
         return nil
     }
 
-    /// Convenience init for backward compatibility with config
-    @available(*, deprecated, message: "Use init with direct Animation parameters instead of PortalTransitionConfig")
-    public init(
-        id: String,
-        config: PortalTransitionConfig,
-        isActive: Binding<Bool>,
-        layerView: @escaping () -> LayerView,
-        completion: @escaping (Bool) -> Void
-    ) {
-        self.id = id
-        self.animation = config.animation.value
-        self.completionCriteria = config.animation.completionCriteria
-        self.corners = config.corners
-        self._isActive = isActive
-        self.layerView = layerView
-        self.completion = completion
-    }
-
     /// Ensures portal info exists in the model when the view appears.
     ///
     /// Creates a new `PortalInfo` entry if one doesn't already exist for this ID.
@@ -302,23 +284,6 @@ public extension View {
     ///   - layerView: Closure that returns the view to animate during transition
     ///   - completion: Optional completion handler (defaults to no-op)
     /// - Returns: A view with the portal transition modifier applied
-    @available(*, deprecated, message: "Use the new API with direct parameters instead of config. Will be removed in a future version.")
-    func portalTransition<LayerView: View>(
-        id: String,
-        config: PortalTransitionConfig,
-        isActive: Binding<Bool>,
-        @ViewBuilder layerView: @escaping () -> LayerView,
-        completion: @escaping (Bool) -> Void = { _ in }
-    ) -> some View {
-        return self.modifier(
-            ConditionalPortalTransitionModifier(
-                id: id,
-                config: config,
-                isActive: isActive,
-                layerView: layerView,
-                completion: completion))
-    }
-
     /// Applies a portal transition with direct parameter configuration.
     ///
     /// - Parameters:

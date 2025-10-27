@@ -137,26 +137,6 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
         return nil
     }
 
-    /// Convenience init for backward compatibility with config
-    @available(*, deprecated, message: "Use init with direct Animation parameters instead of PortalTransitionConfig")
-    public init(
-        items: Binding<[Item]>,
-        groupID: String,
-        config: PortalTransitionConfig,
-        layerView: @escaping (Item) -> LayerView,
-        completion: @escaping (Bool) -> Void,
-        staggerDelay: TimeInterval = 0.0
-    ) {
-        self._items = items
-        self.groupID = groupID
-        self.animation = config.animation.value
-        self.completionCriteria = config.animation.completionCriteria
-        self.corners = config.corners
-        self.layerView = layerView
-        self.completion = completion
-        self.staggerDelay = staggerDelay
-    }
-
     /// Generates string keys from the current items' IDs.
     private var keys: Set<String> {
         Set(items.map { "\($0.id)" })
@@ -354,27 +334,6 @@ public extension View {
     ///   - layerView: Closure that receives each item and returns the view to animate for that item
     ///   - completion: Optional completion handler called when all animations finish (defaults to no-op)
     /// - Returns: A view with the multi-item portal transition modifier applied
-    @available(*, deprecated, message: "Use portalTransition with direct animation and corners parameters instead. Will be removed in a future version.")
-    func portalTransition<Item: Identifiable, LayerView: View>(
-        items: Binding<[Item]>,
-        groupID: String,
-        config: PortalTransitionConfig,
-        staggerDelay: TimeInterval = 0.0,
-        @ViewBuilder layerView: @escaping (Item) -> LayerView,
-        completion: @escaping (Bool) -> Void = { _ in }
-    ) -> some View {
-        return self.modifier(
-            GroupItemPortalTransitionModifier(
-                items: items,
-                groupID: groupID,
-                config: config,
-                layerView: layerView,
-                completion: completion,
-                staggerDelay: staggerDelay
-            )
-        )
-    }
-
     /// Applies coordinated portal transitions for multiple items with direct parameters.
     ///
     /// Creates portal transitions for multiple items, with shared animation parameters

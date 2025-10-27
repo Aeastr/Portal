@@ -149,22 +149,6 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
         return nil
     }
 
-    /// Convenience init for backward compatibility with config.
-    @available(*, deprecated, message: "Use init with direct Animation parameters instead of PortalTransitionConfig")
-    public init(
-        item: Binding<Item?>,
-        config: PortalTransitionConfig,
-        layerView: @escaping (Item) -> LayerView,
-        completion: @escaping (Bool) -> Void
-    ) {
-        self._item = item
-        self.animation = config.animation.value
-        self.completionCriteria = config.animation.completionCriteria
-        self.corners = config.corners
-        self.layerView = layerView
-        self.completion = completion
-    }
-
     /// Generates a string key from the current item's ID.
     ///
     /// Returns `nil` when the item is `nil`, or a string representation of the
@@ -353,23 +337,6 @@ public extension View {
     ///   - layerView: Closure that receives the item and returns the view to animate
     ///   - completion: Optional completion handler (defaults to no-op)
     /// - Returns: A view with the portal transition modifier applied
-    @available(*, deprecated, message: "Use the new API with direct parameters instead of config. Will be removed in a future version.")
-    func portalTransition<Item: Identifiable, LayerView: View>(
-        item: Binding<Item?>,
-        config: PortalTransitionConfig,
-        @ViewBuilder layerView: @escaping (Item) -> LayerView,
-        completion: @escaping (Bool) -> Void = { _ in }
-    ) -> some View {
-        return self.modifier(
-            OptionalPortalTransitionModifier(
-                item: item,
-                config: config,
-                layerView: layerView,
-                completion: completion
-            )
-        )
-    }
-
     /// Applies a portal transition with direct parameters controlled by an optional item.
     ///
     /// - Parameters:

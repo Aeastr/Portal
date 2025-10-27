@@ -74,7 +74,7 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
     }
 
     /// Convenience init for backward compatibility with config
-    @available(*, deprecated, message: "Use init with direct Animation parameters instead of PortalTransitionConfig")
+    @available(*, deprecated, message: "Replace 'config: .init(animation: PortalAnimation(...))' with 'animation: Animation.smooth(...)' parameter")
     public init(
         ids: [String],
         groupID: String,
@@ -217,7 +217,7 @@ public extension View {
     ///   - layerView: Closure that receives each ID and returns the view to animate for that ID
     ///   - completion: Optional completion handler (defaults to no-op)
     /// - Returns: A view with the multi-ID portal transition modifier applied
-    @available(*, deprecated, message: "Use portalTransition with direct animation and corners parameters instead. Will be removed in a future version.")
+    @available(*, deprecated, message: "Replace 'config: .init(animation: PortalAnimation(...))' with 'animation: Animation.smooth(...)' and 'in: corners' parameters")
     func portalTransition<LayerView: View>(
         ids: [String],
         groupID: String,
