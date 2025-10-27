@@ -143,7 +143,10 @@ private struct PortalLayerContentView: View {
                 }
             }
             .compositingGroup()
-            .transition(.asymmetric(insertion: .identity, removal: .opacity.animation(.easeOut(duration: 0.1))))
+            .transition(.asymmetric(
+                insertion: .identity,
+                removal: info.fade == .fade ? .opacity.animation(.easeOut(duration: 0.1)) : .identity
+            ))
             .overlay(
                 Group {
                     #if DEBUG

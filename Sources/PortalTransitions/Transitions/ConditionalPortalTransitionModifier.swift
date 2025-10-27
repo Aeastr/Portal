@@ -62,11 +62,14 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
     /// Animation for the portal transition.
     public let animation: Animation
 
-    /// Completion criteria for detecting when animation finishes.
-    public let completionCriteria: AnimationCompletionCriteria
-
     /// Corner styling configuration for visual appearance.
     public let corners: PortalCorners?
+
+    /// Controls fade-out behavior when the portal layer is removed.
+    public let transition: PortalRemoveTransition
+
+    /// Completion criteria for detecting when animation finishes.
+    public let completionCriteria: AnimationCompletionCriteria
 
     /// Boolean binding that controls the portal transition state.
     ///
@@ -91,10 +94,11 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
     ///
     /// - Parameters:
     ///   - id: Unique identifier for the portal transition
-    ///   - animation: Animation for the transition
-    ///   - completionCriteria: Criteria for detecting animation completion
-    ///   - corners: Corner styling configuration (optional)
     ///   - isActive: Binding that controls the transition state
+    ///   - corners: Corner styling configuration (optional)
+    ///   - animation: Animation for the transition
+    ///   - transition: Fade-out behavior for layer removal
+    ///   - completionCriteria: Criteria for detecting animation completion
     ///   - layerView: Closure that generates the transition layer view
     ///   - completion: Handler called when the transition completes
     public init(
@@ -102,6 +106,7 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
         isActive: Binding<Bool>,
         in corners: PortalCorners? = nil,
         animation: Animation,
+        transition: PortalRemoveTransition = .none,
         completionCriteria: AnimationCompletionCriteria,
         completion: @escaping (Bool) -> Void,
         @ViewBuilder layerView: @escaping () -> LayerView
@@ -110,6 +115,7 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
         self._isActive = isActive
         self.corners = corners
         self.animation = animation
+        self.transition = transition
         self.completionCriteria = completionCriteria
         self.completion = completion
         self.layerView = layerView
@@ -202,6 +208,7 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
         portalModel.info[idx].animation = animation
         portalModel.info[idx].completionCriteria = completionCriteria
         portalModel.info[idx].corners = corners
+        portalModel.info[idx].fade = transition
         portalModel.info[idx].completion = completion
         portalModel.info[idx].layerView = AnyView(layerView())
 
@@ -289,7 +296,9 @@ public extension View {
     /// - Parameters:
     ///   - id: Unique identifier for the portal transition
     ///   - isActive: Boolean binding that controls the transition state
+    ///   - in corners: Corner radius configuration for visual styling
     ///   - animation: Animation to use for the transition (defaults to smooth animation)
+    ///   - transition: Fade-out behavior for layer removal (defaults to .fade)
     ///   - completionCriteria: How to detect animation completion (defaults to .removed)
     ///   - layerView: Closure that returns the view to animate during transition
     ///   - completion: Optional completion handler (defaults to no-op)
@@ -299,6 +308,7 @@ public extension View {
         isActive: Binding<Bool>,
         in corners: PortalCorners? = nil,
         animation: Animation = PortalConstants.defaultAnimation,
+        transition: PortalRemoveTransition = .none,
         completionCriteria: AnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void = { _ in },
         @ViewBuilder layerView: @escaping () -> LayerView
@@ -309,6 +319,7 @@ public extension View {
                 isActive: isActive,
                 in: corners,
                 animation: animation,
+                transition: transition,
                 completionCriteria: completionCriteria,
                 completion: completion,
                 layerView: layerView))

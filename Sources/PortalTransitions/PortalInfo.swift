@@ -108,6 +108,12 @@ public struct PortalInfo: Identifiable {
     /// beyond frame boundaries during scaling transitions.
     public var corners: PortalCorners?
 
+    /// Controls fade-out behavior when the portal layer is removed.
+    ///
+    /// Determines whether the portal transition layer should fade out smoothly
+    /// or disappear instantly when the transition completes. Default is `.fade`.
+    public var fade: PortalRemoveTransition = .none
+
     /// Anchor bounds information for the destination (target) view.
     ///
     /// Contains the geometric bounds of the destination view in the coordinate space

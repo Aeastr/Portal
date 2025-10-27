@@ -33,11 +33,14 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
     /// Animation to use for the transition.
     public let animation: Animation
 
-    /// Completion criteria for detecting when the animation finishes.
-    public let completionCriteria: AnimationCompletionCriteria
-
     /// Corner styling configuration for visual appearance.
     public let corners: PortalCorners?
+
+    /// Controls fade-out behavior when the portal layer is removed.
+    public let transition: PortalRemoveTransition
+
+    /// Completion criteria for detecting when the animation finishes.
+    public let completionCriteria: AnimationCompletionCriteria
 
     /// Boolean binding that controls the portal transition state.
     @Binding public var isActive: Bool
@@ -59,6 +62,7 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
         isActive: Binding<Bool>,
         in corners: PortalCorners? = nil,
         animation: Animation = PortalConstants.defaultAnimation,
+        transition: PortalRemoveTransition = .none,
         completionCriteria: AnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void,
         @ViewBuilder layerView: @escaping (String) -> LayerView
@@ -68,6 +72,7 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
         self._isActive = isActive
         self.corners = corners
         self.animation = animation
+        self.transition = transition
         self.completionCriteria = completionCriteria
         self.completion = completion
         self.layerView = layerView
@@ -94,6 +99,7 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
                 portalModel.info[idx].animation = animation
                 portalModel.info[idx].completionCriteria = completionCriteria
                 portalModel.info[idx].corners = corners
+                portalModel.info[idx].fade = transition
                 portalModel.info[idx].groupID = groupID
                 portalModel.info[idx].isGroupCoordinator = (i == 0)
                 portalModel.info[idx].showLayer = true
@@ -182,6 +188,7 @@ public extension View {
     ///   - isActive: Controls whether the transition is active
     ///   - in corners: Corner radius configuration for visual styling
     ///   - animation: The animation curve to use
+    ///   - transition: Fade-out behavior for layer removal (defaults to .fade)
     ///   - completionCriteria: How to detect animation completion
     ///   - layerView: Closure that generates the view for each ID
     ///   - completion: Called when the transition completes
@@ -193,6 +200,7 @@ public extension View {
         isActive: Binding<Bool>,
         in corners: PortalCorners? = nil,
         animation: Animation = PortalConstants.defaultAnimation,
+        transition: PortalRemoveTransition = .none,
         completionCriteria: AnimationCompletionCriteria = .removed,
         @ViewBuilder layerView: @escaping (String) -> LayerView,
         completion: @escaping (Bool) -> Void = { _ in }
@@ -204,6 +212,7 @@ public extension View {
                 isActive: isActive,
                 in: corners,
                 animation: animation,
+                transition: transition,
                 completionCriteria: completionCriteria,
                 completion: completion,
                 layerView: layerView))

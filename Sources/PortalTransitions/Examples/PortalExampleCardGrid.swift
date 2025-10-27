@@ -123,7 +123,8 @@ public struct PortalExampleCardGrid: View {
             }
 
             .portalTransition(
-                item: $selectedCard
+                item: $selectedCard,
+                transition: .fade
             ) { card in
                 AnimatedLayer(portalID: "\(card.id)") {
                     Group {

@@ -48,11 +48,14 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
     /// Animation to use for the transition.
     public let animation: Animation
 
-    /// Completion criteria for detecting when the animation finishes.
-    public let completionCriteria: AnimationCompletionCriteria
-
     /// Corner styling configuration for visual appearance.
     public let corners: PortalCorners?
+
+    /// Controls fade-out behavior when the portal layer is removed.
+    public let transition: PortalRemoveTransition
+
+    /// Completion criteria for detecting when the animation finishes.
+    public let completionCriteria: AnimationCompletionCriteria
 
     /// Closure that generates the layer view for the transition animation.
     ///
@@ -83,6 +86,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
     ///   - item: Binding to the optional item that controls the transition
     ///   - corners: Corner styling (defaults to environment value)
     ///   - animation: Animation to use for the transition
+    ///   - transition: Fade-out behavior for layer removal
     ///   - completionCriteria: How to detect animation completion
     ///   - completion: Handler called when the transition completes
     ///   - layerView: Closure that generates the transition layer view
@@ -90,6 +94,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
         item: Binding<Item?>,
         in corners: PortalCorners? = nil,
         animation: Animation = PortalConstants.defaultAnimation,
+        transition: PortalRemoveTransition = .none,
         completionCriteria: AnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void,
         @ViewBuilder layerView: @escaping (Item) -> LayerView
@@ -97,6 +102,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
         self._item = item
         self.corners = corners
         self.animation = animation
+        self.transition = transition
         self.completionCriteria = completionCriteria
         self.completion = completion
         self.layerView = layerView
@@ -214,6 +220,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
             portalModel.info[idx].animation = animation
             portalModel.info[idx].completionCriteria = completionCriteria
             portalModel.info[idx].corners = corners
+            portalModel.info[idx].fade = transition
             portalModel.info[idx].completion = completion
             portalModel.info[idx].layerView = AnyView(layerView(unwrapped))
             portalModel.info[idx].showLayer = true
@@ -343,6 +350,7 @@ public extension View {
     ///   - item: Binding to an optional `Identifiable` item that controls the transition
     ///   - in corners: Corner radius configuration for visual styling
     ///   - animation: Animation to use for the transition (defaults to smooth animation)
+    ///   - transition: Fade-out behavior for layer removal (defaults to .fade)
     ///   - completionCriteria: How to detect animation completion (defaults to .removed)
     ///   - completion: Optional completion handler (defaults to no-op)
     ///   - layerView: Closure that receives the item and returns the view to animate
@@ -351,6 +359,7 @@ public extension View {
         item: Binding<Item?>,
         in corners: PortalCorners? = nil,
         animation: Animation = PortalConstants.defaultAnimation,
+        transition: PortalRemoveTransition = .none,
         completionCriteria: AnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void = { _ in },
         @ViewBuilder layerView: @escaping (Item) -> LayerView
@@ -360,6 +369,7 @@ public extension View {
                 item: item,
                 in: corners,
                 animation: animation,
+                transition: transition,
                 completionCriteria: completionCriteria,
                 completion: completion,
                 layerView: layerView
