@@ -11,7 +11,7 @@
 #if DEBUG
 import SwiftUI
 
-let portalAnimationDuration: TimeInterval = 0.4
+let portalAnimationDuration: TimeInterval = 0.38
 let portalAnimationExample = Animation.smooth(duration: portalAnimationDuration, extraBounce: 0.25)
 let portalAnimationExampleExtraBounce = Animation.smooth(duration: portalAnimationDuration + 0.12, extraBounce: 0.55)
 
@@ -53,17 +53,17 @@ struct AnimatedLayer<Content: View>: AnimatedPortalLayer {
             // Timing calculation: Trigger second bounce slightly before halfway point
             // The 0.1 offset is an animation design parameter for this specific bounce choreography,
             // NOT PortalConstants.animationDelay (which is for portal system timing, not animation design)
-            DispatchQueue.main.asyncAfter(deadline: .now() + (portalAnimationDuration / 2) - 0.1) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                 withAnimation(portalAnimationExampleExtraBounce) {
                     layerScale = 1
                 }
             }
         } else {
             withAnimation(portalAnimationExample) {
-                layerScale = scale
+                layerScale = 1.15
             }
             // Same timing calculation for reverse animation
-            DispatchQueue.main.asyncAfter(deadline: .now() + (portalAnimationDuration / 2) - 0.1) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                 withAnimation(portalAnimationExampleExtraBounce) {
                     layerScale = 1
                 }

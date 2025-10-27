@@ -24,7 +24,7 @@ public struct PortalConstants {
     /// - View hierarchy updates to complete
     /// - Layout calculations to settle
     /// - Smooth visual transitions without flicker
-    public static let animationDelay: TimeInterval = 0.1
+    public static let animationDelay: TimeInterval = 0.05
 
     /// Default animation duration for portal transitions.
     ///

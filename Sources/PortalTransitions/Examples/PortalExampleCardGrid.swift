@@ -141,6 +141,7 @@ public struct PortalExampleCardGrid: View {
                 }
             }
         }
+        
     }
 }
 
@@ -212,7 +213,7 @@ private struct PortalExampleCardDetail: View {
 }
 
 #Preview("Card Grid") {
-    PortalExampleCardGrid()
+    PortalExampleCardGrid().portalDebugOverlays(enabled: false)
 }
 
 #Preview("Detail View") {
