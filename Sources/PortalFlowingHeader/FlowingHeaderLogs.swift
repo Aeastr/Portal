@@ -24,13 +24,13 @@ public enum FlowingHeaderLogs {
     private static let bootstrap: Void = {
         let instance = Logger.shared(for: registryKey)
         instance.subsystem = registryKey
-//#if DEBUG
+// #if DEBUG
 //        instance.setAllowedLevels(Set(LogLevel.allCases))
-//#else
+// #else
 //        instance.setAllowedLevels([.notice, .warning, .error, .fault])
-//#endif
+// #endif
         instance.setAllowedLevels([.notice, .warning, .error, .fault])
-        // we have disabled some levels by default to avoid spamming the console, they can still be enabled if need be, but this is less likely 
+        // we have disabled some levels by default to avoid spamming the console, they can still be enabled if need be, but this is less likely
     }()
 
     /// Shared logger instance dedicated to the PortalFlowingHeader package.
