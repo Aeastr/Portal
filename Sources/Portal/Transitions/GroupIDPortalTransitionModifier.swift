@@ -177,7 +177,7 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
     }
 }
 
-extension View {
+public extension View {
     /// Applies coordinated portal transitions for multiple portal IDs.
     ///
     /// This modifier enables multiple portal animations to run simultaneously as a coordinated group

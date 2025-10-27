@@ -9,7 +9,7 @@
 //
 
 import SwiftUI
-import os.log
+import LogOutLoud
 
 /// Layout style for accessory view positioning in the navigation bar.
 @available(iOS 18.0, *)
@@ -18,6 +18,30 @@ public enum AccessoryLayout: Sendable {
     case horizontal
     /// Accessory positioned vertically (stacked on top of title)
     case vertical
+}
+
+/// Snapping behavior when scrolling stops in the transition zone.
+@available(iOS 18.0, *)
+public enum SnappingBehavior: Sendable {
+    /// Snap to nearest position (0.0 or 1.0) based on midpoint (0.5)
+    case nearest
+    /// Snap based on scroll direction: down → 1.0, up → 0.0
+    case directional
+    /// No snapping - header stays at current progress
+    case none
+}
+
+/// Scroll direction for tracking user intent.
+@available(iOS 18.0, *)
+private enum ScrollDirection {
+    /// Scrolling downward (increasing offset)
+    case down
+    /// Scrolling upward (decreasing offset)
+    case up
+
+    var isDown: Bool {
+        self == .down
+    }
 }
 
 /// Components that can be displayed and transitioned in a flowing header.
@@ -47,18 +71,23 @@ public struct FlowingHeaderContent: Sendable {
     /// Layout style for navigation bar (horizontal or vertical)
     public let layout: AccessoryLayout
 
+    /// Snapping behavior when scrolling stops
+    public let snappingBehavior: SnappingBehavior
+
     public init(
         id: String = "default",
         title: String,
         subtitle: String,
         displays: Set<FlowingHeaderDisplayComponent> = [.title],
-        layout: AccessoryLayout = .horizontal
+        layout: AccessoryLayout = .horizontal,
+        snappingBehavior: SnappingBehavior = .directional
     ) {
         self.id = id
         self.title = title
         self.subtitle = subtitle
         self.displays = displays
         self.layout = layout
+        self.snappingBehavior = snappingBehavior
     }
 }
 
@@ -71,7 +100,8 @@ extension FlowingHeaderContent: Equatable {
         lhs.title == rhs.title &&
         lhs.subtitle == rhs.subtitle &&
         lhs.displays == rhs.displays &&
-        lhs.layout == rhs.layout
+        lhs.layout == rhs.layout &&
+        lhs.snappingBehavior == rhs.snappingBehavior
     }
 }
 
@@ -119,6 +149,9 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
     @State private var titleProgress: Double = 0.0
     @State private var isScrolling = false
     @State private var scrollOffset: CGFloat = 0
+    @State private var lastScrollDirection: ScrollDirection = .down
+    @State private var hasSnapped = false
+    @State private var snappedValue: Double = 0.0
     @State private var accessoryFlowing = false
     @State private var accessorySourceHeight: CGFloat = 0
 
@@ -141,38 +174,134 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
             .environment(\.titleProgress, titleProgress)
             .environment(\.accessoryFlowing, accessoryFlowing)
             .onScrollPhaseChange { _, newPhase in
+                let wasScrolling = isScrolling
                 isScrolling = [ScrollPhase.interacting, ScrollPhase.decelerating].contains(newPhase)
 
-                // When scrolling stops, snap to nearest position
-                if !isScrolling {
-                    let snapTarget = titleProgress > 0.5 ? 1.0 : 0.0
-                    withAnimation(.smooth(duration: FlowingHeaderTokens.transitionDuration)) {
-                        titleProgress = snapTarget
+                // When scrolling stops, snap based on configured behavior
+                // Only snap if we're in the transition zone (progress between 0 and 1)
+                if wasScrolling && !isScrolling && titleProgress > 0.0 && titleProgress < 1.0 {
+                    let snapTarget: Double?
+
+                    switch config.snappingBehavior {
+                    case .directional:
+                        // Snap based on scroll direction: down → 1.0, up → 0.0
+                        snapTarget = lastScrollDirection.isDown ? 1.0 : 0.0
+                        FlowingHeaderLogs.logger.log(
+                            "Directional snap triggered",
+                            level: .debug,
+                            tags: [FlowingHeaderLogs.Tags.snapping],
+                            metadata: [
+                                "direction": lastScrollDirection.isDown ? "down" : "up",
+                                "target": "\(snapTarget!)",
+                                "currentProgress": "\(titleProgress)"
+                            ]
+                        )
+
+                    case .nearest:
+                        // Snap to nearest position based on midpoint
+                        snapTarget = titleProgress > 0.5 ? 1.0 : 0.0
+                        FlowingHeaderLogs.logger.log(
+                            "Nearest snap triggered",
+                            level: .debug,
+                            tags: [FlowingHeaderLogs.Tags.snapping],
+                            metadata: [
+                                "progress": "\(titleProgress)",
+                                "target": "\(snapTarget!)"
+                            ]
+                        )
+
+                    case .none:
+                        // No snapping
+                        snapTarget = nil
+                        FlowingHeaderLogs.logger.log(
+                            "Snap disabled",
+                            level: .debug,
+                            tags: [FlowingHeaderLogs.Tags.snapping],
+                            metadata: ["progress": "\(titleProgress)"]
+                        )
+                    }
+
+                    if let snapTarget = snapTarget {
+                        withAnimation(.smooth(duration: FlowingHeaderTokens.transitionDuration)) {
+                            titleProgress = snapTarget
+                        }
+
+                        // Remember that we've snapped (for directional behavior persistence)
+                        hasSnapped = true
+                        snappedValue = snapTarget
                     }
                 }
             }
             .onScrollGeometryChange(for: CGFloat.self) { geometry in
                 return geometry.contentOffset.y + geometry.contentInsets.top
-            } action: { _, newValue in
-                scrollOffset = newValue
+            } action: { _, newOffset in
+                let currentDirection: ScrollDirection = newOffset > scrollOffset ? .down : .up
+
+                // Track direction during scroll (ignore tiny movements to prevent jitter)
+                if abs(newOffset - scrollOffset) > FlowingHeaderTokens.scrollDirectionThreshold {
+                    lastScrollDirection = currentDirection
+                }
+
+                scrollOffset = newOffset
+
+                // If accessory is flowing, start earlier (when it's partially scrolled)
+                // Otherwise use full height or fallback
+                let hasFlowingAccessory = config.displays.contains(.accessory)
+                let startAt: CGFloat
+
+                if hasFlowingAccessory && accessorySourceHeight > 0 {
+                    startAt = accessorySourceHeight / FlowingHeaderTokens.accessoryStartDivisor
+                } else {
+                    startAt = accessorySourceHeight > 0 ? accessorySourceHeight : FlowingHeaderTokens.fallbackStartOffset
+                }
+
+                let progress = FlowingHeaderCalculations.calculateProgress(
+                    scrollOffset: newOffset,
+                    startAt: startAt,
+                    range: FlowingHeaderTokens.transitionRange
+                )
+
                 // Only update progress while actively scrolling
                 if isScrolling {
-                    // If accessory is flowing, start earlier (when it's partially scrolled)
-                    // Otherwise use full height or fallback
-                    let hasFlowingAccessory = config.displays.contains(.accessory)
-                    let startAt: CGFloat
+                    // If we've snapped and user continues scrolling in same direction, keep it snapped
+                    if hasSnapped {
+                        let shouldKeepSnapped = (snappedValue == 1.0 && currentDirection.isDown) || (snappedValue == 0.0 && !currentDirection.isDown)
 
-                    if hasFlowingAccessory && accessorySourceHeight > 0 {
-                        startAt = accessorySourceHeight / FlowingHeaderTokens.accessoryStartDivisor
-                    } else {
-                        startAt = accessorySourceHeight > 0 ? accessorySourceHeight : FlowingHeaderTokens.fallbackStartOffset
+                        if shouldKeepSnapped {
+                            // Keep snapped, don't update progress
+                            FlowingHeaderLogs.logger.log(
+                                "Maintaining snap position",
+                                level: .debug,
+                                tags: [FlowingHeaderLogs.Tags.scroll],
+                                metadata: ["snappedValue": "\(snappedValue)"]
+                            )
+                            return
+                        } else {
+                            // User reversed direction, reset snap state
+                            FlowingHeaderLogs.logger.log(
+                                "Direction reversed, releasing snap",
+                                level: .debug,
+                                tags: [FlowingHeaderLogs.Tags.scroll],
+                                metadata: [
+                                    "previousSnap": "\(snappedValue)",
+                                    "newDirection": currentDirection.isDown ? "down" : "up"
+                                ]
+                            )
+                            hasSnapped = false
+                        }
                     }
 
-                    let progress = FlowingHeaderCalculations.calculateProgress(
-                        scrollOffset: newValue,
-                        startAt: startAt,
-                        range: FlowingHeaderTokens.transitionRange
+                    FlowingHeaderLogs.logger.log(
+                        "Scroll progress update",
+                        level: .debug,
+                        tags: [FlowingHeaderLogs.Tags.scroll],
+                        metadata: [
+                            "offset": String(format: "%.1f", newOffset),
+                            "progress": String(format: "%.2f", progress),
+                            "direction": currentDirection.isDown ? "down" : "up"
+                        ]
                     )
+
                     withAnimation(.smooth(duration: FlowingHeaderTokens.scrollAnimationDuration)) {
                         titleProgress = progress
                     }
@@ -289,19 +418,22 @@ public extension View {
     ///   - subtitle: Secondary subtitle text
     ///   - displays: Components to show in nav bar (default: [.title])
     ///   - layout: Layout style for nav bar (default: .horizontal)
+    ///   - snappingBehavior: How to snap when scrolling stops (default: .directional)
     func flowingHeader(
         id: String = "default",
         title: String,
         subtitle: String,
         displays: Set<FlowingHeaderDisplayComponent> = [.title],
-        layout: AccessoryLayout = .horizontal
+        layout: AccessoryLayout = .horizontal,
+        snappingBehavior: SnappingBehavior = .directional
     ) -> some View {
         let config = FlowingHeaderContent(
             id: id,
             title: title,
             subtitle: subtitle,
             displays: displays,
-            layout: layout
+            layout: layout,
+            snappingBehavior: snappingBehavior
         )
         return modifier(FlowingHeaderModifier<EmptyView>(config: config, accessoryContent: nil))
     }
@@ -335,6 +467,7 @@ public extension View {
     ///   - subtitle: Secondary subtitle text
     ///   - displays: Components to show in nav bar (default: [.title, .accessory])
     ///   - layout: Layout style for nav bar (default: .horizontal)
+    ///   - snappingBehavior: How to snap when scrolling stops (default: .directional)
     ///   - accessory: View builder for custom accessory content
     func flowingHeader<AccessoryContent: View>(
         id: String = "default",
@@ -342,6 +475,7 @@ public extension View {
         subtitle: String,
         displays: Set<FlowingHeaderDisplayComponent> = [.title, .accessory],
         layout: AccessoryLayout = .vertical,
+        snappingBehavior: SnappingBehavior = .directional,
         @ViewBuilder accessory: () -> AccessoryContent
     ) -> some View {
         let config = FlowingHeaderContent(
@@ -349,7 +483,8 @@ public extension View {
             title: title,
             subtitle: subtitle,
             displays: displays,
-            layout: layout
+            layout: layout,
+            snappingBehavior: snappingBehavior
         )
         return modifier(FlowingHeaderModifier(config: config, accessoryContent: accessory()))
     }

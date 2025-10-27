@@ -1,6 +1,6 @@
 //
-//  PortalLogs.swift
-//  Portal
+//  FlowingHeaderLogs.swift
+//  PortalFlowingHeader
 //
 //  Created by Aether, 2025.
 //
@@ -14,24 +14,26 @@ import LogOutLoud
 import LogOutLoudConsole
 #endif
 
-/// Central logging namespace for the Portal package.
+/// Central logging namespace for the PortalFlowingHeader package.
 ///
-/// Use `PortalLogs.logger` for emitting logs related to portal lifecycle events,
-/// transitions, and diagnostics. Consumers can customise the logger configuration
-/// by calling `PortalLogs.configure(...)` at app launch.
-public enum PortalLogs {
-    private static let registryKey = "package.aeastr.portal"
+/// Use `FlowingHeaderLogs.logger` for emitting logs related to scroll tracking,
+/// snapping behavior, and transition diagnostics. Consumers can customize the
+/// logger configuration by calling `FlowingHeaderLogs.configure(...)` at app launch.
+public enum FlowingHeaderLogs {
+    private static let registryKey = "package.aeastr.portal.flowingheader"
     private static let bootstrap: Void = {
         let instance = Logger.shared(for: registryKey)
         instance.subsystem = registryKey
-#if DEBUG
-        instance.setAllowedLevels(Set(LogLevel.allCases))
-#else
+// #if DEBUG
+//        instance.setAllowedLevels(Set(LogLevel.allCases))
+// #else
+//        instance.setAllowedLevels([.notice, .warning, .error, .fault])
+// #endif
         instance.setAllowedLevels([.notice, .warning, .error, .fault])
-#endif
+        // we have disabled some levels by default to avoid spamming the console, they can still be enabled if need be, but this is less likely
     }()
 
-    /// Shared logger instance dedicated to the Portal package.
+    /// Shared logger instance dedicated to the PortalFlowingHeader package.
     public static var logger: Logger {
         _ = bootstrap
         return Logger.shared(for: registryKey)
@@ -47,12 +49,12 @@ public enum PortalLogs {
         if let allowedLevels { instance.setAllowedLevels(allowedLevels) }
     }
 
-    /// Commonly used logging tags for Portal internals.
+    /// Commonly used logging tags for FlowingHeader internals.
     public enum Tags {
-        public static let container = Tag("PortalContainer")
-        public static let overlay = Tag("OverlayWindow")
-        public static let transition = Tag("PortalTransition")
-        public static let diagnostics = Tag("Diagnostics")
+        public static let scroll = Tag("Scroll")
+        public static let snapping = Tag("Snapping")
+        public static let transition = Tag("Transition")
+        public static let anchors = Tag("Anchors")
     }
 
 #if canImport(LogOutLoudConsole)

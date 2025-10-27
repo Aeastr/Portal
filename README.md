@@ -2,9 +2,7 @@
   <img width="200" height="200" src="/Resources/icon/icon.png" alt="Portal Logo">
   <h1><b>Portal</b></h1>
   <p>
-    Portal is a SwiftUI package for seamless element transitions between views—including across sheets and navigation pushes (NavigationStack, .navigationDestination, etc)—using a portal metaphor for maximum flexibility.
-    <br>
-    <i>Compatible with iOS 17.0 and later*</i>
+    Advanced element transitions across navigation contexts, scroll-based flowing headers, and advanced view mirroring capabilities.
   </p>
 </div>
 
@@ -12,6 +10,7 @@
   <a href="https://developer.apple.com/ios/"><img src="https://img.shields.io/badge/iOS-17%2B-purple.svg" alt="iOS 17+"></a>
   <a href="https://swift.org/"><img src="https://img.shields.io/badge/Swift-6.0-orange.svg" alt="Swift 6.0"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT"></a>
+  <a href="https://github.com/Aeastr/Portal/actions/workflows/build.yml"><img src="https://github.com/Aeastr/Portal/actions/workflows/build.yml/badge.svg" alt="Build"></a>
   <a href="https://github.com/Aeastr/Portal/actions/workflows/tests.yml"><img src="https://github.com/Aeastr/Portal/actions/workflows/tests.yml/badge.svg" alt="Tests"></a>
 </p>
 
@@ -39,44 +38,38 @@ The [Portal Wiki](https://github.com/Aeastr/Portal/wiki) has the detailed docs -
 The wiki is included as a git submodule at `/wiki`, so you get all the docs when you clone. Great for offline reference and LLMs.
 
 
-## Features
+## What's Included
 
-- **Seamless Transitions**  
-  Effortlessly animate floating overlays between source and destination views using simple view modifiers.
+Portal provides three main capabilities:
 
-- **PortalFlowingHeader**  
-  Smooth, scroll-based header transitions where content flows from the scroll view into the navigation bar. Perfect for polished, native-feeling iOS experiences. (iOS 18.0+)
+### 🎯 Element Transitions (Portal)
+Animate views between navigation contexts (sheets, navigation stacks, tabs) with floating overlays.
+- Simple `.portalSource()` / `.portalDestination()` modifiers
+- Works with standard SwiftUI presentations (`.sheet`, `.navigationDestination`)
+- Flexible keying by static IDs or `Identifiable` items
+- Customizable animations via `AnimatedPortalLayer` protocol
+- **iOS 17+** • Standard SwiftUI APIs
 
-- **Works with Standard Presentations**  
-  Fully compatible with SwiftUI's built-in presentation methods like `.sheet` and `.navigationDestination`.
+### 📱 Flowing Headers (PortalFlowingHeader)
+Scroll-based header transitions that smoothly flow into the navigation bar.
+- Titles and accessories animate to navigation bar on scroll
+- Native iOS-feeling transitions with automatic snapping
+- Configurable snapping behavior (directional, nearest, none)
+- Visual debug overlays and structured logging
+- **iOS 18+** • Advanced scroll tracking APIs
 
-- **Flexible Anchoring**  
-  Mark any view as a portal source or destination, keyed by static IDs or `Identifiable` items.
+### 🔮 View Mirroring (PortalPrivate & PortalView)
+Advanced view mirroring using `_UIPortalView` for perfect state preservation.
+- Single shared view instance (same size at source/destination)
+- Direct UIKit integration available via `PortalView`
+- **⚠️ Private API** • Obfuscated for App Store compliance
 
-- **Easy Integration**  
-  Install `PortalContainer` once at your root view and every sheet/navigation stack automatically gains portal support—no custom presentation code required.
+## Key Features
 
-- **Customizable Animations**  
-  Fine-tune transitions with `PortalTransitionConfig` and drive bespoke transition layers via the `AnimatedPortalLayer` protocol.
-
-- **Modern SwiftUI Support**  
-  Built for iOS 17+ with the latest SwiftUI APIs and animation completion criteria
-
-- **Debug Overlays**
-  Visual indicators in DEBUG builds showing portal sources, destinations, and animation states. Zero overhead in Release builds.
-
-- **Structured Logging**
-  Built-in diagnostics via [LogOutLoud](https://github.com/Aeastr/LogOutLoud) integration. See the [Debugging Guide](https://github.com/Aeastr/Portal/wiki/Debugging) for details.
-  
-## Package Targets
-
-- **`Portal`** – Core transition system using standard SwiftUI APIs. Separate view instances allow different sizes at source/destination.
-
-- **`PortalFlowingHeader`** – Scroll-based header transitions that flow into the navigation bar. Smooth, native-feeling animations for polished iOS experiences. (iOS 18.0+) 
-
-- **`PortalPrivate`** – Portal transitions powered by view mirroring. Single shared instance with perfect state preservation but same-size constraint. (⚠️ Obfuscated Private API)
-
-- **`PortalView`** – Low-level `_UIPortalView` wrapper for direct UIKit integration.  (⚠️ Obfuscated Private API)
+✅ **One-time setup** – Install `PortalContainer` at your root, every presentation gains portal support
+✅ **Debug overlays** – Visual indicators in DEBUG builds, zero overhead in Release
+✅ **Structured logging** – Built-in diagnostics via [LogOutLoud](https://github.com/Aeastr/LogOutLoud)
+✅ **Modern SwiftUI** – Built for iOS 17+ with latest APIs and animation completion criteria
 
 
 ## Examples
