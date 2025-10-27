@@ -10,8 +10,8 @@
 
 import XCTest
 import SwiftUI
-@testable import Portal
-@testable import PortalView
+@testable import PortalTransitions
+@testable 
 @testable import PortalPrivate
 
 final class PortalPrivateTests: XCTestCase {

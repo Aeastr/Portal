@@ -9,8 +9,8 @@
 //
 
 import SwiftUI
-import Portal
-import PortalView
+import PortalTransitions
+
 
 public struct PortalPrivateExampleNoSheetView: View {
     @State private var selectedItem: Item?

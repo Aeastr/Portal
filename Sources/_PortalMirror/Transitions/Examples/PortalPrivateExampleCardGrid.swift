@@ -10,7 +10,7 @@
 
 #if DEBUG
 import SwiftUI
-import Portal
+import PortalTransitions
 
 /// PortalPrivate card grid example showing dynamic item parameter usage with view mirroring
 public struct PortalPrivateExampleCardGrid: View {

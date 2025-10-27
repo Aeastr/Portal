@@ -10,7 +10,7 @@
 
 #if DEBUG
 import SwiftUI
-import Portal
+import PortalTransitions
 
 /// Comparison example showing PortalPrivate vs native iOS transitions
 /// Shows PortalPrivate's view mirroring vs native iOS transition features

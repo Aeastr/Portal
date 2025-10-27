@@ -10,7 +10,7 @@
 
 #if DEBUG
 import SwiftUI
-import Portal
+import PortalTransitions
 
 /// PortalPrivate static ID example showing code block transitions with view mirroring
 public struct PortalPrivateExampleStaticID: View {

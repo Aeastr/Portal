@@ -10,7 +10,7 @@
 
 #if DEBUG
 import SwiftUI
-import Portal
+import PortalTransitions
 /// Portal multi-item example showing coordinated transitions for multiple elements
 public struct PortalExampleMultiItem: View {
     @State private var selectedPhotos: [MultiItemPhoto] = []

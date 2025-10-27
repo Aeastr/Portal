@@ -10,7 +10,7 @@
 
 #if DEBUG
 import SwiftUI
-import Portal
+import PortalTransitions
 
 // Configuration for animation timing - can be customized via environment or init
 struct AnimatedLayerConfig {

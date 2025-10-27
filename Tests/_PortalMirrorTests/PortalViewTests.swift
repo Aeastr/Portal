@@ -12,7 +12,7 @@ import XCTest
 import UIKit
 import SwiftUI
 import Obfuscate
-@testable import PortalView
+@testable 
 
 final class PortalViewTests: XCTestCase {
     // MARK: - Obfuscation Tests

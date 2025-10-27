@@ -9,8 +9,8 @@
 //
 
 import SwiftUI
-import Portal
-import PortalView
+import PortalTransitions
+
 
 // MARK: - Extended Portal Info
 

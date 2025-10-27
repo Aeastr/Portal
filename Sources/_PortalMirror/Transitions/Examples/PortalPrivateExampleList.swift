@@ -10,7 +10,7 @@
 
 #if DEBUG
 import SwiftUI
-import Portal
+import PortalTransitions
 import LogOutLoudConsole
 
 /// PortalPrivate list example showing photo transitions in a native SwiftUI List with view mirroring

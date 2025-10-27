@@ -10,7 +10,7 @@
 
 import XCTest
 import SwiftUI
-@testable import Portal
+@testable import PortalTransitions
 
 final class PortalCoreTests: XCTestCase {
     // MARK: - Animation Tests
