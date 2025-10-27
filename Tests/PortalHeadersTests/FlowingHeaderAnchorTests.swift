@@ -10,7 +10,7 @@
 
 import XCTest
 import SwiftUI
-@testable import PortalHeader
+@testable import PortalHeaders
 
 @available(iOS 18.0, *)
 final class PortalHeaderAnchorTests: XCTestCase {
