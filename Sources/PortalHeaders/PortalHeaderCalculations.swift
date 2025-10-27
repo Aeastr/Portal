@@ -1,6 +1,6 @@
 //
-//  FlowingHeaderCalculations.swift
-//  PortalFlowingHeader
+//  PortalHeaderCalculations.swift
+//  PortalPortalHeader
 //
 //  Created by Aether, 2025.
 //
@@ -15,7 +15,7 @@ import Foundation
 ///
 /// This struct provides testable, stateless functions for computing animation
 /// progress, offsets, and positions used in flowing header transitions.
-public struct FlowingHeaderCalculations {
+public struct PortalHeaderCalculations {
     // MARK: - Progress Calculation
 
     /// Calculates transition progress based on scroll offset.
@@ -33,7 +33,7 @@ public struct FlowingHeaderCalculations {
     ///
     /// ```swift
     /// // Transition starts at -20, completes over 40 points
-    /// let progress = FlowingHeaderCalculations.calculateProgress(
+    /// let progress = PortalHeaderCalculations.calculateProgress(
     ///     scrollOffset: 0,
     ///     startAt: -20,
     ///     range: 40
@@ -79,7 +79,7 @@ public struct FlowingHeaderCalculations {
     /// ## Example
     ///
     /// ```swift
-    /// let position = FlowingHeaderCalculations.calculatePosition(
+    /// let position = PortalHeaderCalculations.calculatePosition(
     ///     sourceRect: CGRect(x: 0, y: 0, width: 100, height: 100),
     ///     destinationRect: CGRect(x: 200, y: 400, width: 50, height: 50),
     ///     progress: 0.5
@@ -114,7 +114,7 @@ public struct FlowingHeaderCalculations {
     /// ## Example
     ///
     /// ```swift
-    /// let scale = FlowingHeaderCalculations.calculateScale(
+    /// let scale = PortalHeaderCalculations.calculateScale(
     ///     sourceSize: CGSize(width: 100, height: 100),
     ///     destinationSize: CGSize(width: 50, height: 50),
     ///     progress: 0.5
@@ -167,7 +167,7 @@ public struct FlowingHeaderCalculations {
     /// ## Example
     ///
     /// ```swift
-    /// let fade = FlowingHeaderCalculations.calculateAccessoryFade(
+    /// let fade = PortalHeaderCalculations.calculateAccessoryFade(
     ///     progress: 0.25,
     ///     fadeMultiplier: 4.0
     /// )

@@ -1,6 +1,6 @@
 //
-//  FlowingHeaderExampleWithAccessory.swift
-//  PortalFlowingHeader
+//  PortalHeaderExampleWithAccessory.swift
+//  PortalPortalHeader
 //
 //  Created by Aether, 2025.
 //
@@ -11,9 +11,9 @@
 #if DEBUG
 import SwiftUI
 
-/// Basic FlowingHeader example with accessory and title flowing to nav bar
+/// Basic PortalHeader example with accessory and title flowing to nav bar
 @available(iOS 18.0, *)
-public struct FlowingHeaderExampleWithAccessory: View {
+public struct PortalHeaderExampleWithAccessory: View {
     public init() {}
 
     private let colors: [Color] = [.red, .orange, .yellow, .green, .blue, .purple, .pink]
@@ -21,7 +21,7 @@ public struct FlowingHeaderExampleWithAccessory: View {
     public var body: some View {
         NavigationStack {
             ScrollView {
-                FlowingHeaderView()
+                PortalHeaderView()
 
                 LazyVStack(spacing: 12) {
                     ForEach(0..<20) { index in
@@ -57,9 +57,9 @@ public struct FlowingHeaderExampleWithAccessory: View {
                 }
                 .padding()
             }
-            .flowingHeaderDestination()
+            .portalHeaderDestination()
         }
-        .flowingHeader(
+        .portalHeader(
             title: "Photos",
             subtitle: "My Collection"
         ) {
@@ -72,7 +72,7 @@ public struct FlowingHeaderExampleWithAccessory: View {
 
 @available(iOS 18.0, *)
 #Preview("With Accessory") {
-    FlowingHeaderExampleWithAccessory()
+    PortalHeaderExampleWithAccessory()
 }
 
 #endif

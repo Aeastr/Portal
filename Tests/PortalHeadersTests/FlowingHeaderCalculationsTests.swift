@@ -1,6 +1,6 @@
 //
-//  FlowingHeaderCalculationsTests.swift
-//  PortalFlowingHeader
+//  PortalHeaderCalculationsTests.swift
+//  PortalPortalHeader
 //
 //  Created by Aether, 2025.
 //
@@ -9,16 +9,16 @@
 //
 
 import Testing
-@testable import PortalFlowingHeader
+@testable import PortalPortalHeader
 import CoreGraphics
 
-@Suite("FlowingHeader Calculations Tests")
-struct FlowingHeaderCalculationsTests {
+@Suite("PortalHeader Calculations Tests")
+struct PortalHeaderCalculationsTests {
     // MARK: - Progress Calculation Tests
 
     @Test("Progress calculation returns 0 before start offset")
     func progressBeforestartAt() {
-        let progress = FlowingHeaderCalculations.calculateProgress(
+        let progress = PortalHeaderCalculations.calculateProgress(
             scrollOffset: -30,
             startAt: -20,
             range: 40
@@ -28,7 +28,7 @@ struct FlowingHeaderCalculationsTests {
 
     @Test("Progress calculation at start offset")
     func progressAtstartAt() {
-        let progress = FlowingHeaderCalculations.calculateProgress(
+        let progress = PortalHeaderCalculations.calculateProgress(
             scrollOffset: -20,
             startAt: -20,
             range: 40
@@ -38,7 +38,7 @@ struct FlowingHeaderCalculationsTests {
 
     @Test("Progress calculation at midpoint")
     func progressAtMidpoint() {
-        let progress = FlowingHeaderCalculations.calculateProgress(
+        let progress = PortalHeaderCalculations.calculateProgress(
             scrollOffset: 0,
             startAt: -20,
             range: 40
@@ -48,7 +48,7 @@ struct FlowingHeaderCalculationsTests {
 
     @Test("Progress calculation at end offset")
     func progressAtEndOffset() {
-        let progress = FlowingHeaderCalculations.calculateProgress(
+        let progress = PortalHeaderCalculations.calculateProgress(
             scrollOffset: 20,
             startAt: -20,
             range: 40
@@ -58,7 +58,7 @@ struct FlowingHeaderCalculationsTests {
 
     @Test("Progress calculation clamped at maximum")
     func progressClampedAtMaximum() {
-        let progress = FlowingHeaderCalculations.calculateProgress(
+        let progress = PortalHeaderCalculations.calculateProgress(
             scrollOffset: 100,
             startAt: -20,
             range: 40
@@ -68,7 +68,7 @@ struct FlowingHeaderCalculationsTests {
 
     @Test("Progress calculation with zero range")
     func progressWithZeroRange() {
-        let progress = FlowingHeaderCalculations.calculateProgress(
+        let progress = PortalHeaderCalculations.calculateProgress(
             scrollOffset: 0,
             startAt: 0,
             range: 0
@@ -79,7 +79,7 @@ struct FlowingHeaderCalculationsTests {
 
     @Test("Progress calculation with negative range")
     func progressWithNegativeRange() {
-        let progress = FlowingHeaderCalculations.calculateProgress(
+        let progress = PortalHeaderCalculations.calculateProgress(
             scrollOffset: 10,
             startAt: 0,
             range: -40
@@ -91,7 +91,7 @@ struct FlowingHeaderCalculationsTests {
 
     @Test("Progress calculation with custom values")
     func progressWithCustomValues() {
-        let progress = FlowingHeaderCalculations.calculateProgress(
+        let progress = PortalHeaderCalculations.calculateProgress(
             scrollOffset: 50,
             startAt: 10,
             range: 100
@@ -102,7 +102,7 @@ struct FlowingHeaderCalculationsTests {
     @Test("Progress calculation negative clamping")
     func progressNegativeClamping() {
         // Test that negative progress values are clamped to 0.0
-        let progress = FlowingHeaderCalculations.calculateProgress(
+        let progress = PortalHeaderCalculations.calculateProgress(
             scrollOffset: 50,
             startAt: 100,
             range: 10
@@ -115,7 +115,7 @@ struct FlowingHeaderCalculationsTests {
 
     @Test("Progress with negative scroll offset")
     func progressWithNegativeScrollOffset() {
-        let progress = FlowingHeaderCalculations.calculateProgress(
+        let progress = PortalHeaderCalculations.calculateProgress(
             scrollOffset: -50,
             startAt: -20,
             range: 40
@@ -126,7 +126,7 @@ struct FlowingHeaderCalculationsTests {
 
     @Test("Progress when startAt equals scrollOffset")
     func progressWhenStartAtEqualsScrollOffset() {
-        let progress = FlowingHeaderCalculations.calculateProgress(
+        let progress = PortalHeaderCalculations.calculateProgress(
             scrollOffset: 100,
             startAt: 100,
             range: 40
@@ -142,7 +142,7 @@ struct FlowingHeaderCalculationsTests {
         let source = CGRect(x: 0, y: 0, width: 100, height: 100)
         let destination = CGRect(x: 200, y: 400, width: 50, height: 50)
 
-        let position = FlowingHeaderCalculations.calculatePosition(
+        let position = PortalHeaderCalculations.calculatePosition(
             sourceRect: source,
             destinationRect: destination,
             progress: 0.0
@@ -157,7 +157,7 @@ struct FlowingHeaderCalculationsTests {
         let source = CGRect(x: 0, y: 0, width: 100, height: 100)
         let destination = CGRect(x: 200, y: 400, width: 50, height: 50)
 
-        let position = FlowingHeaderCalculations.calculatePosition(
+        let position = PortalHeaderCalculations.calculatePosition(
             sourceRect: source,
             destinationRect: destination,
             progress: 1.0
@@ -172,7 +172,7 @@ struct FlowingHeaderCalculationsTests {
         let source = CGRect(x: 0, y: 0, width: 100, height: 100)
         let destination = CGRect(x: 200, y: 400, width: 50, height: 50)
 
-        let position = FlowingHeaderCalculations.calculatePosition(
+        let position = PortalHeaderCalculations.calculatePosition(
             sourceRect: source,
             destinationRect: destination,
             progress: 0.5
@@ -187,7 +187,7 @@ struct FlowingHeaderCalculationsTests {
         let source = CGRect(x: 0, y: 0, width: 100, height: 100)
         let destination = CGRect(x: 200, y: 400, width: 50, height: 50)
 
-        let position = FlowingHeaderCalculations.calculatePosition(
+        let position = PortalHeaderCalculations.calculatePosition(
             sourceRect: source,
             destinationRect: destination,
             progress: 0.5,
@@ -203,7 +203,7 @@ struct FlowingHeaderCalculationsTests {
         let source = CGRect(x: 0, y: 0, width: 100, height: 100)
         let destination = CGRect(x: 200, y: 400, width: 50, height: 50)
 
-        let position = FlowingHeaderCalculations.calculatePosition(
+        let position = PortalHeaderCalculations.calculatePosition(
             sourceRect: source,
             destinationRect: destination,
             progress: 0.5,
@@ -218,7 +218,7 @@ struct FlowingHeaderCalculationsTests {
     func positionWithIdenticalRects() {
         let rect = CGRect(x: 100, y: 100, width: 50, height: 50)
 
-        let position = FlowingHeaderCalculations.calculatePosition(
+        let position = PortalHeaderCalculations.calculatePosition(
             sourceRect: rect,
             destinationRect: rect,
             progress: 0.5
@@ -233,7 +233,7 @@ struct FlowingHeaderCalculationsTests {
         let source = CGRect(x: -100, y: -200, width: 50, height: 50)
         let destination = CGRect(x: 100, y: 200, width: 50, height: 50)
 
-        let position = FlowingHeaderCalculations.calculatePosition(
+        let position = PortalHeaderCalculations.calculatePosition(
             sourceRect: source,
             destinationRect: destination,
             progress: 0.5
@@ -257,7 +257,7 @@ struct FlowingHeaderCalculationsTests {
         let source = CGSize(width: 100, height: 100)
         let destination = CGSize(width: 50, height: 50)
 
-        let scale = FlowingHeaderCalculations.calculateScale(
+        let scale = PortalHeaderCalculations.calculateScale(
             sourceSize: source,
             destinationSize: destination,
             progress: 0.0
@@ -272,7 +272,7 @@ struct FlowingHeaderCalculationsTests {
         let source = CGSize(width: 100, height: 100)
         let destination = CGSize(width: 50, height: 50)
 
-        let scale = FlowingHeaderCalculations.calculateScale(
+        let scale = PortalHeaderCalculations.calculateScale(
             sourceSize: source,
             destinationSize: destination,
             progress: 1.0
@@ -287,7 +287,7 @@ struct FlowingHeaderCalculationsTests {
         let source = CGSize(width: 100, height: 100)
         let destination = CGSize(width: 50, height: 50)
 
-        let scale = FlowingHeaderCalculations.calculateScale(
+        let scale = PortalHeaderCalculations.calculateScale(
             sourceSize: source,
             destinationSize: destination,
             progress: 0.5
@@ -302,7 +302,7 @@ struct FlowingHeaderCalculationsTests {
         let source = CGSize(width: 100, height: 200)
         let destination = CGSize(width: 50, height: 50)
 
-        let scale = FlowingHeaderCalculations.calculateScale(
+        let scale = PortalHeaderCalculations.calculateScale(
             sourceSize: source,
             destinationSize: destination,
             progress: 0.5
@@ -317,7 +317,7 @@ struct FlowingHeaderCalculationsTests {
         let source = CGSize(width: 50, height: 50)
         let destination = CGSize(width: 100, height: 100)
 
-        let scale = FlowingHeaderCalculations.calculateScale(
+        let scale = PortalHeaderCalculations.calculateScale(
             sourceSize: source,
             destinationSize: destination,
             progress: 0.5
@@ -332,7 +332,7 @@ struct FlowingHeaderCalculationsTests {
         let source = CGSize(width: 100, height: 100)
         let destination = CGSize(width: 0, height: 0)
 
-        let scale = FlowingHeaderCalculations.calculateScale(
+        let scale = PortalHeaderCalculations.calculateScale(
             sourceSize: source,
             destinationSize: destination,
             progress: 0.5
@@ -347,7 +347,7 @@ struct FlowingHeaderCalculationsTests {
         let source = CGSize(width: 0, height: 0)
         let destination = CGSize(width: 100, height: 100)
 
-        let scale = FlowingHeaderCalculations.calculateScale(
+        let scale = PortalHeaderCalculations.calculateScale(
             sourceSize: source,
             destinationSize: destination,
             progress: 0.5
@@ -364,7 +364,7 @@ struct FlowingHeaderCalculationsTests {
         let sourceZeroWidth = CGSize(width: 0, height: 100)
         let destination = CGSize(width: 50, height: 50)
 
-        let scaleZeroWidth = FlowingHeaderCalculations.calculateScale(
+        let scaleZeroWidth = PortalHeaderCalculations.calculateScale(
             sourceSize: sourceZeroWidth,
             destinationSize: destination,
             progress: 0.5
@@ -376,7 +376,7 @@ struct FlowingHeaderCalculationsTests {
         // Zero height only
         let sourceZeroHeight = CGSize(width: 100, height: 0)
 
-        let scaleZeroHeight = FlowingHeaderCalculations.calculateScale(
+        let scaleZeroHeight = PortalHeaderCalculations.calculateScale(
             sourceSize: sourceZeroHeight,
             destinationSize: destination,
             progress: 0.5
@@ -390,7 +390,7 @@ struct FlowingHeaderCalculationsTests {
     func scaleWithIdenticalSizes() {
         let size = CGSize(width: 100, height: 100)
 
-        let scale = FlowingHeaderCalculations.calculateScale(
+        let scale = PortalHeaderCalculations.calculateScale(
             sourceSize: size,
             destinationSize: size,
             progress: 0.5
@@ -405,12 +405,12 @@ struct FlowingHeaderCalculationsTests {
         let source = CGSize(width: 64, height: 64)
         let destination = CGSize(width: 32, height: 32)
 
-        let scaleAt25 = FlowingHeaderCalculations.calculateScale(
+        let scaleAt25 = PortalHeaderCalculations.calculateScale(
             sourceSize: source,
             destinationSize: destination,
             progress: 0.25
         )
-        let scaleAt75 = FlowingHeaderCalculations.calculateScale(
+        let scaleAt75 = PortalHeaderCalculations.calculateScale(
             sourceSize: source,
             destinationSize: destination,
             progress: 0.75
@@ -432,14 +432,14 @@ struct FlowingHeaderCalculationsTests {
         let startAt: CGFloat = 0
         let range: CGFloat = 20
 
-        let progress = FlowingHeaderCalculations.calculateProgress(
+        let progress = PortalHeaderCalculations.calculateProgress(
             scrollOffset: scrollOffset,
             startAt: startAt,
             range: range
         )
         #expect(progress == 0.5)
 
-        let position = FlowingHeaderCalculations.calculatePosition(
+        let position = PortalHeaderCalculations.calculatePosition(
             sourceRect: source,
             destinationRect: destination,
             progress: CGFloat(progress)
@@ -452,7 +452,7 @@ struct FlowingHeaderCalculationsTests {
         // halfway: 150 + (75 - 150) * 0.5 = 150 + (-37.5) = 112.5
         #expect(position.y == 112.5)
 
-        let scale = FlowingHeaderCalculations.calculateScale(
+        let scale = PortalHeaderCalculations.calculateScale(
             sourceSize: source.size,
             destinationSize: destination.size,
             progress: CGFloat(progress)
@@ -468,7 +468,7 @@ struct FlowingHeaderCalculationsTests {
         let source = CGRect(x: 10000, y: 10000, width: 100, height: 100)
         let destination = CGRect(x: 20000, y: 20000, width: 50, height: 50)
 
-        let position = FlowingHeaderCalculations.calculatePosition(
+        let position = PortalHeaderCalculations.calculatePosition(
             sourceRect: source,
             destinationRect: destination,
             progress: 0.5
@@ -485,7 +485,7 @@ struct FlowingHeaderCalculationsTests {
         let source = CGSize(width: 0.1, height: 0.1)
         let destination = CGSize(width: 100, height: 100)
 
-        let scale = FlowingHeaderCalculations.calculateScale(
+        let scale = PortalHeaderCalculations.calculateScale(
             sourceSize: source,
             destinationSize: destination,
             progress: 0.5
@@ -498,7 +498,7 @@ struct FlowingHeaderCalculationsTests {
 
     @Test("Progress with floating point precision")
     func progressWithFloatingPointPrecision() {
-        let progress = FlowingHeaderCalculations.calculateProgress(
+        let progress = PortalHeaderCalculations.calculateProgress(
             scrollOffset: 1.0 / 3.0,
             startAt: 0.0,
             range: 1.0
@@ -510,7 +510,7 @@ struct FlowingHeaderCalculationsTests {
 
     @Test("Accessory fade at start of transition")
     func accessoryFadeAtStart() {
-        let fade = FlowingHeaderCalculations.calculateAccessoryFade(
+        let fade = PortalHeaderCalculations.calculateAccessoryFade(
             progress: 0.0,
             fadeMultiplier: 4.0
         )
@@ -520,7 +520,7 @@ struct FlowingHeaderCalculationsTests {
 
     @Test("Accessory fade at 10% progress")
     func accessoryFadeAt10Percent() {
-        let fade = FlowingHeaderCalculations.calculateAccessoryFade(
+        let fade = PortalHeaderCalculations.calculateAccessoryFade(
             progress: 0.1,
             fadeMultiplier: 4.0
         )
@@ -530,7 +530,7 @@ struct FlowingHeaderCalculationsTests {
 
     @Test("Accessory fade at 25% progress")
     func accessoryFadeAt25Percent() {
-        let fade = FlowingHeaderCalculations.calculateAccessoryFade(
+        let fade = PortalHeaderCalculations.calculateAccessoryFade(
             progress: 0.25,
             fadeMultiplier: 4.0
         )
@@ -540,7 +540,7 @@ struct FlowingHeaderCalculationsTests {
 
     @Test("Accessory fade at 50% progress")
     func accessoryFadeAt50Percent() {
-        let fade = FlowingHeaderCalculations.calculateAccessoryFade(
+        let fade = PortalHeaderCalculations.calculateAccessoryFade(
             progress: 0.5,
             fadeMultiplier: 4.0
         )
@@ -550,7 +550,7 @@ struct FlowingHeaderCalculationsTests {
 
     @Test("Accessory fade at end of transition")
     func accessoryFadeAtEnd() {
-        let fade = FlowingHeaderCalculations.calculateAccessoryFade(
+        let fade = PortalHeaderCalculations.calculateAccessoryFade(
             progress: 1.0,
             fadeMultiplier: 4.0
         )
@@ -560,7 +560,7 @@ struct FlowingHeaderCalculationsTests {
 
     @Test("Accessory fade with custom multiplier")
     func accessoryFadeWithCustomMultiplier() {
-        let fade = FlowingHeaderCalculations.calculateAccessoryFade(
+        let fade = PortalHeaderCalculations.calculateAccessoryFade(
             progress: 0.1,
             fadeMultiplier: 2.0
         )
@@ -570,7 +570,7 @@ struct FlowingHeaderCalculationsTests {
 
     @Test("Accessory fade with custom minimum")
     func accessoryFadeWithCustomMinimum() {
-        let fade = FlowingHeaderCalculations.calculateAccessoryFade(
+        let fade = PortalHeaderCalculations.calculateAccessoryFade(
             progress: 0.5,
             fadeMultiplier: 4.0,
             minimumValue: 0.3
@@ -585,7 +585,7 @@ struct FlowingHeaderCalculationsTests {
         let progressValues: [Double] = [0.3, 0.5, 0.75, 1.0]
 
         for progress in progressValues {
-            let fade = FlowingHeaderCalculations.calculateAccessoryFade(
+            let fade = PortalHeaderCalculations.calculateAccessoryFade(
                 progress: progress,
                 fadeMultiplier: 4.0,
                 minimumValue: 0.6
@@ -596,7 +596,7 @@ struct FlowingHeaderCalculationsTests {
 
     @Test("Accessory fade with zero multiplier")
     func accessoryFadeWithZeroMultiplier() {
-        let fade = FlowingHeaderCalculations.calculateAccessoryFade(
+        let fade = PortalHeaderCalculations.calculateAccessoryFade(
             progress: 0.5,
             fadeMultiplier: 0.0
         )
@@ -607,11 +607,11 @@ struct FlowingHeaderCalculationsTests {
     @Test("Accessory fade accelerates correctly")
     func accessoryFadeAcceleration() {
         // Verify fade accelerates faster than linear progress
-        let fade5 = FlowingHeaderCalculations.calculateAccessoryFade(
+        let fade5 = PortalHeaderCalculations.calculateAccessoryFade(
             progress: 0.05,
             fadeMultiplier: 4.0
         )
-        let fade10 = FlowingHeaderCalculations.calculateAccessoryFade(
+        let fade10 = PortalHeaderCalculations.calculateAccessoryFade(
             progress: 0.1,
             fadeMultiplier: 4.0
         )

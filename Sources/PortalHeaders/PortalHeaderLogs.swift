@@ -1,6 +1,6 @@
 //
-//  FlowingHeaderLogs.swift
-//  PortalFlowingHeader
+//  PortalHeaderLogs.swift
+//  PortalPortalHeader
 //
 //  Created by Aether, 2025.
 //
@@ -14,13 +14,13 @@ import LogOutLoud
 import LogOutLoudConsole
 #endif
 
-/// Central logging namespace for the PortalFlowingHeader package.
+/// Central logging namespace for the PortalPortalHeader package.
 ///
-/// Use `FlowingHeaderLogs.logger` for emitting logs related to scroll tracking,
+/// Use `PortalHeaderLogs.logger` for emitting logs related to scroll tracking,
 /// snapping behavior, and transition diagnostics. Consumers can customize the
-/// logger configuration by calling `FlowingHeaderLogs.configure(...)` at app launch.
-public enum FlowingHeaderLogs {
-    private static let registryKey = "package.aeastr.portal.flowingheader"
+/// logger configuration by calling `PortalHeaderLogs.configure(...)` at app launch.
+public enum PortalHeaderLogs {
+    private static let registryKey = "package.aeastr.portal.portalHeader"
     private static let bootstrap: Void = {
         let instance = Logger.shared(for: registryKey)
         instance.subsystem = registryKey
@@ -33,7 +33,7 @@ public enum FlowingHeaderLogs {
         // we have disabled some levels by default to avoid spamming the console, they can still be enabled if need be, but this is less likely
     }()
 
-    /// Shared logger instance dedicated to the PortalFlowingHeader package.
+    /// Shared logger instance dedicated to the PortalPortalHeader package.
     public static var logger: Logger {
         _ = bootstrap
         return Logger.shared(for: registryKey)
@@ -49,7 +49,7 @@ public enum FlowingHeaderLogs {
         if let allowedLevels { instance.setAllowedLevels(allowedLevels) }
     }
 
-    /// Commonly used logging tags for FlowingHeader internals.
+    /// Commonly used logging tags for PortalHeader internals.
     public enum Tags {
         public static let scroll = Tag("Scroll")
         public static let snapping = Tag("Snapping")

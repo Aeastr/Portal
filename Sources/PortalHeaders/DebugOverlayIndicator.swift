@@ -1,6 +1,6 @@
 //
 //  DebugOverlayIndicator.swift
-//  PortalFlowingHeader
+//  PortalPortalHeader
 //
 //  Created by Aether, 2025.
 //
@@ -48,12 +48,12 @@ internal struct DebugOverlayIndicator: View {
 // MARK: - Complete Debug Overlay
 
 @available(iOS 18.0, *)
-internal struct FlowingHeaderDebugOverlay: View {
+internal struct PortalHeaderDebugOverlay: View {
     let text: String
     let color: Color
-    let components: FlowingHeaderDebugOverlayComponent
+    let components: PortalHeaderDebugOverlayComponent
 
-    init(_ text: String, color: Color, showing components: FlowingHeaderDebugOverlayComponent) {
+    init(_ text: String, color: Color, showing components: PortalHeaderDebugOverlayComponent) {
         self.text = text
         self.color = color
         self.components = components

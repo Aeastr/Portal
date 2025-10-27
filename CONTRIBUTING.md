@@ -148,7 +148,7 @@ Portal supports two types of releases:
 **Example pre-release PR to `dev`:**
 ```
 Title: 4.3.0
-Description: Test new FlowingHeader snapping behavior
+Description: Test new PortalHeader snapping behavior
 ```
 This creates pre-release tags like `4.3.0-1`, `4.3.0-2`, etc. for testing.
 

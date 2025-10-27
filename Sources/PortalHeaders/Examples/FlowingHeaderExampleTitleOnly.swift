@@ -1,6 +1,6 @@
 //
-//  FlowingHeaderExampleTitleOnly.swift
-//  PortalFlowingHeader
+//  PortalHeaderExampleTitleOnly.swift
+//  PortalPortalHeader
 //
 //  Created by Aether, 2025.
 //
@@ -11,15 +11,15 @@
 #if DEBUG
 import SwiftUI
 
-/// FlowingHeader example with title-only transition
+/// PortalHeader example with title-only transition
 @available(iOS 18.0, *)
-public struct FlowingHeaderExampleTitleOnly: View {
+public struct PortalHeaderExampleTitleOnly: View {
     public init() {}
 
     public var body: some View {
         NavigationStack {
             ScrollView {
-                FlowingHeaderView()
+                PortalHeaderView()
 
                 LazyVStack(spacing: 16) {
                     ForEach(0..<10) { index in
@@ -38,9 +38,9 @@ public struct FlowingHeaderExampleTitleOnly: View {
                 }
                 .padding()
             }
-            .flowingHeaderDestination()
+            .portalHeaderDestination()
         }
-        .flowingHeader(
+        .portalHeader(
             title: "Analytics",
             subtitle: "Business Dashboard",
             displays: [.title]
@@ -54,7 +54,7 @@ public struct FlowingHeaderExampleTitleOnly: View {
 
 @available(iOS 18.0, *)
 #Preview("Title Only Transition") {
-    FlowingHeaderExampleTitleOnly()
+    PortalHeaderExampleTitleOnly()
 }
 
 #endif

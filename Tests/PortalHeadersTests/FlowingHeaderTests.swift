@@ -1,6 +1,6 @@
 //
-//  FlowingHeaderTests.swift
-//  PortalFlowingHeader
+//  PortalHeaderTests.swift
+//  PortalPortalHeader
 //
 //  Created by Aether, 2025.
 //
@@ -10,30 +10,30 @@
 
 import XCTest
 import SwiftUI
-@testable import PortalFlowingHeader
+@testable import PortalPortalHeader
 
 @available(iOS 18.0, *)
-final class FlowingHeaderTests: XCTestCase {
-    // MARK: - FlowingHeaderView Tests
+final class PortalHeaderTests: XCTestCase {
+    // MARK: - PortalHeaderView Tests
 
     @MainActor
-    func testFlowingHeaderViewInitialization() {
+    func testPortalHeaderViewInitialization() {
         // Test default initialization
-        let header = FlowingHeaderView()
+        let header = PortalHeaderView()
         XCTAssertNotNil(header)
     }
 
     @MainActor
-    func testFlowingHeaderViewWithCustomID() {
+    func testPortalHeaderViewWithCustomID() {
         // Test initialization with custom ID
-        let header = FlowingHeaderView(id: "custom")
+        let header = PortalHeaderView(id: "custom")
         XCTAssertNotNil(header)
     }
 
-    // MARK: - FlowingHeaderContent Tests
+    // MARK: - PortalHeaderContent Tests
 
-    func testFlowingHeaderContentCreation() {
-        let config = FlowingHeaderContent(
+    func testPortalHeaderContentCreation() {
+        let config = PortalHeaderContent(
             id: "test",
             title: "Test Title",
             subtitle: "Test Subtitle",
@@ -48,8 +48,8 @@ final class FlowingHeaderTests: XCTestCase {
         XCTAssertEqual(config.layout, .horizontal)
     }
 
-    func testFlowingHeaderContentDefaultValues() {
-        let config = FlowingHeaderContent(
+    func testPortalHeaderContentDefaultValues() {
+        let config = PortalHeaderContent(
             title: "Title",
             subtitle: "Subtitle"
         )
@@ -59,8 +59,8 @@ final class FlowingHeaderTests: XCTestCase {
         XCTAssertEqual(config.layout, .horizontal)
     }
 
-    func testFlowingHeaderContentWithAccessory() {
-        let config = FlowingHeaderContent(
+    func testPortalHeaderContentWithAccessory() {
+        let config = PortalHeaderContent(
             title: "Title",
             subtitle: "Subtitle",
             displays: [.title, .accessory]
@@ -73,14 +73,14 @@ final class FlowingHeaderTests: XCTestCase {
     // MARK: - Display Component Tests
 
     func testDisplayComponentCases() {
-        let title = FlowingHeaderDisplayComponent.title
-        let accessory = FlowingHeaderDisplayComponent.accessory
+        let title = PortalHeaderDisplayComponent.title
+        let accessory = PortalHeaderDisplayComponent.accessory
 
         XCTAssertNotEqual(title, accessory)
     }
 
     func testDisplayComponentSet() {
-        var displays: Set<FlowingHeaderDisplayComponent> = [.title]
+        var displays: Set<PortalHeaderDisplayComponent> = [.title]
         XCTAssertTrue(displays.contains(.title))
         XCTAssertFalse(displays.contains(.accessory))
 
@@ -99,40 +99,40 @@ final class FlowingHeaderTests: XCTestCase {
 
     // MARK: - Environment Values Tests
 
-    func testFlowingHeaderLayoutEnvironment() {
+    func testPortalHeaderLayoutEnvironment() {
         var environment = EnvironmentValues()
 
         // Test default value
-        XCTAssertEqual(environment.flowingHeaderLayout, .horizontal)
+        XCTAssertEqual(environment.portalHeaderLayout, .horizontal)
 
         // Test setting new value
-        environment.flowingHeaderLayout = .vertical
-        XCTAssertEqual(environment.flowingHeaderLayout, .vertical)
+        environment.portalHeaderLayout = .vertical
+        XCTAssertEqual(environment.portalHeaderLayout, .vertical)
     }
 
-    func testFlowingHeaderContentEnvironment() {
+    func testPortalHeaderContentEnvironment() {
         var environment = EnvironmentValues()
 
         // Test default value (nil)
-        XCTAssertNil(environment.flowingHeaderContent)
+        XCTAssertNil(environment.portalHeaderContent)
 
         // Test setting config
-        let config = FlowingHeaderContent(title: "Test", subtitle: "Sub")
-        environment.flowingHeaderContent = config
-        XCTAssertNotNil(environment.flowingHeaderContent)
-        XCTAssertEqual(environment.flowingHeaderContent?.title, "Test")
+        let config = PortalHeaderContent(title: "Test", subtitle: "Sub")
+        environment.portalHeaderContent = config
+        XCTAssertNotNil(environment.portalHeaderContent)
+        XCTAssertEqual(environment.portalHeaderContent?.title, "Test")
     }
 
-    func testFlowingHeaderAccessoryViewEnvironment() {
+    func testPortalHeaderAccessoryViewEnvironment() {
         var environment = EnvironmentValues()
 
         // Test default value (nil)
-        XCTAssertNil(environment.flowingHeaderAccessoryView)
+        XCTAssertNil(environment.portalHeaderAccessoryView)
 
         // Test setting accessory view
         let view = AnyView(Image(systemName: "star"))
-        environment.flowingHeaderAccessoryView = view
-        XCTAssertNotNil(environment.flowingHeaderAccessoryView)
+        environment.portalHeaderAccessoryView = view
+        XCTAssertNotNil(environment.portalHeaderAccessoryView)
     }
 
     // MARK: - AnchorKey Tests
@@ -195,8 +195,8 @@ final class FlowingHeaderTests: XCTestCase {
     // MARK: - Example Component Tests
 
     @MainActor
-    func testFlowingHeaderExampleCreation() {
-        let example = FlowingHeaderExampleWithAccessory()
+    func testPortalHeaderExampleCreation() {
+        let example = PortalHeaderExampleWithAccessory()
         XCTAssertNotNil(example)
     }
 
@@ -204,7 +204,7 @@ final class FlowingHeaderTests: XCTestCase {
 
     func testEmptyStringHandling() {
         // Test config with empty strings
-        let config = FlowingHeaderContent(
+        let config = PortalHeaderContent(
             title: "",
             subtitle: ""
         )
@@ -214,7 +214,7 @@ final class FlowingHeaderTests: XCTestCase {
     }
 
     func testConfigEquality() {
-        let config1 = FlowingHeaderContent(
+        let config1 = PortalHeaderContent(
             id: "test",
             title: "Title",
             subtitle: "Subtitle",
@@ -222,7 +222,7 @@ final class FlowingHeaderTests: XCTestCase {
             layout: .horizontal
         )
 
-        let config2 = FlowingHeaderContent(
+        let config2 = PortalHeaderContent(
             id: "test",
             title: "Title",
             subtitle: "Subtitle",
@@ -230,7 +230,7 @@ final class FlowingHeaderTests: XCTestCase {
             layout: .horizontal
         )
 
-        let config3 = FlowingHeaderContent(
+        let config3 = PortalHeaderContent(
             id: "different",
             title: "Title",
             subtitle: "Subtitle",
@@ -247,7 +247,7 @@ final class FlowingHeaderTests: XCTestCase {
     @MainActor
     func testHeaderScrollTransitionFlow() {
         // Test the full flow of header → scroll → navigation bar transition
-        let config = FlowingHeaderContent(
+        let config = PortalHeaderContent(
             id: "integration-test",
             title: "Integration Test",
             subtitle: "Testing full transition",
@@ -261,7 +261,7 @@ final class FlowingHeaderTests: XCTestCase {
         let range: CGFloat = 40
 
         for scrollOffset in scrollOffsets {
-            let progress = FlowingHeaderCalculations.calculateProgress(
+            let progress = PortalHeaderCalculations.calculateProgress(
                 scrollOffset: scrollOffset,
                 startAt: startAt,
                 range: range
@@ -275,13 +275,13 @@ final class FlowingHeaderTests: XCTestCase {
             let sourceRect = CGRect(x: 0, y: 0, width: 200, height: 100)
             let destRect = CGRect(x: 50, y: 50, width: 100, height: 50)
 
-            let position = FlowingHeaderCalculations.calculatePosition(
+            let position = PortalHeaderCalculations.calculatePosition(
                 sourceRect: sourceRect,
                 destinationRect: destRect,
                 progress: CGFloat(progress)
             )
 
-            let scale = FlowingHeaderCalculations.calculateScale(
+            let scale = PortalHeaderCalculations.calculateScale(
                 sourceSize: sourceRect.size,
                 destinationSize: destRect.size,
                 progress: CGFloat(progress)
@@ -302,19 +302,19 @@ final class FlowingHeaderTests: XCTestCase {
     @MainActor
     func testMultipleHeadersWithDifferentIDs() {
         // Test that multiple headers with different IDs don't interfere
-        let header1 = FlowingHeaderContent(
+        let header1 = PortalHeaderContent(
             id: "header1",
             title: "Header 1",
             subtitle: "First Header"
         )
 
-        let header2 = FlowingHeaderContent(
+        let header2 = PortalHeaderContent(
             id: "header2",
             title: "Header 2",
             subtitle: "Second Header"
         )
 
-        let header3 = FlowingHeaderContent(
+        let header3 = PortalHeaderContent(
             id: "header3",
             title: "Header 3",
             subtitle: "Third Header"
@@ -339,7 +339,7 @@ final class FlowingHeaderTests: XCTestCase {
     @MainActor
     func testAccessoryFlowingVsNonFlowing() {
         // Test accessory in flowing scenario
-        let flowingConfig = FlowingHeaderContent(
+        let flowingConfig = PortalHeaderContent(
             title: "Flowing",
             subtitle: "With Accessory",
             displays: [.title, .accessory],
@@ -351,7 +351,7 @@ final class FlowingHeaderTests: XCTestCase {
         XCTAssertEqual(flowingConfig.layout, .horizontal)
 
         // Test accessory in vertical layout
-        let verticalConfig = FlowingHeaderContent(
+        let verticalConfig = PortalHeaderContent(
             title: "Vertical",
             subtitle: "Layout",
             displays: [.title, .accessory],
@@ -365,7 +365,7 @@ final class FlowingHeaderTests: XCTestCase {
     @MainActor
     func testCompleteTransitionLifecycle() {
         // Simulate a complete transition from start to finish
-        let config = FlowingHeaderContent(
+        let config = PortalHeaderContent(
             id: "lifecycle-test",
             title: "Lifecycle",
             subtitle: "Complete Transition"
@@ -375,7 +375,7 @@ final class FlowingHeaderTests: XCTestCase {
         let range: CGFloat = 100
 
         // Pre-transition
-        let preProgress = FlowingHeaderCalculations.calculateProgress(
+        let preProgress = PortalHeaderCalculations.calculateProgress(
             scrollOffset: -10,
             startAt: startOffset,
             range: range
@@ -383,7 +383,7 @@ final class FlowingHeaderTests: XCTestCase {
         XCTAssertEqual(preProgress, 0.0)
 
         // Start of transition
-        let startProgress = FlowingHeaderCalculations.calculateProgress(
+        let startProgress = PortalHeaderCalculations.calculateProgress(
             scrollOffset: 0,
             startAt: startOffset,
             range: range
@@ -391,7 +391,7 @@ final class FlowingHeaderTests: XCTestCase {
         XCTAssertEqual(startProgress, 0.0)
 
         // Mid-transition
-        let midProgress = FlowingHeaderCalculations.calculateProgress(
+        let midProgress = PortalHeaderCalculations.calculateProgress(
             scrollOffset: 50,
             startAt: startOffset,
             range: range
@@ -399,7 +399,7 @@ final class FlowingHeaderTests: XCTestCase {
         XCTAssertEqual(midProgress, 0.5)
 
         // End of transition
-        let endProgress = FlowingHeaderCalculations.calculateProgress(
+        let endProgress = PortalHeaderCalculations.calculateProgress(
             scrollOffset: 100,
             startAt: startOffset,
             range: range
@@ -407,7 +407,7 @@ final class FlowingHeaderTests: XCTestCase {
         XCTAssertEqual(endProgress, 1.0)
 
         // Post-transition
-        let postProgress = FlowingHeaderCalculations.calculateProgress(
+        let postProgress = PortalHeaderCalculations.calculateProgress(
             scrollOffset: 150,
             startAt: startOffset,
             range: range
@@ -420,9 +420,9 @@ final class FlowingHeaderTests: XCTestCase {
     @MainActor
     func testViewCreationPerformance() {
         measure {
-            // Test performance of creating FlowingHeader views
+            // Test performance of creating PortalHeader views
             for i in 0..<100 {
-                _ = FlowingHeaderView(id: "test\(i)")
+                _ = PortalHeaderView(id: "test\(i)")
             }
         }
     }
@@ -431,7 +431,7 @@ final class FlowingHeaderTests: XCTestCase {
         measure {
             // Test performance of creating config objects
             for i in 0..<1000 {
-                _ = FlowingHeaderContent(
+                _ = PortalHeaderContent(
                     id: "test\(i)",
                     title: "Title \(i)",
                     subtitle: "Subtitle \(i)",

@@ -1,6 +1,6 @@
 //
-//  FlowingHeaderTokens.swift
-//  PortalFlowingHeader
+//  PortalHeaderTokens.swift
+//  PortalPortalHeader
 //
 //  Created by Aether, 2025.
 //
@@ -10,11 +10,11 @@
 
 import Foundation
 
-/// Design tokens and constants for the FlowingHeader animation system.
+/// Design tokens and constants for the PortalHeader animation system.
 ///
 /// This struct provides centralized configuration for timing and animations
-/// used throughout the FlowingHeader component.
-public struct FlowingHeaderTokens {
+/// used throughout the PortalHeader component.
+public struct PortalHeaderTokens {
     // MARK: - Animation Timing
 
     /// Default animation duration for flowing header transitions.

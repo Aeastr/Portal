@@ -11,7 +11,7 @@ The current module structure will be reorganized for better clarity and discover
   - Discrete, event-based transitions (sheets, navigation stacks, modals)
   - Standard SwiftUI APIs, no private dependencies
 
-- `PortalFlowingHeader` → `PortalHeaders`
+- `PortalPortalHeader` → `PortalHeaders`
   - Scroll-based header transitions that flow into navigation bars
   - Progressive, continuous transitions driven by scroll position
   - iOS 18+ for advanced scroll tracking

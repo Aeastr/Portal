@@ -1,6 +1,6 @@
 //
-//  FlowingHeaderView.swift
-//  PortalFlowingHeader
+//  PortalHeaderView.swift
+//  PortalPortalHeader
 //
 //  Created by Aether, 2025.
 //
@@ -12,19 +12,19 @@ import SwiftUI
 
 /// A header view that smoothly transitions to the navigation bar during scroll.
 ///
-/// `FlowingHeaderView` reads its configuration from the environment, set by the
-/// `.flowingHeader()` modifier applied to the parent NavigationStack.
+/// `PortalHeaderView` reads its configuration from the environment, set by the
+/// `.portalHeader()` modifier applied to the parent NavigationStack.
 ///
 /// ## Basic Usage
 ///
 /// ```swift
 /// NavigationStack {
 ///     ScrollView {
-///         FlowingHeaderView()
+///         PortalHeaderView()
 ///     }
-///     .flowingHeaderDestination()
+///     .portalHeaderDestination()
 /// }
-/// .flowingHeader(title: "Favorites", subtitle: "Your starred items")
+/// .portalHeader(title: "Favorites", subtitle: "Your starred items")
 /// ```
 ///
 /// ## With Accessory
@@ -32,11 +32,11 @@ import SwiftUI
 /// ```swift
 /// NavigationStack {
 ///     ScrollView {
-///         FlowingHeaderView()
+///         PortalHeaderView()
 ///     }
-///     .flowingHeaderDestination(displays: [.title, .accessory])
+///     .portalHeaderDestination(displays: [.title, .accessory])
 /// }
-/// .flowingHeader(
+/// .portalHeader(
 ///     title: "Profile",
 ///     subtitle: "Account settings",
 ///     displays: [.title, .accessory]
@@ -49,22 +49,22 @@ import SwiftUI
 /// - Important: This view is only available on iOS 18.0 and later due to its use of
 ///   advanced scroll tracking APIs.
 @available(iOS 18.0, *)
-public struct FlowingHeaderView: View {
-    @Environment(\.flowingHeaderContent) private var config
-    @Environment(\.flowingHeaderAccessoryView) private var accessoryView
+public struct PortalHeaderView: View {
+    @Environment(\.portalHeaderContent) private var config
+    @Environment(\.portalHeaderAccessoryView) private var accessoryView
     @Environment(\.titleProgress) private var titleProgress
     @Environment(\.accessoryFlowing) private var accessoryFlowing
-    @Environment(\.flowingHeaderDebugOverlays) private var debugOverlaysEnabled
+    @Environment(\.portalHeaderDebugOverlays) private var debugOverlaysEnabled
 
     private let id: String
-    private let visibleComponents: Set<FlowingHeaderDisplayComponent>?
+    private let visibleComponents: Set<PortalHeaderDisplayComponent>?
 
     /// Creates a flowing header that reads configuration from environment.
     ///
     /// - Parameters:
     ///   - id: Optional identifier to match specific header config (default: "default")
     ///   - displays: Optional override for which components to show in the header (default: shows all)
-    public init(id: String = "default", displays: Set<FlowingHeaderDisplayComponent>? = nil) {
+    public init(id: String = "default", displays: Set<PortalHeaderDisplayComponent>? = nil) {
         self.id = id
         self.visibleComponents = displays
     }
@@ -83,7 +83,7 @@ public struct FlowingHeaderView: View {
     }
 
     @ViewBuilder
-    private func headerContent(config: FlowingHeaderContent) -> some View {
+    private func headerContent(config: PortalHeaderContent) -> some View {
         // visibleComponents controls what shows in the header
         // config.displays controls what flows to nav bar (creates anchors)
         let showComponents = visibleComponents ?? [.title, .accessory]  // Default: show everything
@@ -96,9 +96,9 @@ public struct FlowingHeaderView: View {
 
         VStack(spacing: showAccessory ? 12 : 8) {
             // Calculate accessory fade using centralized, testable function
-            let fadeValue = FlowingHeaderCalculations.calculateAccessoryFade(
+            let fadeValue = PortalHeaderCalculations.calculateAccessoryFade(
                 progress: titleProgress,
-                fadeMultiplier: FlowingHeaderTokens.accessoryFadeMultiplier
+                fadeMultiplier: PortalHeaderTokens.accessoryFadeMultiplier
             )
 
             // Show accessory if in visibleComponents
@@ -108,11 +108,11 @@ public struct FlowingHeaderView: View {
                     accessoryView
                         .opacity(accessoryFlowing ? 0 : fadeValue)
                         .scaleEffect(accessoryFlowing ? 1 : fadeValue, anchor: .top)
-                        .animation(.smooth(duration: FlowingHeaderTokens.transitionDuration), value: fadeValue)
+                        .animation(.smooth(duration: PortalHeaderTokens.transitionDuration), value: fadeValue)
                         .overlay(
                             Group {
                                 #if DEBUG
-                                FlowingHeaderDebugOverlay("Source", color: .blue, showing: debugOverlaysEnabled)
+                                PortalHeaderDebugOverlay("Source", color: .blue, showing: debugOverlaysEnabled)
                                 #endif
                             }
                         )
@@ -124,7 +124,7 @@ public struct FlowingHeaderView: View {
                     accessoryView
                         .opacity(fadeValue)
                         .scaleEffect(fadeValue, anchor: .top)
-                        .animation(.smooth(duration: FlowingHeaderTokens.transitionDuration), value: fadeValue)
+                        .animation(.smooth(duration: PortalHeaderTokens.transitionDuration), value: fadeValue)
                 }
             }
 
@@ -139,7 +139,7 @@ public struct FlowingHeaderView: View {
                             .overlay(
                                 Group {
                                     #if DEBUG
-                                    FlowingHeaderDebugOverlay("Source", color: .blue, showing: debugOverlaysEnabled)
+                                    PortalHeaderDebugOverlay("Source", color: .blue, showing: debugOverlaysEnabled)
                                     #endif
                                 }
                             )
@@ -174,7 +174,7 @@ public struct FlowingHeaderView: View {
 #Preview {
     NavigationStack {
         ScrollView {
-            FlowingHeaderView()
+            PortalHeaderView()
                 .padding(.top, 20)
 
             ForEach(0..<20) { index in
@@ -186,9 +186,9 @@ public struct FlowingHeaderView: View {
                     .padding(.horizontal)
             }
         }
-        .flowingHeaderDestination()
+        .portalHeaderDestination()
     }
-    .flowingHeader(
+    .portalHeader(
         title: "Preview Title",
         subtitle: "This is a preview of the flowing header",
         displays: [.title]
@@ -197,5 +197,5 @@ public struct FlowingHeaderView: View {
             .font(.system(size: 64))
             .foregroundStyle(.yellow)
     }
-    .flowingHeaderDebugOverlays(showing: [.border])
+    .portalHeaderDebugOverlays(showing: [.border])
 }

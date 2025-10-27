@@ -1,6 +1,6 @@
 //
-//  FlowingHeaderAnchorTests.swift
-//  PortalFlowingHeader
+//  PortalHeaderAnchorTests.swift
+//  PortalPortalHeader
 //
 //  Created by Aether, 2025.
 //
@@ -10,10 +10,10 @@
 
 import XCTest
 import SwiftUI
-@testable import PortalFlowingHeader
+@testable import PortalPortalHeader
 
 @available(iOS 18.0, *)
-final class FlowingHeaderAnchorTests: XCTestCase {
+final class PortalHeaderAnchorTests: XCTestCase {
     // MARK: - AnchorKeyID Tests
 
     func testAnchorKeyIDCreation() {

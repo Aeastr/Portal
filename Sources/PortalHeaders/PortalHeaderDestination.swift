@@ -1,6 +1,6 @@
 //
-//  FlowingHeaderDestination.swift
-//  PortalFlowingHeader
+//  PortalHeaderDestination.swift
+//  PortalPortalHeader
 //
 //  Created by Aether, 2025.
 //
@@ -14,15 +14,15 @@ import SwiftUI
 
 /// Environment key for flowing header layout
 @available(iOS 18.0, *)
-private struct FlowingHeaderLayoutKey: EnvironmentKey {
+private struct PortalHeaderLayoutKey: EnvironmentKey {
     static let defaultValue: AccessoryLayout = .horizontal
 }
 
 @available(iOS 18.0, *)
 public extension EnvironmentValues {
-    var flowingHeaderLayout: AccessoryLayout {
-        get { self[FlowingHeaderLayoutKey.self] }
-        set { self[FlowingHeaderLayoutKey.self] = newValue }
+    var portalHeaderLayout: AccessoryLayout {
+        get { self[PortalHeaderLayoutKey.self] }
+        set { self[PortalHeaderLayoutKey.self] = newValue }
     }
 }
 
@@ -33,15 +33,15 @@ public extension EnvironmentValues {
 /// This modifier reads configuration from the environment to create invisible anchor points
 /// in the navigation bar that serve as destinations for header elements during scroll transitions.
 @available(iOS 18.0, *)
-internal struct FlowingHeaderDestination: ViewModifier {
-    @Environment(\.flowingHeaderContent) private var config
-    @Environment(\.flowingHeaderAccessoryView) private var accessoryView
-    @Environment(\.flowingHeaderLayout) private var layout
+internal struct PortalHeaderDestination: ViewModifier {
+    @Environment(\.portalHeaderContent) private var config
+    @Environment(\.portalHeaderAccessoryView) private var accessoryView
+    @Environment(\.portalHeaderLayout) private var layout
     @Environment(\.titleProgress) private var titleProgress
-    @Environment(\.flowingHeaderDebugOverlays) private var debugOverlaysEnabled
+    @Environment(\.portalHeaderDebugOverlays) private var debugOverlaysEnabled
 
     let id: String
-    let displays: Set<FlowingHeaderDisplayComponent>?
+    let displays: Set<PortalHeaderDisplayComponent>?
 
     @State private var accessorySize: CGSize = .zero
 
@@ -57,7 +57,7 @@ internal struct FlowingHeaderDestination: ViewModifier {
     }
 
     @ViewBuilder
-    private func destinationContent(config: FlowingHeaderContent) -> some View {
+    private func destinationContent(config: PortalHeaderContent) -> some View {
         let effectiveDisplays = displays ?? config.displays
         let showAccessory = effectiveDisplays.contains(.accessory) && accessoryView != nil
         let showTitle = effectiveDisplays.contains(.title)
@@ -93,9 +93,9 @@ internal struct FlowingHeaderDestination: ViewModifier {
     }
 
     @ViewBuilder
-    private func accessoryDestination(config: FlowingHeaderContent, isStatic: Bool) -> some View {
+    private func accessoryDestination(config: PortalHeaderContent, isStatic: Bool) -> some View {
         if let accessoryView = accessoryView {
-            let targetSize = FlowingHeaderTokens.navigationBarAccessorySize
+            let targetSize = PortalHeaderTokens.navigationBarAccessorySize
 
             // Calculate scale based on measured size
             let scale = accessorySize.width > 0 ? targetSize / accessorySize.width : 1.0
@@ -126,7 +126,7 @@ internal struct FlowingHeaderDestination: ViewModifier {
                     .overlay(
                         Group {
                             #if DEBUG
-                            FlowingHeaderDebugOverlay("Destination", color: .orange, showing: debugOverlaysEnabled)
+                            PortalHeaderDebugOverlay("Destination", color: .orange, showing: debugOverlaysEnabled)
                             #endif
                         }
                     )
@@ -138,7 +138,7 @@ internal struct FlowingHeaderDestination: ViewModifier {
     }
 
     @ViewBuilder
-    private func titleDestination(config: FlowingHeaderContent, isStatic: Bool) -> some View {
+    private func titleDestination(config: PortalHeaderContent, isStatic: Bool) -> some View {
         if isStatic {
             // Static display - fades in with scroll progress
             Text(config.title)
@@ -153,7 +153,7 @@ internal struct FlowingHeaderDestination: ViewModifier {
                 .overlay(
                     Group {
                         #if DEBUG
-                        FlowingHeaderDebugOverlay("Destination", color: .orange, showing: debugOverlaysEnabled)
+                        PortalHeaderDebugOverlay("Destination", color: .orange, showing: debugOverlaysEnabled)
                         #endif
                     }
                 )
@@ -170,7 +170,7 @@ internal struct FlowingHeaderDestination: ViewModifier {
 public extension View {
     /// Creates destination anchors for a flowing header transition.
     ///
-    /// This modifier reads configuration from the environment (set by `.flowingHeader()`)
+    /// This modifier reads configuration from the environment (set by `.portalHeader()`)
     /// and creates invisible anchor points in the navigation bar for the transition destinations.
     ///
     /// ## Basic Usage
@@ -178,11 +178,11 @@ public extension View {
     /// ```swift
     /// NavigationStack {
     ///     ScrollView {
-    ///         FlowingHeaderView()
+    ///         PortalHeaderView()
     ///     }
-    ///     .flowingHeaderDestination()
+    ///     .portalHeaderDestination()
     /// }
-    /// .flowingHeader(title: "Favorites", subtitle: "Your items")
+    /// .portalHeader(title: "Favorites", subtitle: "Your items")
     /// ```
     ///
     /// ## Custom Display Components
@@ -191,9 +191,9 @@ public extension View {
     ///
     /// ```swift
     /// ScrollView {
-    ///     FlowingHeaderView()
+    ///     PortalHeaderView()
     /// }
-    /// .flowingHeaderDestination(displays: [.title])  // Title only, no accessory
+    /// .portalHeaderDestination(displays: [.title])  // Title only, no accessory
     /// ```
     ///
     /// - Parameters:
@@ -203,10 +203,10 @@ public extension View {
     ///
     /// - Important: Apply this modifier inside the NavigationStack, typically
     ///   to the ScrollView or List containing your header content.
-    func flowingHeaderDestination(
+    func portalHeaderDestination(
         id: String = "default",
-        displays: Set<FlowingHeaderDisplayComponent>? = nil
+        displays: Set<PortalHeaderDisplayComponent>? = nil
     ) -> some View {
-        modifier(FlowingHeaderDestination(id: id, displays: displays))
+        modifier(PortalHeaderDestination(id: id, displays: displays))
     }
 }

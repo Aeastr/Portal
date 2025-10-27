@@ -1,6 +1,6 @@
 //
-//  FlowingHeaderExampleNoAccessory.swift
-//  PortalFlowingHeader
+//  PortalHeaderExampleNoAccessory.swift
+//  PortalPortalHeader
 //
 //  Created by Aether, 2025.
 //
@@ -11,15 +11,15 @@
 #if DEBUG
 import SwiftUI
 
-/// FlowingHeader example with no accessory
+/// PortalHeader example with no accessory
 @available(iOS 18.0, *)
-public struct FlowingHeaderExampleNoAccessory: View {
+public struct PortalHeaderExampleNoAccessory: View {
     public init() {}
 
     public var body: some View {
         NavigationStack {
             ScrollView {
-                FlowingHeaderView()
+                PortalHeaderView()
 
                 LazyVStack(spacing: 12) {
                     ForEach(0..<15) { index in
@@ -32,9 +32,9 @@ public struct FlowingHeaderExampleNoAccessory: View {
                 }
                 .padding()
             }
-            .flowingHeaderDestination()
+            .portalHeaderDestination()
         }
-        .flowingHeader(
+        .portalHeader(
             title: "Settings",
             subtitle: "Configure your preferences"
         )
@@ -43,7 +43,7 @@ public struct FlowingHeaderExampleNoAccessory: View {
 
 @available(iOS 18.0, *)
 #Preview("No Accessory") {
-    FlowingHeaderExampleNoAccessory()
+    PortalHeaderExampleNoAccessory()
 }
 
 #endif

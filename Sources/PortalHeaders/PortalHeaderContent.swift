@@ -1,6 +1,6 @@
 //
-//  FlowingHeaderContent.swift
-//  PortalFlowingHeader
+//  PortalHeaderContent.swift
+//  PortalPortalHeader
 //
 //  Created by Aether, 2025.
 //
@@ -46,7 +46,7 @@ private enum ScrollDirection {
 
 /// Components that can be displayed and transitioned in a flowing header.
 @available(iOS 18.0, *)
-public enum FlowingHeaderDisplayComponent: Hashable, Sendable {
+public enum PortalHeaderDisplayComponent: Hashable, Sendable {
     /// The title text component
     case title
     /// The accessory view component
@@ -55,7 +55,7 @@ public enum FlowingHeaderDisplayComponent: Hashable, Sendable {
 
 /// Configuration for a flowing header, provided via environment.
 @available(iOS 18.0, *)
-public struct FlowingHeaderContent: Sendable {
+public struct PortalHeaderContent: Sendable {
     /// Unique identifier for this header configuration
     public let id: String
 
@@ -66,7 +66,7 @@ public struct FlowingHeaderContent: Sendable {
     public let subtitle: String
 
     /// Components to display in the navigation bar destination
-    public let displays: Set<FlowingHeaderDisplayComponent>
+    public let displays: Set<PortalHeaderDisplayComponent>
 
     /// Layout style for navigation bar (horizontal or vertical)
     public let layout: AccessoryLayout
@@ -78,7 +78,7 @@ public struct FlowingHeaderContent: Sendable {
         id: String = "default",
         title: String,
         subtitle: String,
-        displays: Set<FlowingHeaderDisplayComponent> = [.title],
+        displays: Set<PortalHeaderDisplayComponent> = [.title],
         layout: AccessoryLayout = .horizontal,
         snappingBehavior: SnappingBehavior = .directional
     ) {
@@ -94,8 +94,8 @@ public struct FlowingHeaderContent: Sendable {
 // MARK: - Equatable Conformance
 
 @available(iOS 18.0, *)
-extension FlowingHeaderContent: Equatable {
-    public static func == (lhs: FlowingHeaderContent, rhs: FlowingHeaderContent) -> Bool {
+extension PortalHeaderContent: Equatable {
+    public static func == (lhs: PortalHeaderContent, rhs: PortalHeaderContent) -> Bool {
         lhs.id == rhs.id &&
         lhs.title == rhs.title &&
         lhs.subtitle == rhs.subtitle &&
@@ -108,8 +108,8 @@ extension FlowingHeaderContent: Equatable {
 // MARK: - Environment Keys
 
 @available(iOS 18.0, *)
-private struct FlowingHeaderContentKey: EnvironmentKey {
-    static let defaultValue: FlowingHeaderContent? = nil
+private struct PortalHeaderContentKey: EnvironmentKey {
+    static let defaultValue: PortalHeaderContent? = nil
 }
 
 /// Environment key for the accessory view.
@@ -119,22 +119,22 @@ private struct FlowingHeaderContentKey: EnvironmentKey {
 ///   the entire view hierarchy. The performance impact is minimal since this is
 ///   a single view rendered in the navigation bar.
 @available(iOS 18.0, *)
-private struct FlowingHeaderAccessoryViewKey: EnvironmentKey {
+private struct PortalHeaderAccessoryViewKey: EnvironmentKey {
     nonisolated(unsafe) static let defaultValue: AnyView? = nil
 }
 
 @available(iOS 18.0, *)
 public extension EnvironmentValues {
     /// The current flowing header configuration
-    var flowingHeaderContent: FlowingHeaderContent? {
-        get { self[FlowingHeaderContentKey.self] }
-        set { self[FlowingHeaderContentKey.self] = newValue }
+    var portalHeaderContent: PortalHeaderContent? {
+        get { self[PortalHeaderContentKey.self] }
+        set { self[PortalHeaderContentKey.self] = newValue }
     }
 
     /// The custom accessory view for flowing headers
-    var flowingHeaderAccessoryView: AnyView? {
-        get { self[FlowingHeaderAccessoryViewKey.self] }
-        set { self[FlowingHeaderAccessoryViewKey.self] = newValue }
+    var portalHeaderAccessoryView: AnyView? {
+        get { self[PortalHeaderAccessoryViewKey.self] }
+        set { self[PortalHeaderAccessoryViewKey.self] = newValue }
     }
 }
 
@@ -142,8 +142,8 @@ public extension EnvironmentValues {
 
 /// A view modifier that configures a flowing header via environment and applies transitions.
 @available(iOS 18.0, *)
-private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
-    let config: FlowingHeaderContent
+private struct PortalHeaderModifier<AccessoryContent: View>: ViewModifier {
+    let config: PortalHeaderContent
     let accessoryContent: AccessoryContent?
 
     @State private var titleProgress: Double = 0.0
@@ -168,9 +168,9 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
         }
 
         content
-            .environment(\.flowingHeaderContent, config)
-            .environment(\.flowingHeaderAccessoryView, measuredAccessory)
-            .environment(\.flowingHeaderLayout, config.layout)
+            .environment(\.portalHeaderContent, config)
+            .environment(\.portalHeaderAccessoryView, measuredAccessory)
+            .environment(\.portalHeaderLayout, config.layout)
             .environment(\.titleProgress, titleProgress)
             .environment(\.accessoryFlowing, accessoryFlowing)
             .onScrollPhaseChange { _, newPhase in
@@ -186,10 +186,10 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
                     case .directional:
                         // Snap based on scroll direction: down → 1.0, up → 0.0
                         snapTarget = lastScrollDirection.isDown ? 1.0 : 0.0
-                        FlowingHeaderLogs.logger.log(
+                        PortalHeaderLogs.logger.log(
                             "Directional snap triggered",
                             level: .debug,
-                            tags: [FlowingHeaderLogs.Tags.snapping],
+                            tags: [PortalHeaderLogs.Tags.snapping],
                             metadata: [
                                 "direction": lastScrollDirection.isDown ? "down" : "up",
                                 "target": "\(snapTarget!)",
@@ -200,10 +200,10 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
                     case .nearest:
                         // Snap to nearest position based on midpoint
                         snapTarget = titleProgress > 0.5 ? 1.0 : 0.0
-                        FlowingHeaderLogs.logger.log(
+                        PortalHeaderLogs.logger.log(
                             "Nearest snap triggered",
                             level: .debug,
-                            tags: [FlowingHeaderLogs.Tags.snapping],
+                            tags: [PortalHeaderLogs.Tags.snapping],
                             metadata: [
                                 "progress": "\(titleProgress)",
                                 "target": "\(snapTarget!)"
@@ -213,16 +213,16 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
                     case .none:
                         // No snapping
                         snapTarget = nil
-                        FlowingHeaderLogs.logger.log(
+                        PortalHeaderLogs.logger.log(
                             "Snap disabled",
                             level: .debug,
-                            tags: [FlowingHeaderLogs.Tags.snapping],
+                            tags: [PortalHeaderLogs.Tags.snapping],
                             metadata: ["progress": "\(titleProgress)"]
                         )
                     }
 
                     if let snapTarget = snapTarget {
-                        withAnimation(.smooth(duration: FlowingHeaderTokens.transitionDuration)) {
+                        withAnimation(.smooth(duration: PortalHeaderTokens.transitionDuration)) {
                             titleProgress = snapTarget
                         }
 
@@ -238,7 +238,7 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
                 let currentDirection: ScrollDirection = newOffset > scrollOffset ? .down : .up
 
                 // Track direction during scroll (ignore tiny movements to prevent jitter)
-                if abs(newOffset - scrollOffset) > FlowingHeaderTokens.scrollDirectionThreshold {
+                if abs(newOffset - scrollOffset) > PortalHeaderTokens.scrollDirectionThreshold {
                     lastScrollDirection = currentDirection
                 }
 
@@ -250,15 +250,15 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
                 let startAt: CGFloat
 
                 if hasFlowingAccessory && accessorySourceHeight > 0 {
-                    startAt = accessorySourceHeight / FlowingHeaderTokens.accessoryStartDivisor
+                    startAt = accessorySourceHeight / PortalHeaderTokens.accessoryStartDivisor
                 } else {
-                    startAt = accessorySourceHeight > 0 ? accessorySourceHeight : FlowingHeaderTokens.fallbackStartOffset
+                    startAt = accessorySourceHeight > 0 ? accessorySourceHeight : PortalHeaderTokens.fallbackStartOffset
                 }
 
-                let progress = FlowingHeaderCalculations.calculateProgress(
+                let progress = PortalHeaderCalculations.calculateProgress(
                     scrollOffset: newOffset,
                     startAt: startAt,
-                    range: FlowingHeaderTokens.transitionRange
+                    range: PortalHeaderTokens.transitionRange
                 )
 
                 // Only update progress while actively scrolling
@@ -269,19 +269,19 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
 
                         if shouldKeepSnapped {
                             // Keep snapped, don't update progress
-                            FlowingHeaderLogs.logger.log(
+                            PortalHeaderLogs.logger.log(
                                 "Maintaining snap position",
                                 level: .debug,
-                                tags: [FlowingHeaderLogs.Tags.scroll],
+                                tags: [PortalHeaderLogs.Tags.scroll],
                                 metadata: ["snappedValue": "\(snappedValue)"]
                             )
                             return
                         } else {
                             // User reversed direction, reset snap state
-                            FlowingHeaderLogs.logger.log(
+                            PortalHeaderLogs.logger.log(
                                 "Direction reversed, releasing snap",
                                 level: .debug,
-                                tags: [FlowingHeaderLogs.Tags.scroll],
+                                tags: [PortalHeaderLogs.Tags.scroll],
                                 metadata: [
                                     "previousSnap": "\(snappedValue)",
                                     "newDirection": currentDirection.isDown ? "down" : "up"
@@ -291,10 +291,10 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
                         }
                     }
 
-                    FlowingHeaderLogs.logger.log(
+                    PortalHeaderLogs.logger.log(
                         "Scroll progress update",
                         level: .debug,
-                        tags: [FlowingHeaderLogs.Tags.scroll],
+                        tags: [PortalHeaderLogs.Tags.scroll],
                         metadata: [
                             "offset": String(format: "%.1f", newOffset),
                             "progress": String(format: "%.2f", progress),
@@ -302,7 +302,7 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
                         ]
                     )
 
-                    withAnimation(.smooth(duration: FlowingHeaderTokens.scrollAnimationDuration)) {
+                    withAnimation(.smooth(duration: PortalHeaderTokens.scrollAnimationDuration)) {
                         titleProgress = progress
                     }
                 }
@@ -320,7 +320,7 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
             let accessorySrcKey = AnchorKeyID(kind: "source", id: config.id, type: "accessory")
             let accessoryDstKey = AnchorKeyID(kind: "destination", id: config.id, type: "accessory")
 
-            // titleProgress is already clamped 0-1 by FlowingHeaderCalculations.calculateProgress
+            // titleProgress is already clamped 0-1 by PortalHeaderCalculations.calculateProgress
             let progress = CGFloat(titleProgress)
             let hasBothAccessoryAnchors = anchors[accessorySrcKey] != nil && anchors[accessoryDstKey] != nil
 
@@ -348,7 +348,7 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
     private func renderTitle(geometry: GeometryProxy, srcAnchor: Anchor<CGRect>, dstAnchor: Anchor<CGRect>, progress: CGFloat) -> some View {
         let srcRect = geometry[srcAnchor]
         let dstRect = geometry[dstAnchor]
-        let position = FlowingHeaderCalculations.calculatePosition(
+        let position = PortalHeaderCalculations.calculatePosition(
             sourceRect: srcRect,
             destinationRect: dstRect,
             progress: progress
@@ -374,12 +374,12 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
         if let accessory = accessoryContent {
             let srcRect = geometry[srcAnchor]
             let dstRect = geometry[dstAnchor]
-            let position = FlowingHeaderCalculations.calculatePosition(
+            let position = PortalHeaderCalculations.calculatePosition(
                 sourceRect: srcRect,
                 destinationRect: dstRect,
                 progress: progress
             )
-            let scale = FlowingHeaderCalculations.calculateScale(
+            let scale = PortalHeaderCalculations.calculateScale(
                 sourceSize: srcRect.size,
                 destinationSize: dstRect.size,
                 progress: progress
@@ -398,18 +398,18 @@ public extension View {
     /// Configures a flowing header with title and subtitle only.
     ///
     /// Apply this modifier to a NavigationStack to provide configuration for
-    /// FlowingHeaderView and flowingHeaderDestination modifiers within.
+    /// PortalHeaderView and portalHeaderDestination modifiers within.
     ///
     /// ## Usage
     ///
     /// ```swift
     /// NavigationStack {
     ///     ScrollView {
-    ///         FlowingHeaderView()
+    ///         PortalHeaderView()
     ///     }
-    ///     .flowingHeaderDestination()
+    ///     .portalHeaderDestination()
     /// }
-    /// .flowingHeader(title: "Profile", subtitle: "Settings")
+    /// .portalHeader(title: "Profile", subtitle: "Settings")
     /// ```
     ///
     /// - Parameters:
@@ -419,15 +419,15 @@ public extension View {
     ///   - displays: Components to show in nav bar (default: [.title])
     ///   - layout: Layout style for nav bar (default: .horizontal)
     ///   - snappingBehavior: How to snap when scrolling stops (default: .directional)
-    func flowingHeader(
+    func portalHeader(
         id: String = "default",
         title: String,
         subtitle: String,
-        displays: Set<FlowingHeaderDisplayComponent> = [.title],
+        displays: Set<PortalHeaderDisplayComponent> = [.title],
         layout: AccessoryLayout = .horizontal,
         snappingBehavior: SnappingBehavior = .directional
     ) -> some View {
-        let config = FlowingHeaderContent(
+        let config = PortalHeaderContent(
             id: id,
             title: title,
             subtitle: subtitle,
@@ -435,24 +435,24 @@ public extension View {
             layout: layout,
             snappingBehavior: snappingBehavior
         )
-        return modifier(FlowingHeaderModifier<EmptyView>(config: config, accessoryContent: nil))
+        return modifier(PortalHeaderModifier<EmptyView>(config: config, accessoryContent: nil))
     }
 
     /// Configures a flowing header with title, subtitle, and custom accessory.
     ///
     /// Apply this modifier to a NavigationStack to provide configuration for
-    /// FlowingHeaderView and flowingHeaderDestination modifiers within.
+    /// PortalHeaderView and portalHeaderDestination modifiers within.
     ///
     /// ## Usage
     ///
     /// ```swift
     /// NavigationStack {
     ///     ScrollView {
-    ///         FlowingHeaderView()
+    ///         PortalHeaderView()
     ///     }
-    ///     .flowingHeaderDestination(displays: [.title, .accessory])
+    ///     .portalHeaderDestination(displays: [.title, .accessory])
     /// }
-    /// .flowingHeader(
+    /// .portalHeader(
     ///     title: "Profile",
     ///     subtitle: "Settings",
     ///     displays: [.title, .accessory]
@@ -469,16 +469,16 @@ public extension View {
     ///   - layout: Layout style for nav bar (default: .horizontal)
     ///   - snappingBehavior: How to snap when scrolling stops (default: .directional)
     ///   - accessory: View builder for custom accessory content
-    func flowingHeader<AccessoryContent: View>(
+    func portalHeader<AccessoryContent: View>(
         id: String = "default",
         title: String,
         subtitle: String,
-        displays: Set<FlowingHeaderDisplayComponent> = [.title, .accessory],
+        displays: Set<PortalHeaderDisplayComponent> = [.title, .accessory],
         layout: AccessoryLayout = .vertical,
         snappingBehavior: SnappingBehavior = .directional,
         @ViewBuilder accessory: () -> AccessoryContent
     ) -> some View {
-        let config = FlowingHeaderContent(
+        let config = PortalHeaderContent(
             id: id,
             title: title,
             subtitle: subtitle,
@@ -486,6 +486,6 @@ public extension View {
             layout: layout,
             snappingBehavior: snappingBehavior
         )
-        return modifier(FlowingHeaderModifier(config: config, accessoryContent: accessory()))
+        return modifier(PortalHeaderModifier(config: config, accessoryContent: accessory()))
     }
 }

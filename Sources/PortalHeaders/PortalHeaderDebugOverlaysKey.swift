@@ -1,6 +1,6 @@
 //
-//  FlowingHeaderDebugOverlaysKey.swift
-//  PortalFlowingHeader
+//  PortalHeaderDebugOverlaysKey.swift
+//  PortalPortalHeader
 //
 //  Created by Aether, 2025.
 //
@@ -14,7 +14,7 @@ import SwiftUI
 
 /// Components that can be shown in debug overlays.
 @available(iOS 18.0, *)
-public struct FlowingHeaderDebugOverlayComponent: OptionSet, Sendable {
+public struct PortalHeaderDebugOverlayComponent: OptionSet, Sendable {
     public let rawValue: Int
 
     public init(rawValue: Int) {
@@ -22,20 +22,20 @@ public struct FlowingHeaderDebugOverlayComponent: OptionSet, Sendable {
     }
 
     /// Show the text label indicator
-    public static let label = FlowingHeaderDebugOverlayComponent(rawValue: 1 << 0)
+    public static let label = PortalHeaderDebugOverlayComponent(rawValue: 1 << 0)
     /// Show the border outline
-    public static let border = FlowingHeaderDebugOverlayComponent(rawValue: 1 << 1)
+    public static let border = PortalHeaderDebugOverlayComponent(rawValue: 1 << 1)
 
     /// Show all debug overlay components
-    public static let all: FlowingHeaderDebugOverlayComponent = [.label, .border]
+    public static let all: PortalHeaderDebugOverlayComponent = [.label, .border]
 }
 
 // MARK: - Debug Overlays Environment Key
 
 /// Environment key for controlling which debug overlay components are shown.
 @available(iOS 18.0, *)
-private struct FlowingHeaderDebugOverlaysKey: EnvironmentKey {
-    static let defaultValue: FlowingHeaderDebugOverlayComponent = .all
+private struct PortalHeaderDebugOverlaysKey: EnvironmentKey {
+    static let defaultValue: PortalHeaderDebugOverlayComponent = .all
 }
 
 @available(iOS 18.0, *)
@@ -50,11 +50,11 @@ public extension EnvironmentValues {
     /// **Usage:**
     /// ```swift
     /// ContentView()
-    ///     .environment(\.flowingHeaderDebugOverlays, [.label])  // Label only
+    ///     .environment(\.portalHeaderDebugOverlays, [.label])  // Label only
     /// ```
-    var flowingHeaderDebugOverlays: FlowingHeaderDebugOverlayComponent {
-        get { self[FlowingHeaderDebugOverlaysKey.self] }
-        set { self[FlowingHeaderDebugOverlaysKey.self] = newValue }
+    var portalHeaderDebugOverlays: PortalHeaderDebugOverlayComponent {
+        get { self[PortalHeaderDebugOverlaysKey.self] }
+        set { self[PortalHeaderDebugOverlaysKey.self] = newValue }
     }
 }
 
@@ -71,18 +71,18 @@ public extension View {
     /// ```swift
     /// // Show both label and border (default)
     /// ContentView()
-    ///     .flowingHeaderDebugOverlays(showing: [.label, .border])
+    ///     .portalHeaderDebugOverlays(showing: [.label, .border])
     ///
     /// // Show only labels
     /// ContentView()
-    ///     .flowingHeaderDebugOverlays(showing: [.label])
+    ///     .portalHeaderDebugOverlays(showing: [.label])
     ///
     /// // Hide all overlays
     /// ContentView()
-    ///     .flowingHeaderDebugOverlays(showing: [])
+    ///     .portalHeaderDebugOverlays(showing: [])
     /// ```
-    func flowingHeaderDebugOverlays(showing: FlowingHeaderDebugOverlayComponent) -> some View {
-        environment(\.flowingHeaderDebugOverlays, showing)
+    func portalHeaderDebugOverlays(showing: PortalHeaderDebugOverlayComponent) -> some View {
+        environment(\.portalHeaderDebugOverlays, showing)
     }
 
     /// Controls whether flowing header debug overlays are shown.
@@ -96,9 +96,9 @@ public extension View {
     /// **Example:**
     /// ```swift
     /// ContentView()
-    ///     .flowingHeaderDebugOverlays(enabled: false)
+    ///     .portalHeaderDebugOverlays(enabled: false)
     /// ```
-    func flowingHeaderDebugOverlays(enabled: Bool) -> some View {
-        environment(\.flowingHeaderDebugOverlays, enabled ? .all : [])
+    func portalHeaderDebugOverlays(enabled: Bool) -> some View {
+        environment(\.portalHeaderDebugOverlays, enabled ? .all : [])
     }
 }
