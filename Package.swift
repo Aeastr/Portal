@@ -8,17 +8,14 @@ let package = Package(
     platforms: [.iOS(.v17)],
     products: [
         .library(
-            name: "Portal",
-            targets: ["Portal"]),
+            name: "PortalTransitions",
+            targets: ["PortalTransitions"]),
         .library(
-            name: "PortalFlowingHeader",
-            targets: ["PortalFlowingHeader"]),
+            name: "PortalHeaders",
+            targets: ["PortalHeaders"]),
         .library(
-            name: "PortalView",
-            targets: ["PortalView"]),
-        .library(
-            name: "PortalPrivate",
-            targets: ["PortalPrivate"]),
+            name: "_PortalMirror",
+            targets: ["_PortalMirror"]),
     ],
     dependencies: [
         .package(url: "https://github.com/Aeastr/LogOutLoud.git", from: "2.1.2"),
@@ -26,48 +23,43 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "Portal",
+            name: "PortalTransitions",
             dependencies: [
                 .product(name: "LogOutLoud", package: "LogOutLoud"),
                 .product(name: "LogOutLoudConsole", package: "LogOutLoud")
             ],
-            path: "Sources/Portal"
+            path: "Sources/PortalTransitions"
         ),
         .target(
-            name: "PortalFlowingHeader",
+            name: "PortalHeaders",
             dependencies: [
                 .product(name: "LogOutLoud", package: "LogOutLoud"),
                 .product(name: "LogOutLoudConsole", package: "LogOutLoud")
             ],
-            path: "Sources/PortalFlowingHeader"
+            path: "Sources/PortalHeaders"
         ),
         .target(
-            name: "PortalView",
+            name: "_PortalMirror",
             dependencies: [
+                "PortalTransitions",
                 .product(name: "Obfuscate", package: "Obfuscate")
             ],
-            path: "Sources/PortalView"
-        ),
-        .target(
-            name: "PortalPrivate",
-            dependencies: [
-                "Portal",
-                "PortalView"
-            ],
-            path: "Sources/PortalPrivate"
+            path: "Sources/_PortalMirror"
         ),
         .testTarget(
-            name: "PortalFlowingHeaderTests",
-            dependencies: ["PortalFlowingHeader"],
-            path: "Tests/PortalFlowingHeaderTests"
+            name: "PortalHeadersTests",
+            dependencies: ["PortalHeaders"],
+            path: "Tests/PortalHeadersTests"
         ),
         .testTarget(
-            name: "PortalViewTests",
-            dependencies: ["PortalView"]
+            name: "PortalTransitionsTests",
+            dependencies: ["PortalTransitions"],
+            path: "Tests/PortalTransitionsTests"
         ),
         .testTarget(
-            name: "PortalPrivateTests",
-            dependencies: ["Portal", "PortalView", "PortalPrivate"]
+            name: "_PortalMirrorTests",
+            dependencies: ["_PortalMirror"],
+            path: "Tests/_PortalMirrorTests"
         ),
     ]
 )
