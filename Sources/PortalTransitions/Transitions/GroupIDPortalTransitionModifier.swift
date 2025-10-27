@@ -74,6 +74,7 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
     }
 
     /// Convenience init for backward compatibility with config
+    @available(*, deprecated, message: "Use init with direct Animation parameters instead of PortalTransitionConfig")
     public init(
         ids: [String],
         groupID: String,

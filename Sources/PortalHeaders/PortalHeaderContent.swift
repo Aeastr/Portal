@@ -354,16 +354,13 @@ private struct PortalHeaderModifier<AccessoryContent: View>: ViewModifier {
             progress: progress
         )
 
-        // Calculate scale based on actual rendered sizes to support Dynamic Type
-        let sourceFont = Font.title.weight(.semibold)
-        let destFont = Font.headline.weight(.semibold)
 
         // Use ratio of rect heights as proxy for font size ratio
         let scaleRatio = dstRect.height / srcRect.height
         let currentScale = 1 + (scaleRatio - 1) * progress
 
         return Text(config.title)
-            .font(sourceFont)
+            .font(.title.weight(.semibold))
             .foregroundStyle(.primary)
             .scaleEffect(currentScale)
             .position(x: position.x, y: position.y)

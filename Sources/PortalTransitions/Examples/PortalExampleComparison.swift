@@ -172,8 +172,8 @@ public struct PortalExampleComparison: View {
             }
             .portalTransition(
             id: "portalDemo",
-            config: .init(animation: PortalAnimation(portalAnimationExample)),
-            isActive: $showPortalSheet
+            isActive: $showPortalSheet,
+            animation: portalAnimationExample
         ) {
             AnimatedLayer(portalID: "portalDemo") {
                 RoundedRectangle(cornerRadius: 16)

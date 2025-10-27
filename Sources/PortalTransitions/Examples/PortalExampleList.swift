@@ -104,9 +104,7 @@ public struct PortalExampleList: View {
             }
             .portalTransition(
                 item: $selectedItem,
-                config: .init(
-                    animation: PortalAnimation(portalAnimationExample)
-                )
+                animation: portalAnimationExample
             ) { item in
                 Group {
                     RoundedRectangle(cornerRadius: 12)

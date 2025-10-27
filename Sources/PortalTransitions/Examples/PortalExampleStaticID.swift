@@ -102,8 +102,8 @@ public struct PortalExampleStaticID: View {
             }
             .portalTransition(
                 id: "codeBlock",
-                config: .init(animation: PortalAnimation(.spring(response: 0.4, dampingFraction: 0.8))),
-                isActive: $showDetail
+                isActive: $showDetail,
+                animation: .spring(response: 0.4, dampingFraction: 0.8)
             ) {
                 AnimatedLayer(portalID: "codeBlock") {
                     VStack(alignment: .leading, spacing: 8) {

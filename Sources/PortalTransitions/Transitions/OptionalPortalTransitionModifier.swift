@@ -140,11 +140,9 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
 
         // Recursively check nested children (for wrapped animations)
         for child in mirror.children {
-            if let childMirror = child.value as? Any {
-                let nestedMirror = Mirror(reflecting: childMirror)
-                if let duration = extractDuration(from: nestedMirror) {
-                    return duration
-                }
+            let nestedMirror = Mirror(reflecting: child.value)
+            if let duration = extractDuration(from: nestedMirror) {
+                return duration
             }
         }
 
@@ -152,6 +150,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
     }
 
     /// Convenience init for backward compatibility with config.
+    @available(*, deprecated, message: "Use init with direct Animation parameters instead of PortalTransitionConfig")
     public init(
         item: Binding<Item?>,
         config: PortalTransitionConfig,
