@@ -30,7 +30,7 @@ public struct PortalConstants {
     ///
     /// This duration is calibrated to match iOS system animations like sheet presentations.
     /// Using shorter durations (0.1-0.3s) with sheets can cause visual artifacts.
-    public static let defaultAnimationDuration: TimeInterval = 0.4
+    public static let defaultAnimationDuration: TimeInterval = 0.38
 
     /// Minimum duration for sheet-compatible animations.
     ///

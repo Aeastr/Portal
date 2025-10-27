@@ -11,7 +11,7 @@
 #if DEBUG
 import SwiftUI
 
-let portalAnimationDuration: TimeInterval = 0.38
+let portalAnimationDuration: TimeInterval = 0.35
 let portalAnimationExample = Animation.smooth(duration: portalAnimationDuration, extraBounce: 0.25)
 let portalAnimationExampleExtraBounce = Animation.smooth(duration: portalAnimationDuration + 0.12, extraBounce: 0.55)
 
@@ -28,7 +28,7 @@ let portalAnimationExampleExtraBounce = Animation.smooth(duration: portalAnimati
 /// these values are meant to be tuned for your specific animation design.
 struct AnimatedLayer<Content: View>: AnimatedPortalLayer {
     let portalID: String
-    var scale: CGFloat = 1.25
+    var scale: CGFloat = 1.1
     @ViewBuilder let content: () -> Content
 
     @State private var layerScale: CGFloat = 1
