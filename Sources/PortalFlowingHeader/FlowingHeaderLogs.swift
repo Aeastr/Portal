@@ -30,7 +30,7 @@ public enum FlowingHeaderLogs {
 //        instance.setAllowedLevels([.notice, .warning, .error, .fault])
 //#endif
         instance.setAllowedLevels([.notice, .warning, .error, .fault])
-        // we have disabled some levels by default to avoid spamming the console, they can still be enabled if need be, but this is less likely 
+        // we have disabled some levels by default to avoid spamming the console, they can still be enabled if need be, but this is less likely
     }()
 
     /// Shared logger instance dedicated to the PortalFlowingHeader package.
