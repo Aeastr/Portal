@@ -42,7 +42,7 @@ The wiki is included as a git submodule at `/wiki`, so you get all the docs when
 
 Portal provides three main capabilities:
 
-### 🎯 Element Transitions (Portal)
+### 🎯 Element Transitions (`PortalTransitions`)
 Animate views between navigation contexts (sheets, navigation stacks, tabs) with floating overlays.
 - Simple `.portalSource()` / `.portalDestination()` modifiers
 - Works with standard SwiftUI presentations (`.sheet`, `.navigationDestination`)
@@ -50,7 +50,7 @@ Animate views between navigation contexts (sheets, navigation stacks, tabs) with
 - Customizable animations via `AnimatedPortalLayer` protocol
 - **iOS 17+** • Standard SwiftUI APIs
 
-### 📱 Flowing Headers (PortalHeader)
+### 📱 Flowing Headers (`PortalHeaders`)
 Scroll-based header transitions that smoothly flow into the navigation bar.
 - Titles and accessories animate to navigation bar on scroll
 - Native iOS-feeling transitions with automatic snapping
@@ -58,10 +58,10 @@ Scroll-based header transitions that smoothly flow into the navigation bar.
 - Visual debug overlays and structured logging
 - **iOS 18+** • Advanced scroll tracking APIs
 
-### 🔮 View Mirroring (PortalPrivate & PortalView)
+### 🔮 View Mirroring (`_PortalMirror`)
 Advanced view mirroring using `_UIPortalView` for perfect state preservation.
 - Single shared view instance (same size at source/destination)
-- Direct UIKit integration available via `PortalView`
+- Direct UIKit integration available via low-level `PortalView`
 - **⚠️ Private API** • Obfuscated for App Store compliance
 
 ## Key Features
@@ -76,12 +76,12 @@ Advanced view mirroring using `_UIPortalView` for perfect state preservation.
 
 Each target includes example implementations:
 
-| **Portal** | **PortalPrivate** | **PortalView** |
+| **PortalTransitions** | **_PortalMirror** | **PortalHeaders** |
 |:---|:---|:---|
-| [Static ID](Sources/Portal/Examples/PortalExample_StaticID.swift) | [Static ID](Sources/PortalPrivate/Examples/PortalExample_StaticID.swift) | [UIPortalView Example](Sources/PortalView/UIPortalViewExample.swift) |
-| [Card Grid](Sources/Portal/Examples/PortalExample_CardGrid.swift) | [Card Grid](Sources/PortalPrivate/Examples/PortalExample_CardGrid.swift) | |
-| [List](Sources/Portal/Examples/PortalExample_List.swift) | [List](Sources/PortalPrivate/Examples/PortalExample_List.swift) | |
-| [Comparison](Sources/Portal/Examples/PortalExample_Comparison.swift) | [Comparison](Sources/PortalPrivate/Examples/PortalExample_Comparison.swift) | |
+| [Static ID](Sources/PortalTransitions/Examples/PortalExample_StaticID.swift) | [Static ID](Sources/_PortalMirror/Transitions/Examples/PortalPrivateExampleStaticID.swift) | [No Accessory](Sources/PortalHeaders/Examples/PortalHeaderExampleNoAccessory.swift) |
+| [Card Grid](Sources/PortalTransitions/Examples/PortalExample_CardGrid.swift) | [Card Grid](Sources/_PortalMirror/Transitions/Examples/PortalPrivateExampleCardGrid.swift) | [Title Only](Sources/PortalHeaders/Examples/PortalHeaderExampleTitleOnly.swift) |
+| [List](Sources/PortalTransitions/Examples/PortalExample_List.swift) | [List](Sources/_PortalMirror/Transitions/Examples/PortalPrivateExampleList.swift) | [With Accessory](Sources/PortalHeaders/Examples/PortalHeaderExampleWithAccessory.swift) |
+| [Comparison](Sources/PortalTransitions/Examples/PortalExample_Comparison.swift) | [Comparison](Sources/_PortalMirror/Transitions/Examples/PortalPrivateExampleComparison.swift) | |
 
 ## Contributing & Support
 
