@@ -73,26 +73,6 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
         self.layerView = layerView
     }
 
-    /// Convenience init for backward compatibility with config
-    @available(*, deprecated, message: "Replace 'config: .init(animation: PortalAnimation(...))' with 'animation: Animation.smooth(...)' parameter")
-    public init(
-        ids: [String],
-        groupID: String,
-        config: PortalTransitionConfig,
-        isActive: Binding<Bool>,
-        layerView: @escaping (String) -> LayerView,
-        completion: @escaping (Bool) -> Void
-    ) {
-        self.ids = ids
-        self.groupID = groupID
-        self.animation = config.animation.value
-        self.completionCriteria = config.animation.completionCriteria
-        self.corners = config.corners
-        self._isActive = isActive
-        self.layerView = layerView
-        self.completion = completion
-    }
-
     /// Ensures portal info exists for all IDs when the view appears.
     private func onAppear() {
         for id in ids where !portalModel.info.contains(where: { $0.infoID == id }) {
@@ -190,52 +170,6 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
 }
 
 public extension View {
-    /// Applies coordinated portal transitions for multiple portal IDs.
-    ///
-    /// This modifier enables multiple portal animations to run simultaneously as a coordinated group
-    /// using string IDs. All IDs in the array are animated together with synchronized timing.
-    ///
-    /// **Usage Pattern:**
-    /// ```swift
-    /// @State private var showPortals = false
-    ///
-    /// ContentView()
-    ///     .portalTransition(
-    ///         ids: ["portal1", "portal2", "portal3"],
-    ///         groupID: "myGroup",
-    ///         isActive: $showPortals
-    ///     ) { id in
-    ///         OverlayView(id: id)
-    ///     }
-    /// ```
-    ///
-    /// - Parameters:
-    ///   - ids: Array of portal IDs that should animate together
-    ///   - groupID: Group identifier for coordinating animations
-    ///   - config: Configuration for animation and styling (optional, defaults to standard config)
-    ///   - isActive: Boolean binding that controls the transition state
-    ///   - layerView: Closure that receives each ID and returns the view to animate for that ID
-    ///   - completion: Optional completion handler (defaults to no-op)
-    /// - Returns: A view with the multi-ID portal transition modifier applied
-    @available(*, deprecated, message: "Replace 'config: .init(animation: PortalAnimation(...))' with 'animation: Animation.smooth(...)' and 'in: corners' parameters")
-    func portalTransition<LayerView: View>(
-        ids: [String],
-        groupID: String,
-        config: PortalTransitionConfig,
-        isActive: Binding<Bool>,
-        @ViewBuilder layerView: @escaping (String) -> LayerView,
-        completion: @escaping (Bool) -> Void = { _ in }
-    ) -> some View {
-        return self.modifier(
-            GroupIDPortalTransitionModifier(
-                ids: ids,
-                groupID: groupID,
-                config: config,
-                isActive: isActive,
-                layerView: layerView,
-                completion: completion))
-    }
-
     /// Applies a portal transition for multiple IDs with direct parameter configuration.
     ///
     /// Creates portal transitions for multiple elements identified by their IDs, with

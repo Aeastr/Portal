@@ -271,39 +271,6 @@ public extension View {
         }
     }
 
-    /// Triggers a portal transition for a private portal using the mirrored view (deprecated)
-    ///
-    /// This modifier triggers the animation for PortalPrivate views.
-    /// Unlike regular `.portalTransition`, you don't provide a layer view
-    /// since it uses the _UIPortalView mirror of the source.
-    ///
-    /// - Deprecated: Use the new API with animation as a direct parameter
-    @available(*, deprecated, message: "Use the new API with animation as a direct parameter instead of config")
-    func portalPrivateTransition(
-        id: String,
-        config: PortalTransitionConfig,
-        isActive: Binding<Bool>,
-        hidesSource: Bool = false,
-        matchesAlpha: Bool = true,
-        matchesTransform: Bool = true,
-        matchesPosition: Bool = false,
-        completion: @escaping (Bool) -> Void = { _ in }
-    ) -> some View {
-        self.modifier(
-            PortalPrivateTransitionModifier(
-                id: id,
-                isActive: isActive,
-                animation: config.animation.value,
-                completionCriteria: config.animation.completionCriteria,
-                hidesSource: hidesSource,
-                matchesAlpha: matchesAlpha,
-                matchesTransform: matchesTransform,
-                matchesPosition: matchesPosition,
-                completion: completion
-            )
-        )
-    }
-
     /// Triggers a portal transition for a private portal using the mirrored view
     ///
     /// This modifier triggers the animation for PortalPrivate views.
@@ -346,31 +313,6 @@ public extension View {
         )
     }
 
-    /// Triggers a portal transition for a private portal with an optional item (deprecated)
-    @available(*, deprecated, message: "Use the new API with animation as a direct parameter instead of config")
-    func portalPrivateTransition<Item: Identifiable>(
-        item: Binding<Item?>,
-        config: PortalTransitionConfig,
-        hidesSource: Bool = false,
-        matchesAlpha: Bool = true,
-        matchesTransform: Bool = true,
-        matchesPosition: Bool = false,
-        completion: @escaping (Bool) -> Void = { _ in }
-    ) -> some View {
-        self.modifier(
-            PortalPrivateItemTransitionModifier(
-                item: item,
-                animation: config.animation.value,
-                completionCriteria: config.animation.completionCriteria,
-                hidesSource: hidesSource,
-                matchesAlpha: matchesAlpha,
-                matchesTransform: matchesTransform,
-                matchesPosition: matchesPosition,
-                completion: completion
-            )
-        )
-    }
-
     /// Triggers a portal transition for a private portal with an optional item
     func portalPrivateTransition<Item: Identifiable>(
         item: Binding<Item?>,
@@ -396,47 +338,6 @@ public extension View {
         )
     }
 
-    /// Triggers coordinated portal transitions for multiple private portal IDs.
-    ///
-    /// This modifier enables multiple portal animations to run simultaneously as a coordinated group
-    /// using string IDs. All IDs in the array are animated together with synchronized timing.
-    ///
-    /// Example:
-    /// ```swift
-    /// .portalPrivateTransition(
-    ///     ids: ["portal1", "portal2", "portal3"],
-    ///     groupID: "myGroup",
-    ///     isActive: $showPortals
-    /// )
-    /// ```
-    @available(*, deprecated, message: "Use the new API with animation as a direct parameter instead of config")
-    func portalPrivateTransition(
-        ids: [String],
-        groupID: String,
-        config: PortalTransitionConfig,
-        isActive: Binding<Bool>,
-        hidesSource: Bool = false,
-        matchesAlpha: Bool = true,
-        matchesTransform: Bool = true,
-        matchesPosition: Bool = false,
-        completion: @escaping (Bool) -> Void = { _ in }
-    ) -> some View {
-        self.modifier(
-            MultiIDPortalPrivateTransitionModifier(
-                ids: ids,
-                groupID: groupID,
-                isActive: isActive,
-                animation: config.animation.value,
-                completionCriteria: config.animation.completionCriteria,
-                hidesSource: hidesSource,
-                matchesAlpha: matchesAlpha,
-                matchesTransform: matchesTransform,
-                matchesPosition: matchesPosition,
-                completion: completion
-            )
-        )
-    }
-
     func portalPrivateTransition(
         ids: [String],
         groupID: String,
@@ -456,46 +357,6 @@ public extension View {
                 isActive: isActive,
                 animation: animation,
                 completionCriteria: completionCriteria,
-                hidesSource: hidesSource,
-                matchesAlpha: matchesAlpha,
-                matchesTransform: matchesTransform,
-                matchesPosition: matchesPosition,
-                completion: completion
-            )
-        )
-    }
-
-    /// Triggers coordinated portal transitions for multiple private portal items.
-    ///
-    /// This modifier enables multiple portal animations to run simultaneously as a coordinated group.
-    /// All items in the array are animated together with synchronized timing.
-    ///
-    /// Example:
-    /// ```swift
-    /// .portalPrivateTransition(
-    ///     items: $selectedPhotos,
-    ///     groupID: "photoStack"
-    /// )
-    /// ```
-    @available(*, deprecated, message: "Use the new API with animation as a direct parameter instead of config")
-    func portalPrivateTransition<Item: Identifiable>(
-        items: Binding<[Item]>,
-        groupID: String,
-        config: PortalTransitionConfig,
-        staggerDelay: TimeInterval = 0.0,
-        hidesSource: Bool = false,
-        matchesAlpha: Bool = true,
-        matchesTransform: Bool = true,
-        matchesPosition: Bool = false,
-        completion: @escaping (Bool) -> Void = { _ in }
-    ) -> some View {
-        self.modifier(
-            MultiItemPortalPrivateTransitionModifier(
-                items: items,
-                groupID: groupID,
-                animation: config.animation.value,
-                completionCriteria: config.animation.completionCriteria,
-                staggerDelay: staggerDelay,
                 hidesSource: hidesSource,
                 matchesAlpha: matchesAlpha,
                 matchesTransform: matchesTransform,
