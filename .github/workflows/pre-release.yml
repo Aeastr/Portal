@@ -1,18 +1,28 @@
 name: Pre-release
 
+# Creates pre-release versions when PRs are merged to the dev branch
+# Pre-releases are for testing changes before creating a release PR to main
+# Format: base-version-number (e.g., 4.3.0-1, 4.3.0-2, etc.)
 on:
   pull_request:
-    types: [opened, synchronize, reopened, edited]
-    branches: [ main ]
+    types: [closed]
+    branches: [ dev ]
 
 # Prevent concurrent pre-releases for the same PR
+# Using merge_commit_sha allows parallel pre-releases from different PRs
 concurrency:
-  group: pre-release-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+  group: pre-release-${{ github.event.pull_request.merge_commit_sha }}
+  cancel-in-progress: false
 
 permissions:
   contents: write
-  pull-requests: write
+  pull-requests: read
+
+env:
+  # Toggle between draft and published pre-releases
+  # Set to 'true' to create draft pre-releases (recommended for safety)
+  # Set to 'false' to publish pre-releases immediately
+  DRAFT_RELEASE: 'false'
 
 jobs:
   pre-release:
@@ -21,11 +31,13 @@ jobs:
     # 10-minute timeout: Allows time for git operations, tag creation, and GitHub release API calls
     # Prevents hanging on network issues or API rate limits
     timeout-minutes: 10
+    if: github.event.pull_request.merged == true
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
+        ref: ${{ github.event.pull_request.merge_commit_sha }}
         # Fetch full history for changelog generation
         fetch-depth: 0
 
@@ -35,7 +47,7 @@ jobs:
         # Fetch all tags once at the beginning to avoid redundant fetches
         git fetch --tags
 
-    - name: Extract version from PR title
+    - name: Extract and validate version from PR title
       id: version
       shell: bash
       env:
@@ -44,10 +56,343 @@ jobs:
       run: |
         echo "PR Title: $PR_TITLE"
 
-        # Try to extract version number (supports formats like "4.3.0", "Release 4.3.0", "v4.3.0")
+        # Extract version number (supports formats like "4.3.0", "Release 4.3.0", "v4.3.0")
         VERSION=$(echo "$PR_TITLE" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
 
         if [ -z "$VERSION" ]; then
+          echo "::error::No version number found in PR title. Pre-releases require a version number."
+          echo "::error::PR title must contain a semantic version (e.g., '4.3.0' or 'Release 4.3.0')"
+          echo "::error::If you don't want to create a pre-release, this PR should not have been merged."
+          exit 1
+        fi
+
+        echo "Version extracted from PR title: $VERSION"
+
+        # Validate semantic versioning format (MAJOR.MINOR.PATCH)
+        if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+          echo "::error::Version '$VERSION' is not valid semantic versioning (expected: MAJOR.MINOR.PATCH)"
+          exit 1
+        fi
+
+        # Validate PR body length early (GitHub limit is 125 KiB = 128000 bytes)
+        PR_BODY_LENGTH=$(echo -n "$PR_BODY" | wc -c)
+        if [ "$PR_BODY_LENGTH" -gt 128000 ]; then
+          echo "::error::PR body is too large ($PR_BODY_LENGTH bytes). GitHub limit is 125 KiB (128000 bytes)."
+          echo "::error::Please reduce the PR description length."
+          exit 1
+        fi
+
+        # Extract version components and validate bounds
+        MAJOR=$(echo "$VERSION" | cut -d. -f1)
+        MINOR=$(echo "$VERSION" | cut -d. -f2)
+        PATCH=$(echo "$VERSION" | cut -d. -f3)
+
+        # Validate version components are non-negative and reasonable
+        if [ "$MAJOR" -lt 0 ] || [ "$MAJOR" -gt 999 ]; then
+          echo "::error::Major version '$MAJOR' must be between 0 and 999"
+          exit 1
+        fi
+
+        if [ "$MINOR" -lt 0 ] || [ "$MINOR" -gt 999 ]; then
+          echo "::error::Minor version '$MINOR' must be between 0 and 999"
+          exit 1
+        fi
+
+        if [ "$PATCH" -lt 0 ] || [ "$PATCH" -gt 999 ]; then
+          echo "::error::Patch version '$PATCH' must be between 0 and 999"
+          exit 1
+        fi
+
+        echo "Extracted base version: $VERSION"
+        echo "base_version=$VERSION" >> $GITHUB_OUTPUT
+
+    - name: Determine pre-release number
+      id: prerelease
+      shell: bash
+      run: |
+        BASE_VERSION="${{ steps.version.outputs.base_version }}"
+
+        # Find existing pre-release tags for this version
+        EXISTING_PRERELEASE_TAGS=$(git tag -l "${BASE_VERSION}-*" | grep -E "^${BASE_VERSION}-[0-9]+$" || echo "")
+
+        if [ -z "$EXISTING_PRERELEASE_TAGS" ]; then
+          # No existing pre-releases, start at 1
+          PRERELEASE_NUM=1
+        else
+          # Find the highest pre-release number and increment
+          HIGHEST=$(echo "$EXISTING_PRERELEASE_TAGS" | sed "s/${BASE_VERSION}-//" | sort -n | tail -1)
+          PRERELEASE_NUM=$((HIGHEST + 1))
+        fi
+
+        PRERELEASE_TAG="${BASE_VERSION}-${PRERELEASE_NUM}"
+        echo "Pre-release tag: $PRERELEASE_TAG"
+        echo "tag=$PRERELEASE_TAG" >> $GITHUB_OUTPUT
+        echo "number=$PRERELEASE_NUM" >> $GITHUB_OUTPUT
+        echo "release_name=$PRERELEASE_TAG" >> $GITHUB_OUTPUT
+
+    - name: Generate changelog from commits
+      id: changelog
+      shell: bash
+      run: |
+        BASE_VERSION="${{ steps.version.outputs.base_version }}"
+        PR_NUMBER="${{ github.event.pull_request.number }}"
+        REPO="${{ github.repository }}"
+
+        # Get the previous release tag (look for both final releases and pre-releases)
+        PREV_TAG=$(git tag -l --sort=-v:refname | grep -E '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9]+)?$' | head -1)
+
+        if [ -n "$PREV_TAG" ]; then
+          echo "Generating changelog from $PREV_TAG to HEAD"
+
+          # Generate changelog from commits
+          CHANGELOG=$(git log $PREV_TAG..HEAD --pretty=format:"- %s (%h)" --no-merges)
+
+          if [ -n "$CHANGELOG" ]; then
+            echo "## Changes since $PREV_TAG" > changelog.txt
+            echo "" >> changelog.txt
+            echo "$CHANGELOG" >> changelog.txt
+            echo "" >> changelog.txt
+            echo "" >> changelog.txt
+            echo "_Pre-release PR: #${PR_NUMBER}_" >> changelog.txt
+          else
+            echo "::warning::No commits found between $PREV_TAG and HEAD"
+            echo "::warning::Creating a pre-release with no changes. Verify this is intentional."
+            echo "## Changes since $PREV_TAG" > changelog.txt
+            echo "" >> changelog.txt
+            echo "_No new commits since last release_" >> changelog.txt
+            echo "" >> changelog.txt
+            echo "" >> changelog.txt
+            echo "_Pre-release PR: #${PR_NUMBER}_" >> changelog.txt
+          fi
+        else
+          echo "## Initial Pre-release" > changelog.txt
+          echo "" >> changelog.txt
+          echo "First pre-release of Portal" >> changelog.txt
+          echo "" >> changelog.txt
+          echo "" >> changelog.txt
+          echo "_Pre-release PR: #${PR_NUMBER}_" >> changelog.txt
+        fi
+
+        cat changelog.txt
+
+    - name: Validate and merge release notes
+      id: notes
+      shell: bash
+      env:
+        PR_BODY: ${{ github.event.pull_request.body }}
+      run: |
+        # Start with pre-release warning
+        echo "⚠️ **This is a pre-release version for testing purposes.**" > release_notes.txt
+        echo "" >> release_notes.txt
+
+        # Check if PR body is empty or only whitespace
+        if [ -z "$(echo "$PR_BODY" | tr -d '[:space:]')" ]; then
+          echo "::warning::PR body is empty. Using generated changelog only."
+          cat changelog.txt >> release_notes.txt
+        else
+          # Combine PR body with generated changelog
+          echo "$PR_BODY" >> release_notes.txt
+          echo "" >> release_notes.txt
+          echo "---" >> release_notes.txt
+          echo "" >> release_notes.txt
+          cat changelog.txt >> release_notes.txt
+        fi
+
+        # Save to output with unique delimiter to prevent EOF collision
+        DELIMITER="EOF_$(date +%s)_$$"
+        echo "notes<<$DELIMITER" >> $GITHUB_OUTPUT
+        cat release_notes.txt >> $GITHUB_OUTPUT
+        echo "$DELIMITER" >> $GITHUB_OUTPUT
+
+    - name: Check if tag exists on remote
+      shell: bash
+      run: |
+        TAG="${{ steps.prerelease.outputs.tag }}"
+
+        # Check if exact tag exists remotely
+        if git ls-remote --tags origin | grep -q "refs/tags/${TAG}$"; then
+          echo "::error::Tag $TAG already exists on remote"
+          exit 1
+        fi
+
+        echo "Tag $TAG is available"
+
+    - name: Validate version against latest release
+      shell: bash
+      run: |
+        BASE_VERSION="${{ steps.version.outputs.base_version }}"
+
+        # Get latest final release tag (non-pre-release)
+        LATEST_RELEASE=$(git tag -l --sort=-v:refname | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
+
+        if [ -n "$LATEST_RELEASE" ]; then
+          echo "Latest final release: $LATEST_RELEASE"
+          echo "Pre-release base version: $BASE_VERSION"
+
+          # Version comparison (works for semantic versioning)
+          if [ "$(printf '%s\n' "$LATEST_RELEASE" "$BASE_VERSION" | sort -V | tail -1)" != "$BASE_VERSION" ]; then
+            echo "::error::Pre-release base version $BASE_VERSION must be greater than or equal to latest release $LATEST_RELEASE"
+            echo "::error::Cannot create pre-releases for older versions"
+            exit 1
+          fi
+
+          echo "✓ Pre-release version $BASE_VERSION is valid (>= $LATEST_RELEASE)"
+        else
+          echo "No previous final releases found - this will be the first pre-release"
+        fi
+
+    - name: Create and push tag
+      id: create_tag
+      shell: bash
+      run: |
+        TAG="${{ steps.prerelease.outputs.tag }}"
+
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+
+        # Create annotated tag
+        git tag -a "$TAG" -m "Pre-release ${{ steps.prerelease.outputs.number }} for ${{ steps.version.outputs.base_version }}"
+
+        # Push tag with retry logic and final safety check
+        MAX_RETRIES=3
+        RETRY_COUNT=0
+
+        while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+          # Final safety check: verify exact tag doesn't exist on remote
+          if git ls-remote --tags origin | grep -q "refs/tags/${TAG}$"; then
+            echo "::error::Tag $TAG was created by another process - race condition detected"
+            echo "success=false" >> $GITHUB_OUTPUT
+            git tag -d "$TAG"
+            exit 1
+          fi
+
+          if git push origin "$TAG"; then
+            echo "Successfully pushed tag $TAG"
+            echo "success=true" >> $GITHUB_OUTPUT
+            exit 0
+          else
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            echo "Failed to push tag (attempt $RETRY_COUNT/$MAX_RETRIES)"
+            if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+              sleep 2
+            fi
+          fi
+        done
+
+        echo "::error::Failed to push tag after $MAX_RETRIES attempts"
+        echo "success=false" >> $GITHUB_OUTPUT
+
+        # Clean up local tag on failure
+        git tag -d "$TAG"
+        exit 1
+
+    - name: Create GitHub Pre-release
+      id: create_release
+      if: steps.create_tag.outputs.success == 'true'
+      shell: bash
+      run: |
+        TAG="${{ steps.prerelease.outputs.tag }}"
+        RELEASE_NAME="${{ steps.prerelease.outputs.release_name }}"
+        DRAFT="${{ env.DRAFT_RELEASE }}"
+
+        echo "Creating pre-release with draft=$DRAFT"
+
+        # Create pre-release using GitHub CLI
+        if [ "$DRAFT" = "true" ]; then
+          gh release create "$TAG" \
+            --title "$RELEASE_NAME" \
+            --notes "${{ steps.notes.outputs.notes }}" \
+            --draft \
+            --prerelease \
+            --verify-tag
+          echo "draft=true" >> $GITHUB_OUTPUT
+        else
+          gh release create "$TAG" \
+            --title "$RELEASE_NAME" \
+            --notes "${{ steps.notes.outputs.notes }}" \
+            --prerelease \
+            --verify-tag
+          echo "draft=false" >> $GITHUB_OUTPUT
+        fi
+
+        echo "success=true" >> $GITHUB_OUTPUT
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Notify on success
+      if: steps.create_release.outputs.success == 'true'
+      continue-on-error: true
+      shell: bash
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        TAG="${{ steps.prerelease.outputs.tag }}"
+        RELEASE_URL="https://github.com/${{ github.repository }}/releases/tag/$TAG"
+        IS_DRAFT="${{ steps.create_release.outputs.draft }}"
+
+        # Comment on PR with success notification (may fail if PR is closed)
+        if [ "$IS_DRAFT" = "true" ]; then
+          gh pr comment "${{ github.event.pull_request.number }}" \
+            --body "✅ **Draft pre-release $TAG created successfully!**
+
+        View the pre-release: [$TAG]($RELEASE_URL)
+
+        ⚠️ **This is a draft pre-release** - it needs to be manually published before it's available via Swift Package Manager.
+
+        To publish: Go to the [release page]($RELEASE_URL) and click \"Publish release\"." || echo "::warning::Unable to comment on PR (may be closed)"
+        else
+          gh pr comment "${{ github.event.pull_request.number }}" \
+            --body "✅ **Pre-release $TAG created and published successfully!**
+
+        View the pre-release: [$TAG]($RELEASE_URL)
+
+        This pre-release is now available for testing via Swift Package Manager:
+
+        \`\`\`swift
+        .package(url: \"https://github.com/${{ github.repository }}\", exact: \"$TAG\")
+        \`\`\`" || echo "::warning::Unable to comment on PR (may be closed)"
+        fi
+
+    - name: Cleanup on failure
+      if: failure() && steps.create_tag.outputs.success == 'true'
+      shell: bash
+      run: |
+        TAG="${{ steps.prerelease.outputs.tag }}"
+        echo "::warning::Pre-release creation failed. Cleaning up tag $TAG"
+
+        # Delete remote tag
+        git push --delete origin "$TAG" || echo "Failed to delete remote tag"
+
+        echo "::error::Pre-release creation failed. Tag has been cleaned up. Please retry the pre-release."
+
+    - name: Notify on failure
+      if: failure()
+      continue-on-error: true
+      shell: bash
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        BASE_VERSION="${{ steps.version.outputs.base_version }}"
+        PR_URL="${{ github.event.pull_request.html_url }}"
+        RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+        echo "::error::Pre-release workflow failed for version $BASE_VERSION"
+        echo "::error::PR: $PR_URL"
+        echo "::error::Workflow run: $RUN_URL"
+        echo "::error::Please check the logs and retry the pre-release"
+
+        # Create an issue comment to notify about the failure (may fail if PR is closed)
+        gh pr comment "${{ github.event.pull_request.number }}" \
+          --body "⚠️ **Pre-release workflow failed for version $BASE_VERSION**
+
+        The automated pre-release process encountered an error. Please check the [workflow logs]($RUN_URL) for details.
+
+        Common issues:
+        - Tag already exists
+        - Invalid version format
+        - Network/permission issues
+
+        You may need to manually create the pre-release or re-trigger the workflow." || echo "::warning::Unable to comment on PR (may be closed)"
           echo "No version number found in PR title - skipping pre-release"
           echo "is_release_pr=false" >> $GITHUB_OUTPUT
           exit 0

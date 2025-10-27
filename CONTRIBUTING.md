@@ -132,6 +132,40 @@ Portal uses a protected `main` branch with the following workflow:
 
 **Branch Protection**: Direct pushes to `main` are not allowed. All changes must go through pull requests, even for maintainers.
 
+### Pre-releases vs Full Releases
+
+Portal supports two types of releases:
+
+#### Pre-releases (Testing Versions)
+- **Trigger**: When PRs **with version numbers** are merged to the `dev` branch
+- **Purpose**: Create testable versions before official releases
+- **Format**: `base-version-number` (e.g., `4.3.0-1`, `4.3.0-2`)
+- **How to create**: Merge a PR to `dev` with a version number in the title
+- **Use case**: Testing changes in consuming apps before cutting an official release
+
+**Important**: Pre-releases **require** a version number in the PR title. PRs without versions will not trigger pre-release creation.
+
+**Example pre-release PR to `dev`:**
+```
+Title: 4.3.0
+Description: Test new FlowingHeader snapping behavior
+```
+This creates pre-release tags like `4.3.0-1`, `4.3.0-2`, etc. for testing.
+
+#### Full Releases (Official Versions)
+- **Trigger**: When PRs are merged from `dev` → `main`
+- **Purpose**: Official, stable releases published to the community
+- **Format**: Semantic version (e.g., `4.3.0`)
+- **How to create**: Merge a release PR from `dev` to `main` with version in title
+- **Use case**: Official releases for production use
+
+**Example release PR to `main`:**
+```
+Title: 4.3.0
+Description: [Full changelog with all changes since last release]
+```
+This creates the official `4.3.0` release.
+
 ### Standard Pull Requests
 
 For non-release PRs (bug fixes, features):

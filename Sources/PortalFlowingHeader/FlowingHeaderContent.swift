@@ -271,7 +271,7 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
                             // Keep snapped, don't update progress
                             FlowingHeaderLogs.logger.log(
                                 "Maintaining snap position",
-                                level: .trace,
+                                level: .debug,
                                 tags: [FlowingHeaderLogs.Tags.scroll],
                                 metadata: ["snappedValue": "\(snappedValue)"]
                             )
@@ -293,7 +293,7 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
 
                     FlowingHeaderLogs.logger.log(
                         "Scroll progress update",
-                        level: .trace,
+                        level: .debug,
                         tags: [FlowingHeaderLogs.Tags.scroll],
                         metadata: [
                             "offset": String(format: "%.1f", newOffset),
