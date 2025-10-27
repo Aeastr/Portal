@@ -43,7 +43,7 @@ public struct FlowingHeaderExampleTitleOnly: View {
         .flowingHeader(
             title: "Analytics",
             subtitle: "Business Dashboard",
-            displays: [.title],
+            displays: [.title]
         ) {
             Image(systemName: "chart.bar.fill")
                 .font(.system(size: 64))

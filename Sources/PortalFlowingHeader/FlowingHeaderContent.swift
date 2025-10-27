@@ -9,7 +9,7 @@
 //
 
 import SwiftUI
-import os.log
+import LogOutLoud
 
 /// Layout style for accessory view positioning in the navigation bar.
 @available(iOS 18.0, *)
@@ -29,6 +29,19 @@ public enum SnappingBehavior: Sendable {
     case directional
     /// No snapping - header stays at current progress
     case none
+}
+
+/// Scroll direction for tracking user intent.
+@available(iOS 18.0, *)
+private enum ScrollDirection {
+    /// Scrolling downward (increasing offset)
+    case down
+    /// Scrolling upward (decreasing offset)
+    case up
+
+    var isDown: Bool {
+        self == .down
+    }
 }
 
 /// Components that can be displayed and transitioned in a flowing header.
@@ -136,8 +149,7 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
     @State private var titleProgress: Double = 0.0
     @State private var isScrolling = false
     @State private var scrollOffset: CGFloat = 0
-    @State private var previousScrollOffset: CGFloat = 0
-    @State private var lastScrollDirection: Bool = true  // true = down, false = up
+    @State private var lastScrollDirection: ScrollDirection = .down
     @State private var hasSnapped = false
     @State private var snappedValue: Double = 0.0
     @State private var accessoryFlowing = false
@@ -173,18 +185,40 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
                     switch config.snappingBehavior {
                     case .directional:
                         // Snap based on scroll direction: down → 1.0, up → 0.0
-                        snapTarget = lastScrollDirection ? 1.0 : 0.0
-                        print("🔵 SNAP (directional): lastScrollDirection=\(lastScrollDirection ? "down" : "up"), snapTarget=\(snapTarget!)")
+                        snapTarget = lastScrollDirection.isDown ? 1.0 : 0.0
+                        FlowingHeaderLogs.logger.log(
+                            "Directional snap triggered",
+                            level: .debug,
+                            tags: [FlowingHeaderLogs.Tags.snapping],
+                            metadata: [
+                                "direction": lastScrollDirection.isDown ? "down" : "up",
+                                "target": "\(snapTarget!)",
+                                "currentProgress": "\(titleProgress)"
+                            ]
+                        )
 
                     case .nearest:
                         // Snap to nearest position based on midpoint
                         snapTarget = titleProgress > 0.5 ? 1.0 : 0.0
-                        print("🔵 SNAP (nearest): titleProgress=\(titleProgress), snapTarget=\(snapTarget!)")
+                        FlowingHeaderLogs.logger.log(
+                            "Nearest snap triggered",
+                            level: .debug,
+                            tags: [FlowingHeaderLogs.Tags.snapping],
+                            metadata: [
+                                "progress": "\(titleProgress)",
+                                "target": "\(snapTarget!)"
+                            ]
+                        )
 
                     case .none:
                         // No snapping
                         snapTarget = nil
-                        print("🔵 NO SNAP: titleProgress=\(titleProgress)")
+                        FlowingHeaderLogs.logger.log(
+                            "Snap disabled",
+                            level: .debug,
+                            tags: [FlowingHeaderLogs.Tags.snapping],
+                            metadata: ["progress": "\(titleProgress)"]
+                        )
                     }
 
                     if let snapTarget = snapTarget {
@@ -201,14 +235,13 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
             .onScrollGeometryChange(for: CGFloat.self) { geometry in
                 return geometry.contentOffset.y + geometry.contentInsets.top
             } action: { _, newOffset in
-                let currentDirection = newOffset > scrollOffset
+                let currentDirection: ScrollDirection = newOffset > scrollOffset ? .down : .up
 
-                // Track direction during scroll
-                if abs(newOffset - scrollOffset) > 0.1 {  // Ignore tiny movements
+                // Track direction during scroll (ignore tiny movements to prevent jitter)
+                if abs(newOffset - scrollOffset) > FlowingHeaderTokens.scrollDirectionThreshold {
                     lastScrollDirection = currentDirection
                 }
 
-                previousScrollOffset = scrollOffset
                 scrollOffset = newOffset
 
                 // If accessory is flowing, start earlier (when it's partially scrolled)
@@ -230,24 +263,44 @@ private struct FlowingHeaderModifier<AccessoryContent: View>: ViewModifier {
 
                 // Only update progress while actively scrolling
                 if isScrolling {
-                    print("🟢 SCROLL: newOffset=\(newOffset), progress=\(progress), direction=\(currentDirection ? "down" : "up"), hasSnapped=\(hasSnapped)")
-
                     // If we've snapped and user continues scrolling in same direction, keep it snapped
                     if hasSnapped {
-                        let shouldKeepSnapped = (snappedValue == 1.0 && currentDirection) || (snappedValue == 0.0 && !currentDirection)
-
-                        print("🟢 SCROLL: currentDirection=\(currentDirection ? "down" : "up"), snappedValue=\(snappedValue), shouldKeepSnapped=\(shouldKeepSnapped)")
+                        let shouldKeepSnapped = (snappedValue == 1.0 && currentDirection.isDown) || (snappedValue == 0.0 && !currentDirection.isDown)
 
                         if shouldKeepSnapped {
                             // Keep snapped, don't update progress
-                            print("🟢 SCROLL: Keeping snapped")
+                            FlowingHeaderLogs.logger.log(
+                                "Maintaining snap position",
+                                level: .trace,
+                                tags: [FlowingHeaderLogs.Tags.scroll],
+                                metadata: ["snappedValue": "\(snappedValue)"]
+                            )
                             return
                         } else {
                             // User reversed direction, reset snap state
-                            print("🟢 SCROLL: Reversing direction, reset snap")
+                            FlowingHeaderLogs.logger.log(
+                                "Direction reversed, releasing snap",
+                                level: .debug,
+                                tags: [FlowingHeaderLogs.Tags.scroll],
+                                metadata: [
+                                    "previousSnap": "\(snappedValue)",
+                                    "newDirection": currentDirection.isDown ? "down" : "up"
+                                ]
+                            )
                             hasSnapped = false
                         }
                     }
+
+                    FlowingHeaderLogs.logger.log(
+                        "Scroll progress update",
+                        level: .trace,
+                        tags: [FlowingHeaderLogs.Tags.scroll],
+                        metadata: [
+                            "offset": String(format: "%.1f", newOffset),
+                            "progress": String(format: "%.2f", progress),
+                            "direction": currentDirection.isDown ? "down" : "up"
+                        ]
+                    )
 
                     withAnimation(.smooth(duration: FlowingHeaderTokens.scrollAnimationDuration)) {
                         titleProgress = progress

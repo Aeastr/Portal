@@ -35,6 +35,10 @@ let package = Package(
         ),
         .target(
             name: "PortalFlowingHeader",
+            dependencies: [
+                .product(name: "LogOutLoud", package: "LogOutLoud"),
+                .product(name: "LogOutLoudConsole", package: "LogOutLoud")
+            ],
             path: "Sources/PortalFlowingHeader"
         ),
         .target(
