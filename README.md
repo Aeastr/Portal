@@ -50,7 +50,7 @@ Animate views between navigation contexts (sheets, navigation stacks, tabs) with
 - Customizable animations via `AnimatedPortalLayer` protocol
 - **iOS 17+** • Standard SwiftUI APIs
 
-### 📱 Flowing Headers (PortalPortalHeader)
+### 📱 Flowing Headers (PortalHeader)
 Scroll-based header transitions that smoothly flow into the navigation bar.
 - Titles and accessories animate to navigation bar on scroll
 - Native iOS-feeling transitions with automatic snapping

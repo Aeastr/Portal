@@ -1,6 +1,6 @@
 //
 //  PortalHeaderDestination.swift
-//  PortalPortalHeader
+//  PortalHeader
 //
 //  Created by Aether, 2025.
 //

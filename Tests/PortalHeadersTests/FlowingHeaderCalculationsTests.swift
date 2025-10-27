@@ -1,6 +1,6 @@
 //
 //  PortalHeaderCalculationsTests.swift
-//  PortalPortalHeader
+//  PortalHeader
 //
 //  Created by Aether, 2025.
 //
@@ -9,7 +9,7 @@
 //
 
 import Testing
-@testable import PortalPortalHeader
+@testable import PortalHeader
 import CoreGraphics
 
 @Suite("PortalHeader Calculations Tests")

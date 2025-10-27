@@ -1,6 +1,6 @@
 //
 //  PortalHeaderTests.swift
-//  PortalPortalHeader
+//  PortalHeader
 //
 //  Created by Aether, 2025.
 //
@@ -10,7 +10,7 @@
 
 import XCTest
 import SwiftUI
-@testable import PortalPortalHeader
+@testable import PortalHeader
 
 @available(iOS 18.0, *)
 final class PortalHeaderTests: XCTestCase {

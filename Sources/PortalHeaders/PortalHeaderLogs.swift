@@ -1,6 +1,6 @@
 //
 //  PortalHeaderLogs.swift
-//  PortalPortalHeader
+//  PortalHeader
 //
 //  Created by Aether, 2025.
 //
@@ -14,7 +14,7 @@ import LogOutLoud
 import LogOutLoudConsole
 #endif
 
-/// Central logging namespace for the PortalPortalHeader package.
+/// Central logging namespace for the PortalHeader package.
 ///
 /// Use `PortalHeaderLogs.logger` for emitting logs related to scroll tracking,
 /// snapping behavior, and transition diagnostics. Consumers can customize the
@@ -33,7 +33,7 @@ public enum PortalHeaderLogs {
         // we have disabled some levels by default to avoid spamming the console, they can still be enabled if need be, but this is less likely
     }()
 
-    /// Shared logger instance dedicated to the PortalPortalHeader package.
+    /// Shared logger instance dedicated to the PortalHeader package.
     public static var logger: Logger {
         _ = bootstrap
         return Logger.shared(for: registryKey)
