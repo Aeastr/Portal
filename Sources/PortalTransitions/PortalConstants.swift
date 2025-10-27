@@ -9,6 +9,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 /// Design tokens and constants for the Portal animation system.
 ///
@@ -30,13 +31,19 @@ public struct PortalConstants {
     ///
     /// This duration is calibrated to match iOS system animations like sheet presentations.
     /// Using shorter durations (0.1-0.3s) with sheets can cause visual artifacts.
-    public static let defaultAnimationDuration: TimeInterval = 0.38
+    public static let defaultAnimationDuration: TimeInterval = 0.3
+
+    /// Default animation for portal transitions.
+    ///
+    /// This is the standard animation used across all portal transitions unless overridden.
+    /// Uses a smooth curve with the default duration for natural-feeling motion.
+    public static let defaultAnimation: Animation = .smooth(duration: defaultAnimationDuration)
 
     /// Minimum duration for sheet-compatible animations.
     ///
     /// Portal transitions used with sheets should not be shorter than this
     /// to avoid visual shifts when the portal completes before the sheet.
-    public static let minimumSheetAnimationDuration: TimeInterval = 0.35
+    public static let minimumSheetAnimationDuration: TimeInterval = 0.3
 
     // MARK: - Cache Configuration
 
@@ -56,4 +63,8 @@ public struct PortalConstants {
 
     /// Default debug overlay padding
     public static let debugOverlayPadding: CGFloat = 5
+}
+
+#Preview("Card Grid Example") {
+    PortalExampleCardGrid()
 }

@@ -75,6 +75,12 @@ public struct PortalInfo: Identifiable {
     /// Set when the source view reports its position through the preference system.
     public var sourceAnchor: Anchor<CGRect>?
 
+    /// Cached source anchor used during transitions even if view is removed from hierarchy.
+    ///
+    /// This ensures the transition layer can continue animating even if the source view
+    /// disappears mid-transition (e.g., during sheet dismissal).
+    public var cachedSourceAnchor: Anchor<CGRect>?
+
     /// Animation for the portal transition.
     ///
     /// The SwiftUI animation that controls how the portal transition behaves,
@@ -108,6 +114,12 @@ public struct PortalInfo: Identifiable {
     /// needed for calculating the ending position of the portal animation.
     /// Set when the destination view reports its position through the preference system.
     public var destinationAnchor: Anchor<CGRect>?
+
+    /// Cached destination anchor used during transitions even if view is removed from hierarchy.
+    ///
+    /// This ensures the transition layer can continue animating even if the destination view
+    /// disappears mid-transition (e.g., during sheet dismissal).
+    public var cachedDestinationAnchor: Anchor<CGRect>?
 
     /// Completion callback executed when the portal animation finishes.
     ///

@@ -58,7 +58,7 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
         groupID: String,
         isActive: Binding<Bool>,
         in corners: PortalCorners? = nil,
-        animation: Animation = .smooth(duration: 0.4),
+        animation: Animation = PortalConstants.defaultAnimation,
         completionCriteria: AnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void,
         @ViewBuilder layerView: @escaping (String) -> LayerView
@@ -257,7 +257,7 @@ public extension View {
         groupID: String,
         isActive: Binding<Bool>,
         in corners: PortalCorners? = nil,
-        animation: Animation = .smooth(duration: 0.4),
+        animation: Animation = PortalConstants.defaultAnimation,
         completionCriteria: AnimationCompletionCriteria = .removed,
         @ViewBuilder layerView: @escaping (String) -> LayerView,
         completion: @escaping (Bool) -> Void = { _ in }

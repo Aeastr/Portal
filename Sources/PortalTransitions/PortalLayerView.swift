@@ -94,10 +94,21 @@ private struct PortalLayerContentView: View {
     /// - Positions layer using `.offset()` for precise placement
     /// - Uses `.frame()` for size animation
     var body: some View {
-        if let source = info.sourceAnchor,
-           let destination = info.destinationAnchor,
+        let timestamp = Date().timeIntervalSince1970
+        let milliseconds = Int((timestamp.truncatingRemainder(dividingBy: 1)) * 1000)
+        let timeString = String(format: "%03d", milliseconds)
+
+        // Use cached anchors if live ones are nil (views removed from hierarchy during transition)
+        let sourceToUse = info.sourceAnchor ?? info.cachedSourceAnchor
+        let destinationToUse = info.destinationAnchor ?? info.cachedDestinationAnchor
+
+        if let source = sourceToUse,
+           let destination = destinationToUse,
            let layer = info.layerView,
            info.showLayer {
+            let usingCachedSrc = info.sourceAnchor == nil
+            let usingCachedDst = info.destinationAnchor == nil
+            let _ = print("[\(timeString)ms] LAYER[\(info.infoID)] SHOWING (hideView: \(info.hideView), cachedSrc: \(usingCachedSrc), cachedDst: \(usingCachedDst))")
             // Convert anchor bounds to concrete rectangles in global coordinate space
             let sRect = proxy[source]
             let dRect = proxy[destination]
@@ -135,6 +146,11 @@ private struct PortalLayerContentView: View {
             .frame(width: width, height: height)
             .offset(x: x, y: y)
             .transition(.identity)  // Prevents additional SwiftUI transitions
+        } else {
+            let hasSource = info.sourceAnchor != nil
+            let hasDest = info.destinationAnchor != nil
+            let hasLayer = info.layerView != nil
+            let _ = print("[\(timeString)ms] LAYER[\(info.infoID)] HIDDEN - showLayer:\(info.showLayer) hideView:\(info.hideView) src:\(hasSource) dst:\(hasDest) layer:\(hasLayer)")
         }
     }
 }

@@ -89,7 +89,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
     public init(
         item: Binding<Item?>,
         in corners: PortalCorners? = nil,
-        animation: Animation = .smooth(duration: 0.4),
+        animation: Animation = PortalConstants.defaultAnimation,
         completionCriteria: AnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void,
         @ViewBuilder layerView: @escaping (Item) -> LayerView
@@ -250,10 +250,21 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
                 withAnimation(animation, completionCriteria: completionCriteria) {
                     portalModel.info[idx].animateView = true
                 } completion: {
-                    // Show destination first, then hide layer on next frame to prevent flicker
+                    let timestamp = Date().timeIntervalSince1970
+                    let milliseconds = Int((timestamp.truncatingRemainder(dividingBy: 1)) * 1000)
+                    let timeString = String(format: "%03d", milliseconds)
+                    print("[\(timeString)ms] TRANSITION[\(key)] Animation completed, setting hideView=true")
+
+                    // Show destination first, then hide layer after ensuring it's rendered
                     portalModel.info[idx].hideView = true
 
-                    DispatchQueue.main.async {
+                    // Wait 20ms (~1.2 frames at 60fps) to ensure destination is fully rendered to screen
+                    DispatchQueue.main.asyncAfter(deadline: .now()) {
+                        let timestamp2 = Date().timeIntervalSince1970
+                        let milliseconds2 = Int((timestamp2.truncatingRemainder(dividingBy: 1)) * 1000)
+                        let timeString2 = String(format: "%03d", milliseconds2)
+                        print("[\(timeString2)ms] TRANSITION[\(key)] After 50ms delay, setting showLayer=false")
+
                         // Hide layer after destination is visible
                         portalModel.info[idx].showLayer = false
 
@@ -370,7 +381,7 @@ public extension View {
     func portalTransition<Item: Identifiable, LayerView: View>(
         item: Binding<Item?>,
         in corners: PortalCorners? = nil,
-        animation: Animation = .smooth(duration: 0.4),
+        animation: Animation = PortalConstants.defaultAnimation,
         completionCriteria: AnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void = { _ in },
         @ViewBuilder layerView: @escaping (Item) -> LayerView

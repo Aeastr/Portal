@@ -84,8 +84,16 @@ public struct Portal<Content: View>: View {
                     // Keep anchors aligned with live layout so animated layer follows scrolling/dragging
                     if isSource {
                         model.info[idx].sourceAnchor = anchor
+                        // Cache anchor for use during transitions if view is removed
+                        if model.info[idx].initialized {
+                            model.info[idx].cachedSourceAnchor = anchor
+                        }
                     } else {
                         model.info[idx].destinationAnchor = anchor
+                        // Cache anchor for use during transitions if view is removed
+                        if model.info[idx].initialized {
+                            model.info[idx].cachedDestinationAnchor = anchor
+                        }
                     }
                 }
             }
@@ -95,10 +103,18 @@ public struct Portal<Content: View>: View {
 
     private var opacity: CGFloat {
         guard let idx = index else { return 1 }
+        let timestamp = Date().timeIntervalSince1970
+        let milliseconds = Int((timestamp.truncatingRemainder(dividingBy: 1)) * 1000)
+        let timeString = String(format: "%03d", milliseconds)
+
         if source {
-            return portalModel.info[idx].destinationAnchor == nil ? 1 : 0
+            let op = portalModel.info[idx].destinationAnchor == nil ? 1 : 0
+            print("[\(timeString)ms] SOURCE[\(id)] opacity: \(op)")
+            return CGFloat(op)
         } else {
-            return portalModel.info[idx].initialized ? (portalModel.info[idx].hideView ? 1 : 0) : 1
+            let op = portalModel.info[idx].initialized ? (portalModel.info[idx].hideView ? 1 : 0) : 1
+            print("[\(timeString)ms] DEST[\(id)] opacity: \(op) (hideView: \(portalModel.info[idx].hideView))")
+            return CGFloat(op)
         }
     }
 
