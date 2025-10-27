@@ -105,17 +105,19 @@ private struct PortalLayerContentView: View {
             #if DEBUG
             let usingCachedSrc = info.sourceAnchor == nil
             let usingCachedDst = info.destinationAnchor == nil
-            PortalLogs.logger.log(
-                "Layer showing",
-                level: .debug,
-                tags: [PortalLogs.Tags.transition],
-                metadata: [
-                    "id": info.infoID,
-                    "hideView": "\(info.hideView)",
-                    "cachedSrc": "\(usingCachedSrc)",
-                    "cachedDst": "\(usingCachedDst)"
-                ]
-            )
+            let _ = {
+                PortalLogs.logger.log(
+                    "Layer showing",
+                    level: .debug,
+                    tags: [PortalLogs.Tags.transition],
+                    metadata: [
+                        "id": info.infoID,
+                        "hideView": "\(info.hideView)",
+                        "cachedSrc": "\(usingCachedSrc)",
+                        "cachedDst": "\(usingCachedDst)"
+                    ]
+                )
+            }()
             #endif
             // Convert anchor bounds to concrete rectangles in global coordinate space
             let sRect = proxy[source]
@@ -159,19 +161,21 @@ private struct PortalLayerContentView: View {
             let hasSource = info.sourceAnchor != nil
             let hasDest = info.destinationAnchor != nil
             let hasLayer = info.layerView != nil
-            PortalLogs.logger.log(
-                "Layer hidden",
-                level: .debug,
-                tags: [PortalLogs.Tags.transition],
-                metadata: [
-                    "id": info.infoID,
-                    "showLayer": "\(info.showLayer)",
-                    "hideView": "\(info.hideView)",
-                    "hasSource": "\(hasSource)",
-                    "hasDest": "\(hasDest)",
-                    "hasLayer": "\(hasLayer)"
-                ]
-            )
+            let _ = {
+                PortalLogs.logger.log(
+                    "Layer hidden",
+                    level: .debug,
+                    tags: [PortalLogs.Tags.transition],
+                    metadata: [
+                        "id": info.infoID,
+                        "showLayer": "\(info.showLayer)",
+                        "hideView": "\(info.hideView)",
+                        "hasSource": "\(hasSource)",
+                        "hasDest": "\(hasDest)",
+                        "hasLayer": "\(hasLayer)"
+                    ]
+                )
+            }()
             #endif
         }
     }
