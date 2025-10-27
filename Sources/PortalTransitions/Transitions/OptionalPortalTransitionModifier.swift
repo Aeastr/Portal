@@ -250,20 +250,23 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
                 withAnimation(animation, completionCriteria: completionCriteria) {
                     portalModel.info[idx].animateView = true
                 } completion: {
-                    let timestamp = Date().timeIntervalSince1970
-                    let milliseconds = Int((timestamp.truncatingRemainder(dividingBy: 1)) * 1000)
-                    let timeString = String(format: "%03d", milliseconds)
-                    print("[\(timeString)ms] TRANSITION[\(key)] Animation completed, setting hideView=true")
+                    PortalLogs.logger.log(
+                        "Animation completed, showing destination",
+                        level: .debug,
+                        tags: [PortalLogs.Tags.transition],
+                        metadata: ["id": key, "hideView": "true"]
+                    )
 
                     // Show destination first, then hide layer after ensuring it's rendered
                     portalModel.info[idx].hideView = true
 
-                    // Wait 20ms (~1.2 frames at 60fps) to ensure destination is fully rendered to screen
                     DispatchQueue.main.asyncAfter(deadline: .now()) {
-                        let timestamp2 = Date().timeIntervalSince1970
-                        let milliseconds2 = Int((timestamp2.truncatingRemainder(dividingBy: 1)) * 1000)
-                        let timeString2 = String(format: "%03d", milliseconds2)
-                        print("[\(timeString2)ms] TRANSITION[\(key)] After 50ms delay, setting showLayer=false")
+                        PortalLogs.logger.log(
+                            "Hiding transition layer",
+                            level: .debug,
+                            tags: [PortalLogs.Tags.transition],
+                            metadata: ["id": key, "showLayer": "false"]
+                        )
 
                         // Hide layer after destination is visible
                         portalModel.info[idx].showLayer = false

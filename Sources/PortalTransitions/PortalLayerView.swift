@@ -94,10 +94,6 @@ private struct PortalLayerContentView: View {
     /// - Positions layer using `.offset()` for precise placement
     /// - Uses `.frame()` for size animation
     var body: some View {
-        let timestamp = Date().timeIntervalSince1970
-        let milliseconds = Int((timestamp.truncatingRemainder(dividingBy: 1)) * 1000)
-        let timeString = String(format: "%03d", milliseconds)
-
         // Use cached anchors if live ones are nil (views removed from hierarchy during transition)
         let sourceToUse = info.sourceAnchor ?? info.cachedSourceAnchor
         let destinationToUse = info.destinationAnchor ?? info.cachedDestinationAnchor
@@ -106,9 +102,21 @@ private struct PortalLayerContentView: View {
            let destination = destinationToUse,
            let layer = info.layerView,
            info.showLayer {
+            #if DEBUG
             let usingCachedSrc = info.sourceAnchor == nil
             let usingCachedDst = info.destinationAnchor == nil
-            let _ = print("[\(timeString)ms] LAYER[\(info.infoID)] SHOWING (hideView: \(info.hideView), cachedSrc: \(usingCachedSrc), cachedDst: \(usingCachedDst))")
+            PortalLogs.logger.log(
+                "Layer showing",
+                level: .debug,
+                tags: [PortalLogs.Tags.transition],
+                metadata: [
+                    "id": info.infoID,
+                    "hideView": "\(info.hideView)",
+                    "cachedSrc": "\(usingCachedSrc)",
+                    "cachedDst": "\(usingCachedDst)"
+                ]
+            )
+            #endif
             // Convert anchor bounds to concrete rectangles in global coordinate space
             let sRect = proxy[source]
             let dRect = proxy[destination]
@@ -147,10 +155,24 @@ private struct PortalLayerContentView: View {
             .offset(x: x, y: y)
             .transition(.identity)  // Prevents additional SwiftUI transitions
         } else {
+            #if DEBUG
             let hasSource = info.sourceAnchor != nil
             let hasDest = info.destinationAnchor != nil
             let hasLayer = info.layerView != nil
-            let _ = print("[\(timeString)ms] LAYER[\(info.infoID)] HIDDEN - showLayer:\(info.showLayer) hideView:\(info.hideView) src:\(hasSource) dst:\(hasDest) layer:\(hasLayer)")
+            PortalLogs.logger.log(
+                "Layer hidden",
+                level: .debug,
+                tags: [PortalLogs.Tags.transition],
+                metadata: [
+                    "id": info.infoID,
+                    "showLayer": "\(info.showLayer)",
+                    "hideView": "\(info.hideView)",
+                    "hasSource": "\(hasSource)",
+                    "hasDest": "\(hasDest)",
+                    "hasLayer": "\(hasLayer)"
+                ]
+            )
+            #endif
         }
     }
 }

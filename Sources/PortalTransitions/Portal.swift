@@ -103,17 +103,28 @@ public struct Portal<Content: View>: View {
 
     private var opacity: CGFloat {
         guard let idx = index else { return 1 }
-        let timestamp = Date().timeIntervalSince1970
-        let milliseconds = Int((timestamp.truncatingRemainder(dividingBy: 1)) * 1000)
-        let timeString = String(format: "%03d", milliseconds)
 
         if source {
             let op = portalModel.info[idx].destinationAnchor == nil ? 1 : 0
-            print("[\(timeString)ms] SOURCE[\(id)] opacity: \(op)")
+            #if DEBUG
+            PortalLogs.logger.log(
+                "SOURCE opacity",
+                level: .debug,
+                tags: [PortalLogs.Tags.transition],
+                metadata: ["id": id, "opacity": "\(op)"]
+            )
+            #endif
             return CGFloat(op)
         } else {
             let op = portalModel.info[idx].initialized ? (portalModel.info[idx].hideView ? 1 : 0) : 1
-            print("[\(timeString)ms] DEST[\(id)] opacity: \(op) (hideView: \(portalModel.info[idx].hideView))")
+            #if DEBUG
+            PortalLogs.logger.log(
+                "DEST opacity",
+                level: .debug,
+                tags: [PortalLogs.Tags.transition],
+                metadata: ["id": id, "opacity": "\(op)", "hideView": "\(portalModel.info[idx].hideView)"]
+            )
+            #endif
             return CGFloat(op)
         }
     }
