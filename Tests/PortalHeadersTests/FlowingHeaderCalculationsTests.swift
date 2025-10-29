@@ -9,7 +9,7 @@
 //
 
 import Testing
-@testable import PortalHeaders
+@testable import PortalTransitionsHeaders
 import CoreGraphics
 
 @Suite("PortalHeader Calculations Tests")

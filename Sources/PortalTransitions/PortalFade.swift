@@ -17,7 +17,7 @@ import SwiftUI
 ///
 /// **Usage:**
 /// ```swift
-/// .portalTransition(
+/// .PortalTransitions(
 ///     id: "detail",
 ///     isActive: $showDetail,
 ///     fade: .fade

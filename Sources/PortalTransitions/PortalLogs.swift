@@ -51,7 +51,7 @@ public enum PortalLogs {
     public enum Tags {
         public static let container = Tag("PortalContainer")
         public static let overlay = Tag("OverlayWindow")
-        public static let transition = Tag("PortalTransition")
+        public static let transition = Tag("PortalTransitions")
         public static let diagnostics = Tag("Diagnostics")
     }
 

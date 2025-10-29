@@ -65,6 +65,7 @@ public struct PortalExampleComparison: View {
                                                 .fontWeight(.bold)
                                         }
                                     )
+                                    
                             }
                             .frame(width: 160, height: 120)
                             .portal(id: "portalDemo", .source)
@@ -170,7 +171,7 @@ public struct PortalExampleComparison: View {
                         .navigationTransition(.zoom(sourceID: "zoomDemo", in: namespace))
                 }
             }
-            .portalTransition(
+            .PortalTransitions(
             id: "portalDemo",
             isActive: $showPortalSheet,
             animation: portalAnimationExample
@@ -194,7 +195,9 @@ public struct PortalExampleComparison: View {
                                 .foregroundColor(.white)
                                 .fontWeight(.bold)
                         }
-                    )
+                    ).hueRotation(.degrees(50))
+                    .offset(x: 20, y: 20)
+                    .opacity(0.5)
             }
             }
         }
@@ -228,7 +231,7 @@ private struct PortalExamplePortalComparisonSheet: View {
                                         .foregroundColor(.white)
                                         .fontWeight(.bold)
                                 }
-                            )
+                            ).hueRotation(.degrees(100))
                     }
                     .frame(width: 280, height: 200)
                     .portal(id: "portalDemo", .destination)

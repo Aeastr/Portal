@@ -197,7 +197,7 @@ Release 4.3.0
 - Fixed memory leak in portal cleanup
 
 ## Breaking Changes
-- Renamed `PortalTransition` to `PortalEffect` for clarity
+- Renamed `PortalTransitions` to `PortalEffect` for clarity
 
 ## Bug Fixes
 - Fixed issue where portals wouldn't work in nested NavigationStacks

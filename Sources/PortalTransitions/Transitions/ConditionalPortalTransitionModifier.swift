@@ -1,5 +1,5 @@
 //
-//  ConditionalPortalTransitionModifier.swift
+//  ConditionalPortalTransitionsModifier.swift
 //  Portal
 //
 //  Created by Aether, 2025.
@@ -49,7 +49,7 @@ import SwiftUI
 /// - `onAppear`: Ensures portal info exists in the global model
 /// - `onChange`: Handles forward and reverse transitions
 /// - Automatic cleanup after reverse transitions
-public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier {
+public struct ConditionalPortalTransitionsModifier<LayerView: View>: ViewModifier {
     /// The shared portal model that manages all portal animations.
     @Environment(CrossModel.self) private var portalModel
 
@@ -276,7 +276,7 @@ public extension View {
     /// @State private var showDetail = false
     ///
     /// ContentView()
-    ///     .portalTransition(
+    ///     .PortalTransitions(
     ///         id: "detail",
     ///         isActive: $showDetail
     ///     ) {
@@ -303,7 +303,7 @@ public extension View {
     ///   - layerView: Closure that returns the view to animate during transition
     ///   - completion: Optional completion handler (defaults to no-op)
     /// - Returns: A view with the portal transition modifier applied
-    func portalTransition<LayerView: View>(
+    func PortalTransitions<LayerView: View>(
         id: String,
         isActive: Binding<Bool>,
         in corners: PortalCorners? = nil,
@@ -314,7 +314,7 @@ public extension View {
         @ViewBuilder layerView: @escaping () -> LayerView
     ) -> some View {
         return self.modifier(
-            ConditionalPortalTransitionModifier(
+            ConditionalPortalTransitionsModifier(
                 id: id,
                 isActive: isActive,
                 in: corners,

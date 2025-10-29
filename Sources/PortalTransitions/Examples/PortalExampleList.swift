@@ -102,7 +102,7 @@ public struct PortalExampleList: View {
             .sheet(item: $selectedItem) { item in
                 PortalExampleListDetail(item: item)
             }
-            .portalTransition(
+            .PortalTransitions(
                 item: $selectedItem,
                 animation: portalAnimationExample
             ) { item in

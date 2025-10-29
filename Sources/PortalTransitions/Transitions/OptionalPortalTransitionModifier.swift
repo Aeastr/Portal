@@ -1,5 +1,5 @@
 //
-//  OptionalPortalTransitionModifier.swift
+//  OptionalPortalTransitionsModifier.swift
 //  Portal
 //
 //  Created by Aether, 2025.
@@ -32,12 +32,12 @@ import SwiftUI
 /// @State private var selectedPhoto: Photo? = nil
 ///
 /// PhotoGridView()
-///     .portalTransition(item: $selectedPhoto) { photo in
+///     .PortalTransitions(item: $selectedPhoto) { photo in
 ///         AsyncImage(url: photo.fullSizeURL)
 ///             .aspectRatio(contentMode: .fit)
 ///     }
 /// ```
-public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: View>: ViewModifier {
+public struct OptionalPortalTransitionsModifier<Item: Identifiable, LayerView: View>: ViewModifier {
     /// Binding to the optional item that controls the portal transition.
     ///
     /// When this value changes from `nil` to non-`nil`, a forward portal transition
@@ -333,7 +333,7 @@ public extension View {
     /// @State private var selectedItem: MyItem? = nil
     ///
     /// ContentView()
-    ///     .portalTransition(item: $selectedItem) { item in
+    ///     .PortalTransitions(item: $selectedItem) { item in
     ///         DetailView(item: item)
     ///     }
     /// ```
@@ -355,7 +355,7 @@ public extension View {
     ///   - completion: Optional completion handler (defaults to no-op)
     ///   - layerView: Closure that receives the item and returns the view to animate
     /// - Returns: A view with the portal transition modifier applied
-    func portalTransition<Item: Identifiable, LayerView: View>(
+    func PortalTransitions<Item: Identifiable, LayerView: View>(
         item: Binding<Item?>,
         in corners: PortalCorners? = nil,
         animation: Animation = PortalConstants.defaultAnimation,
@@ -365,7 +365,7 @@ public extension View {
         @ViewBuilder layerView: @escaping (Item) -> LayerView
     ) -> some View {
         return self.modifier(
-            OptionalPortalTransitionModifier(
+            OptionalPortalTransitionsModifier(
                 item: item,
                 in: corners,
                 animation: animation,

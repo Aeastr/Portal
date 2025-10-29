@@ -1,5 +1,5 @@
 //
-//  GroupIDPortalTransitionModifier.swift
+//  GroupIDPortalTransitionsModifier.swift
 //  Portal
 //
 //  Created by Aether, 2025.
@@ -23,7 +23,7 @@ import SwiftUI
 /// - Boolean state control for transitions
 /// - Synchronized timing for all portals in the group
 /// - Proper cleanup when animations complete
-public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
+public struct GroupIDPortalTransitionsModifier<LayerView: View>: ViewModifier {
     /// Array of portal IDs to animate together.
     public let ids: [String]
 
@@ -194,7 +194,7 @@ public extension View {
     ///   - completion: Called when the transition completes
     ///
     /// - Returns: A modified view with the portal transitions applied
-    func portalTransition<LayerView: View>(
+    func PortalTransitions<LayerView: View>(
         ids: [String],
         groupID: String,
         isActive: Binding<Bool>,
@@ -206,7 +206,7 @@ public extension View {
         completion: @escaping (Bool) -> Void = { _ in }
     ) -> some View {
         return self.modifier(
-            GroupIDPortalTransitionModifier(
+            GroupIDPortalTransitionsModifier(
                 ids: ids,
                 groupID: groupID,
                 isActive: isActive,

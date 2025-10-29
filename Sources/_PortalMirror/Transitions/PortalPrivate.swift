@@ -274,7 +274,7 @@ public extension View {
     /// Triggers a portal transition for a private portal using the mirrored view
     ///
     /// This modifier triggers the animation for PortalPrivate views.
-    /// Unlike regular `.portalTransition`, you don't provide a layer view
+    /// Unlike regular `.PortalTransitions`, you don't provide a layer view
     /// since it uses the _UIPortalView mirror of the source.
     ///
     /// Example:

@@ -1,5 +1,5 @@
 //
-//  GroupItemPortalTransitionModifier.swift
+//  GroupItemPortalTransitionsModifier.swift
 //  Portal
 //
 //  Created by Aether, 2025.
@@ -30,11 +30,11 @@ import SwiftUI
 /// @State private var selectedPhotos: [Photo] = []
 ///
 /// PhotoGridView()
-///     .portalTransition(items: $selectedPhotos, groupID: "photoStack") { photo in
+///     .PortalTransitions(items: $selectedPhotos, groupID: "photoStack") { photo in
 ///         PhotoView(photo: photo)
 ///     }
 /// ```
-public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: View>: ViewModifier {
+public struct GroupItemPortalTransitionsModifier<Item: Identifiable, LayerView: View>: ViewModifier {
     /// Binding to the array of items that controls the portal transitions.
     @Binding public var items: [Item]
 
@@ -311,7 +311,7 @@ public extension View {
     /// @State private var selectedPhotos: [Photo] = []
     ///
     /// PhotoGridView()
-    ///     .portalTransition(items: $selectedPhotos, groupID: "photoStack") { photo in
+    ///     .PortalTransitions(items: $selectedPhotos, groupID: "photoStack") { photo in
     ///         PhotoView(photo: photo)
     ///     }
     /// ```
@@ -357,7 +357,7 @@ public extension View {
     ///   - completion: Called when all animations finish
     ///
     /// - Returns: A view with the multi-item portal transition modifier applied
-    func portalTransition<Item: Identifiable, LayerView: View>(
+    func PortalTransitions<Item: Identifiable, LayerView: View>(
         items: Binding<[Item]>,
         groupID: String,
         in corners: PortalCorners? = nil,
@@ -369,7 +369,7 @@ public extension View {
         completion: @escaping (Bool) -> Void = { _ in }
     ) -> some View {
         return self.modifier(
-            GroupItemPortalTransitionModifier(
+            GroupItemPortalTransitionsModifier(
                 items: items,
                 groupID: groupID,
                 in: corners,
