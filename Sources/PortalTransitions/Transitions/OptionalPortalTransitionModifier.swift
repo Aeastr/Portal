@@ -1,5 +1,5 @@
 //
-//  OptionalPortalTransitionsModifier.swift
+//  OptionalPortalTransitionModifier.swift
 //  Portal
 //
 //  Created by Aether, 2025.
@@ -37,7 +37,7 @@ import SwiftUI
 ///             .aspectRatio(contentMode: .fit)
 ///     }
 /// ```
-public struct OptionalPortalTransitionsModifier<Item: Identifiable, LayerView: View>: ViewModifier {
+public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: View>: ViewModifier {
     /// Binding to the optional item that controls the portal transition.
     ///
     /// When this value changes from `nil` to non-`nil`, a forward portal transition
@@ -365,7 +365,7 @@ public extension View {
         @ViewBuilder layerView: @escaping (Item) -> LayerView
     ) -> some View {
         return self.modifier(
-            OptionalPortalTransitionsModifier(
+            OptionalPortalTransitionModifier(
                 item: item,
                 in: corners,
                 animation: animation,

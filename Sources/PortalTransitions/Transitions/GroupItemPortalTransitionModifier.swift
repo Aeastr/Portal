@@ -1,5 +1,5 @@
 //
-//  GroupItemPortalTransitionsModifier.swift
+//  GroupItemPortalTransitionModifier.swift
 //  Portal
 //
 //  Created by Aether, 2025.
@@ -34,7 +34,7 @@ import SwiftUI
 ///         PhotoView(photo: photo)
 ///     }
 /// ```
-public struct GroupItemPortalTransitionsModifier<Item: Identifiable, LayerView: View>: ViewModifier {
+public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: View>: ViewModifier {
     /// Binding to the array of items that controls the portal transitions.
     @Binding public var items: [Item]
 
@@ -369,7 +369,7 @@ public extension View {
         completion: @escaping (Bool) -> Void = { _ in }
     ) -> some View {
         return self.modifier(
-            GroupItemPortalTransitionsModifier(
+            GroupItemPortalTransitionModifier(
                 items: items,
                 groupID: groupID,
                 in: corners,
