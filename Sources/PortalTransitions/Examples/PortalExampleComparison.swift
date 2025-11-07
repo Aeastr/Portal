@@ -171,7 +171,7 @@ public struct PortalExampleComparison: View {
                         .navigationTransition(.zoom(sourceID: "zoomDemo", in: namespace))
                 }
             }
-            .PortalTransitions(
+            .portalTransition(
             id: "portalDemo",
             isActive: $showPortalSheet,
             animation: portalAnimationExample

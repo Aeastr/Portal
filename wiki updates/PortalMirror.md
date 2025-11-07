@@ -464,7 +464,7 @@ Portal(id: "view", .destination) {
     MyView() // Separate instance
 }
 
-.PortalTransitions(
+.portalTransition(
     id: "view",
     isActive: $show,
     animation: .spring(response: 0.4, dampingFraction: 0.8)

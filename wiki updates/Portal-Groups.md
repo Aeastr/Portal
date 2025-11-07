@@ -60,10 +60,10 @@ ForEach(selectedPhotos) { photo in
 
 ### Step 3: Apply Multi-Item Transition
 
-Use `.PortalTransitions(items:groupID:...)` to manage the group:
+Use `.portalTransition(items:groupID:...)` to manage the group:
 
 ```swift
-.PortalTransitions(
+.portalTransition(
     items: $selectedPhotos,
     groupID: "photoStack",
     animation: .spring(response: 0.5, dampingFraction: 0.8)
@@ -116,7 +116,7 @@ struct MultiPhotoGallery: View {
                     selectedPhotos.removeAll()
                 }
             }
-            .PortalTransitions(
+            .portalTransition(
                 items: $selectedPhotos,
                 groupID: "photoStack",
                 animation: .spring(response: 0.5, dampingFraction: 0.8)
@@ -163,7 +163,7 @@ struct MultiPhotoDetailView: View {
 Add a stagger delay to create cascading animations where each item starts slightly after the previous one:
 
 ```swift
-.PortalTransitions(
+.portalTransition(
     items: $selectedPhotos,
     groupID: "photoStack",
     animation: .spring(response: 0.5, dampingFraction: 0.8),
@@ -193,7 +193,7 @@ Add a stagger delay to create cascading animations where each item starts slight
 ### Custom Animation and Styling Per Group
 
 ```swift
-.PortalTransitions(
+.portalTransition(
     items: $selectedPhotos,
     groupID: "photoStack",
     in: PortalCorners(
@@ -214,7 +214,7 @@ Add a stagger delay to create cascading animations where each item starts slight
 The completion handler is called once when all group animations finish:
 
 ```swift
-.PortalTransitions(
+.portalTransition(
     items: $selectedPhotos,
     groupID: "photoStack",
     animation: .spring(response: 0.4, dampingFraction: 0.8),
@@ -244,14 +244,14 @@ The completion handler is called once when all group animations finish:
 .portal(item: photo, .destination, groupID: "photoStack")
 
 // Transition
-.PortalTransitions(items: $photos, groupID: "photoStack")
+.portalTransition(items: $photos, groupID: "photoStack")
 ```
 
 **❌ Incorrect:**
 ```swift
 // Mismatched group IDs
 .portal(item: photo, .source, groupID: "photos")
-.PortalTransitions(items: $photos, groupID: "photoStack") // Different ID!
+.portalTransition(items: $photos, groupID: "photoStack") // Different ID!
 ```
 
 ### Layer View Requirements
@@ -260,14 +260,14 @@ Each item should have a **visually identical layer view**:
 
 ```swift
 // ✅ Good: Consistent layer view for all items
-.PortalTransitions(items: $photos, groupID: "photoStack") { photo in
+.portalTransition(items: $photos, groupID: "photoStack") { photo in
     RoundedRectangle(cornerRadius: 12)
         .fill(photo.color)
         .overlay(Image(systemName: photo.icon))
 }
 
 // ❌ Bad: Different views for different items
-.PortalTransitions(items: $photos, groupID: "photoStack") { photo in
+.portalTransition(items: $photos, groupID: "photoStack") { photo in
     if photo.isFavorite {
         FavoritePhotoView(photo: photo)  // Inconsistent!
     } else {
@@ -315,7 +315,7 @@ Portal Groups are optimized for performance, but consider:
 
 **Solutions**:
 - ✅ Verify `staggerDelay > 0`
-- ✅ Ensure `staggerDelay` is passed to `.PortalTransitions()`
+- ✅ Ensure `staggerDelay` is passed to `.portalTransition()`
 - ✅ Check animation config doesn't override timing
 
 ### Animation Feels Sluggish
@@ -345,7 +345,7 @@ func portal<Item: Identifiable>(
 ### Multi-Item Transition
 
 ```swift
-func PortalTransitions<Item: Identifiable, LayerView: View>(
+func portalTransition<Item: Identifiable, LayerView: View>(
     items: Binding<[Item]>,
     groupID: String,
     in corners: PortalCorners? = nil,

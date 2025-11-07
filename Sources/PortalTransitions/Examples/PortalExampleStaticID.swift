@@ -56,7 +56,7 @@ public struct PortalExampleStaticID: View {
                                     Text(".portal(id: \"hero\", .source)")
                                         .font(.system(.body, design: .monospaced))
                                         .foregroundColor(.blue)
-                                    Text(".PortalTransitions(")
+                                    Text(".portalTransition(")
                                         .font(.system(.body, design: .monospaced))
                                         .foregroundColor(.purple)
                                     Text("  id: \"hero\",")
@@ -100,7 +100,7 @@ public struct PortalExampleStaticID: View {
             .sheet(isPresented: $showDetail) {
                 PortalExampleStaticIDDetail()
             }
-            .PortalTransitions(
+            .portalTransition(
                 id: "codeBlock",
                 isActive: $showDetail,
                 animation: .spring(response: 0.4, dampingFraction: 0.8)
@@ -129,7 +129,7 @@ public struct PortalExampleStaticID: View {
                             Text(".portal(id: \"hero\", .source)")
                                 .font(.system(.body, design: .monospaced))
                                 .foregroundColor(.blue)
-                            Text(".PortalTransitions(")
+                            Text(".portalTransition(")
                                 .font(.system(.body, design: .monospaced))
                                 .foregroundColor(.purple)
                             Text("  id: \"hero\",")
@@ -187,7 +187,7 @@ private struct PortalExampleStaticIDDetail: View {
                                 Text(".portal(id: \"hero\", .source)")
                                     .font(.system(.body, design: .monospaced))
                                     .foregroundColor(.blue)
-                                Text(".PortalTransitions(")
+                                Text(".portalTransition(")
                                     .font(.system(.body, design: .monospaced))
                                     .foregroundColor(.purple)
                                 Text("  id: \"hero\",")

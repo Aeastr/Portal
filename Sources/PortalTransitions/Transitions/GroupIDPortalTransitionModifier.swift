@@ -194,7 +194,7 @@ public extension View {
     ///   - completion: Called when the transition completes
     ///
     /// - Returns: A modified view with the portal transitions applied
-    func PortalTransitions<LayerView: View>(
+    func portalTransition<LayerView: View>(
         ids: [String],
         groupID: String,
         isActive: Binding<Bool>,

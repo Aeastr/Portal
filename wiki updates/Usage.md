@@ -13,7 +13,7 @@ This method is suitable for transitions controlled by a simple on/off state, oft
 1.  **Wrap in `PortalContainer`:** Install it once at your scene root (examples inline it for brevity).
 2.  **Mark Source with ID:** Use `.portal(id:, .source)` on the starting view, providing a unique string ID.
 3.  **Mark Destination with ID:** Use `.portal(id:, .destination)` on the target view, using the *same* string ID.
-4.  **Attach Transition with `isActive`:** Use `.PortalTransitions(id:isActive:...)` on an ancestor view, binding it to your `Binding<Bool>` state and using the same string ID.
+4.  **Attach Transition with `isActive`:** Use `.portalTransition(id:isActive:...)` on an ancestor view, binding it to your `Binding<Bool>` state and using the same string ID.
 
 **Example Walkthrough:**
 
@@ -71,7 +71,7 @@ struct SettingsSheetView: View {
 
 **4. Attach Transition:**
 
-Use `.PortalTransitions(id:isActive:...)` with direct animation parameters:
+Use `.portalTransition(id:isActive:...)` with direct animation parameters:
 *   `id`: The static string identifier used in steps 2 & 3.
 *   `isActive`: Your `Binding<Bool>` state variable.
 *   `animation`: The `Animation` to use (defaults to `.smooth(duration: 0.4)`).
@@ -81,7 +81,7 @@ Use `.PortalTransitions(id:isActive:...)` with direct animation parameters:
 
 ```swift
 // Applied to the VStack or another ancestor in ExampleBooleanView
-.PortalTransitions(
+.portalTransition(
     id: portalID, // <-- Step 4a: Use static ID
     isActive: $showSettingsSheet, // <-- Step 4b: Bind to Bool state
     animation: .spring(response: 0.4, dampingFraction: 0.8), // <-- Step 4c: Animation
@@ -113,7 +113,7 @@ struct ExampleBooleanView: View {
             .sheet(isPresented: $showSettingsSheet) {
                 SettingsSheetView(portalID: portalID) // Contains Step 3
             }
-            .PortalTransitions( // Step 4
+            .portalTransition( // Step 4
                 id: portalID,
                 isActive: $showSettingsSheet,
                 animation: .spring(response: 0.4, dampingFraction: 0.8)
@@ -148,7 +148,7 @@ This method is ideal for data-driven transitions, especially list/grid -> detail
 1.  **Wrap in `PortalContainer`:** Install it once at the root (examples inline it for clarity).
 2.  **Mark Source with Item:** Use `.portal(item:, .source)` on the starting view within your list/grid, passing the specific `Identifiable` item instance.
 3.  **Mark Destination with Item:** Use `.portal(item:, .destination)` on the target view (usually in the presented detail view), passing the corresponding `Identifiable` item instance.
-4.  **Attach Transition with `item`:** Use `.PortalTransitions(item:...)` on an ancestor view, binding it to your `Binding<Optional<Item>>` state.
+4.  **Attach Transition with `item`:** Use `.portalTransition(item:...)` on an ancestor view, binding it to your `Binding<Optional<Item>>` state.
 
 **Example Walkthrough:**
 
@@ -203,7 +203,7 @@ struct CardGridView: View {
             .sheet(item: $selectedCard) { card in
                 CardDetailView(card: card) // Contains Step 3
             }
-            .PortalTransitions( // Step 4
+            .portalTransition( // Step 4
                 item: $selectedCard,
                 animation: .smooth(duration: 0.4, extraBounce: 0.1)
             ) { card in // <-- Closure receives item
@@ -249,12 +249,12 @@ Portal provides direct parameter control for animation and styling, with optiona
 
 ```swift
 // Simple animation with defaults
-.PortalTransitions(id: "myPortal", isActive: $isActive) {
+.portalTransition(id: "myPortal", isActive: $isActive) {
     MyLayerView()
 }
 
 // Custom animation
-.PortalTransitions(
+.portalTransition(
     id: "myPortal",
     isActive: $isActive,
     animation: .spring(response: 0.5, dampingFraction: 0.8)
@@ -267,7 +267,7 @@ Portal provides direct parameter control for animation and styling, with optiona
 
 ```swift
 // Animation with corner radius morphing
-.PortalTransitions(
+.portalTransition(
     id: "myPortal",
     isActive: $isActive,
     in: PortalCorners(
@@ -286,7 +286,7 @@ Portal provides direct parameter control for animation and styling, with optiona
 Portal transitions support completion callbacks to notify you when animations finish:
 
 ```swift
-.PortalTransitions(
+.portalTransition(
     id: "myPortal",
     isActive: $isActive,
     animation: .smooth(duration: 0.5),
@@ -312,7 +312,7 @@ The completion handler receives a `Bool` parameter:
 For advanced control over when the completion fires, use `completionCriteria`:
 
 ```swift
-.PortalTransitions(
+.portalTransition(
     id: "myPortal",
     isActive: $isActive,
     animation: .smooth(duration: 0.5),

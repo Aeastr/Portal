@@ -23,21 +23,21 @@ iOS sheet presentations have an internal animation duration of approximately 0.3
 
 ```swift
 // BAD - Too fast for sheets
-.PortalTransitions(
+.portalTransition(
     item: $selectedItem,
     config: .init(animation: PortalAnimation(.smooth(duration: 0.2))),  // ❌ Will cause shift
     layerView: { ... }
 )
 
 // GOOD - Matches sheet timing
-.PortalTransitions(
+.portalTransition(
     item: $selectedItem,
     config: .init(animation: PortalAnimation(.smooth(duration: 0.38))),  // ✅ No shift
     layerView: { ... }
 )
 
 // GOOD - Using default (0.38s)
-.PortalTransitions(
+.portalTransition(
     item: $selectedItem,  // ✅ Default is calibrated for sheets
     layerView: { ... }
 )

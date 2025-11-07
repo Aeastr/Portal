@@ -13,7 +13,7 @@
 - **`PortalContainer { ... }`** - Manages the overlay window logic required for floating portal animations across hierarchies. Install it once at your root view to cover all presentations.
 - **`.portal(id:, .source/.destination)`** - Mark views as source or destination anchors using string IDs.
 - **`.portal(item:, .source/.destination)`** - Mark views using `Identifiable` items.
-- **`.PortalTransitions(id: isActive: ...)` & `.PortalTransitions(item: ...)`** - Drive transitions with boolean bindings or optional `Identifiable` items.
+- **`.portalTransition(id: isActive: ...)` & `.portalTransition(item: ...)`** - Drive transitions with boolean bindings or optional `Identifiable` items.
 - **Flexible Animation Control** - Use any SwiftUI `Animation` with optional corner radius morphing and completion criteria.
 - **iOS 15+ Compatible** - Maintains backward compatibility with fallback implementations.
 

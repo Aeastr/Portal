@@ -32,7 +32,7 @@ import SwiftUI
 /// @State private var selectedPhoto: Photo? = nil
 ///
 /// PhotoGridView()
-///     .PortalTransitions(item: $selectedPhoto) { photo in
+///     .portalTransition(item: $selectedPhoto) { photo in
 ///         AsyncImage(url: photo.fullSizeURL)
 ///             .aspectRatio(contentMode: .fit)
 ///     }
@@ -333,7 +333,7 @@ public extension View {
     /// @State private var selectedItem: MyItem? = nil
     ///
     /// ContentView()
-    ///     .PortalTransitions(item: $selectedItem) { item in
+    ///     .portalTransition(item: $selectedItem) { item in
     ///         DetailView(item: item)
     ///     }
     /// ```
@@ -355,7 +355,7 @@ public extension View {
     ///   - completion: Optional completion handler (defaults to no-op)
     ///   - layerView: Closure that receives the item and returns the view to animate
     /// - Returns: A view with the portal transition modifier applied
-    func PortalTransitions<Item: Identifiable, LayerView: View>(
+    func portalTransition<Item: Identifiable, LayerView: View>(
         item: Binding<Item?>,
         in corners: PortalCorners? = nil,
         animation: Animation = PortalConstants.defaultAnimation,

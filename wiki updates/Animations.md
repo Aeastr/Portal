@@ -24,12 +24,12 @@ Portal transitions use direct animation parameters:
 
 ```swift
 // Simple with defaults
-.PortalTransitions(id: "myPortal", isActive: $isActive) {
+.portalTransition(id: "myPortal", isActive: $isActive) {
     MyLayerView()
 }
 
 // Custom animation
-.PortalTransitions(
+.portalTransition(
     id: "myPortal",
     isActive: $isActive,
     animation: .spring(response: 0.4, dampingFraction: 0.8)
@@ -38,7 +38,7 @@ Portal transitions use direct animation parameters:
 }
 
 // With smooth animation
-.PortalTransitions(
+.portalTransition(
     id: "myPortal",
     isActive: $isActive,
     animation: .smooth(duration: 0.5, extraBounce: 0.1)
@@ -52,7 +52,7 @@ Portal transitions use direct animation parameters:
 Use `AnimationCompletionCriteria` for precise control:
 
 ```swift
-.PortalTransitions(
+.portalTransition(
     id: "myPortal",
     isActive: $isActive,
     animation: .smooth(duration: 0.5),
@@ -70,7 +70,7 @@ Portal supports optional corner radius transitions using the `in corners:` param
 
 ```swift
 // With corner clipping and transitions
-.PortalTransitions(
+.portalTransition(
     id: "myPortal",
     isActive: $isActive,
     in: PortalCorners(
@@ -84,7 +84,7 @@ Portal supports optional corner radius transitions using the `in corners:` param
 }
 
 // Without corner clipping (default)
-.PortalTransitions(
+.portalTransition(
     id: "myPortal",
     isActive: $isActive,
     animation: .spring(response: 0.4, dampingFraction: 0.8)
@@ -141,7 +141,7 @@ struct SparkleLayer<Content: View>: AnimatedPortalLayer {
 }
 
 // Usage inside a transition
-.PortalTransitions(id: "card", isActive: $isActive) {
+.portalTransition(id: "card", isActive: $isActive) {
     SparkleLayer(portalID: "card") {
         RoundedRectangle(cornerRadius: 16)
             .fill(.blue.gradient)
@@ -176,7 +176,7 @@ A proper API for visual feedback during Portal transitions is planned for a futu
 
 ```swift
 // Bouncy spring
-.PortalTransitions(
+.portalTransition(
     id: "myPortal",
     isActive: $isActive,
     animation: .spring(response: 0.6, dampingFraction: 0.6)
@@ -185,7 +185,7 @@ A proper API for visual feedback during Portal transitions is planned for a futu
 }
 
 // Smooth spring
-.PortalTransitions(
+.portalTransition(
     id: "myPortal",
     isActive: $isActive,
     animation: .spring(response: 0.4, dampingFraction: 0.8)
@@ -198,7 +198,7 @@ A proper API for visual feedback during Portal transitions is planned for a futu
 
 ```swift
 // Basic smooth animation
-.PortalTransitions(
+.portalTransition(
     id: "myPortal",
     isActive: $isActive,
     animation: .smooth(duration: 0.4)
@@ -207,7 +207,7 @@ A proper API for visual feedback during Portal transitions is planned for a futu
 }
 
 // Smooth with bounce
-.PortalTransitions(
+.portalTransition(
     id: "myPortal",
     isActive: $isActive,
     animation: .smooth(duration: 0.4, extraBounce: 0.2)
@@ -220,7 +220,7 @@ A proper API for visual feedback during Portal transitions is planned for a futu
 
 ```swift
 // Ease-in-out
-.PortalTransitions(
+.portalTransition(
     id: "myPortal",
     isActive: $isActive,
     animation: .easeInOut(duration: 0.5)
@@ -229,7 +229,7 @@ A proper API for visual feedback during Portal transitions is planned for a futu
 }
 
 // Custom timing curve
-.PortalTransitions(
+.portalTransition(
     id: "myPortal",
     isActive: $isActive,
     animation: .timingCurve(0.25, 0.1, 0.25, 1, duration: 0.6)
@@ -247,7 +247,7 @@ A proper API for visual feedback during Portal transitions is planned for a futu
 For multi-item transitions, use the `staggerDelay` parameter in group transitions (see [Portal Groups](./Portal-Groups)):
 
 ```swift
-.PortalTransitions(
+.portalTransition(
     items: $selectedPhotos,
     groupID: "photoStack",
     animation: .spring(response: 0.4, dampingFraction: 0.8),
@@ -263,7 +263,7 @@ Animate between different corner styles:
 
 ```swift
 // Card to modal transition
-.PortalTransitions(
+.portalTransition(
     id: "myPortal",
     isActive: $isActive,
     in: PortalCorners(
@@ -277,7 +277,7 @@ Animate between different corner styles:
 }
 
 // Button to sheet transition
-.PortalTransitions(
+.portalTransition(
     id: "myPortal",
     isActive: $isActive,
     in: PortalCorners(
@@ -305,7 +305,7 @@ extension Animation {
 }
 
 // Usage
-.PortalTransitions(id: "myPortal", isActive: $isActive, animation: .portalStandard) {
+.portalTransition(id: "myPortal", isActive: $isActive, animation: .portalStandard) {
     MyLayerView()
 }
 ```
@@ -325,7 +325,7 @@ struct PortalAnimationStyle {
 
 // Usage
 let style = PortalAnimationStyle.cardExpand
-.PortalTransitions(
+.portalTransition(
     id: "myPortal",
     isActive: $isActive,
     in: style.corners,

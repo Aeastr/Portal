@@ -122,7 +122,7 @@ public struct PortalExampleCardGrid: View {
                 PortalExampleCardDetail(card: card)
             }
 
-            .PortalTransitions(
+            .portalTransition(
                 item: $selectedCard,
                 transition: .fade
             ) { card in

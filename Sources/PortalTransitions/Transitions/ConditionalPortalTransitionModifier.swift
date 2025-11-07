@@ -276,7 +276,7 @@ public extension View {
     /// @State private var showDetail = false
     ///
     /// ContentView()
-    ///     .PortalTransitions(
+    ///     .portalTransition(
     ///         id: "detail",
     ///         isActive: $showDetail
     ///     ) {
@@ -303,7 +303,7 @@ public extension View {
     ///   - layerView: Closure that returns the view to animate during transition
     ///   - completion: Optional completion handler (defaults to no-op)
     /// - Returns: A view with the portal transition modifier applied
-    func PortalTransitions<LayerView: View>(
+    func portalTransition<LayerView: View>(
         id: String,
         isActive: Binding<Bool>,
         in corners: PortalCorners? = nil,

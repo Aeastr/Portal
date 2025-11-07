@@ -30,7 +30,7 @@ import SwiftUI
 /// @State private var selectedPhotos: [Photo] = []
 ///
 /// PhotoGridView()
-///     .PortalTransitions(items: $selectedPhotos, groupID: "photoStack") { photo in
+///     .portalTransition(items: $selectedPhotos, groupID: "photoStack") { photo in
 ///         PhotoView(photo: photo)
 ///     }
 /// ```
@@ -311,7 +311,7 @@ public extension View {
     /// @State private var selectedPhotos: [Photo] = []
     ///
     /// PhotoGridView()
-    ///     .PortalTransitions(items: $selectedPhotos, groupID: "photoStack") { photo in
+    ///     .portalTransition(items: $selectedPhotos, groupID: "photoStack") { photo in
     ///         PhotoView(photo: photo)
     ///     }
     /// ```
@@ -357,7 +357,7 @@ public extension View {
     ///   - completion: Called when all animations finish
     ///
     /// - Returns: A view with the multi-item portal transition modifier applied
-    func PortalTransitions<Item: Identifiable, LayerView: View>(
+    func portalTransition<Item: Identifiable, LayerView: View>(
         items: Binding<[Item]>,
         groupID: String,
         in corners: PortalCorners? = nil,

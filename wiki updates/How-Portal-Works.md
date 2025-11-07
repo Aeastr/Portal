@@ -49,7 +49,7 @@ On the view that presents your detail (sheet, push, etc.), attach a portal trans
 
 ```swift
 // Method 1: Boolean-driven transitions
-.PortalTransitions(
+.portalTransition(
   id: "heroCard",                           // matches your source/destination
   config: .init(                            // comprehensive configuration
     animation: PortalAnimation(.spring(response: 0.4, dampingFraction: 0.8)),
@@ -62,7 +62,7 @@ On the view that presents your detail (sheet, push, etc.), attach a portal trans
 }
 
 // Method 2: Item-driven transitions
-.PortalTransitions(
+.portalTransition(
   item: $selectedCard,                     // Binding<Optional<Item>>
   config: .init(animation: PortalAnimation(.smooth(duration: 0.4)))
 ) { card in
