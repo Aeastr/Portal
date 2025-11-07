@@ -46,7 +46,7 @@ This approach provides the functionality while minimizing detection risk through
 
 ```swift
 import PortalTransitions
-import PortalTransitionsPrivate
+import _PortalMirror
 
 struct ContentView: View {
     @State private var showDetail = false

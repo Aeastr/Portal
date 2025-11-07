@@ -10,7 +10,7 @@
 
 import XCTest
 import SwiftUI
-@testable import PortalTransitionsHeaders
+@testable import PortalHeaders
 
 @available(iOS 18.0, *)
 final class PortalHeaderTests: XCTestCase {
