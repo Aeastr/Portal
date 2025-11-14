@@ -102,23 +102,8 @@ private struct PortalLayerContentView: View {
            let destination = destinationToUse,
            let layer = info.layerView,
            info.showLayer {
-            #if DEBUG
             let usingCachedSrc = info.sourceAnchor == nil
             let usingCachedDst = info.destinationAnchor == nil
-            _ = {
-                PortalLogs.logger.log(
-                    "Layer showing",
-                    level: .debug,
-                    tags: [PortalLogs.Tags.transition],
-                    metadata: [
-                        "id": info.infoID,
-                        "hideView": "\(info.hideView)",
-                        "cachedSrc": "\(usingCachedSrc)",
-                        "cachedDst": "\(usingCachedDst)"
-                    ]
-                )
-            }()
-            #endif
             // Convert anchor bounds to concrete rectangles in global coordinate space
             let sRect = proxy[source]
             let dRect = proxy[destination]
@@ -161,27 +146,39 @@ private struct PortalLayerContentView: View {
             .frame(width: width, height: height)
             .offset(x: x, y: y)
             .transition(.identity)  // Prevents additional SwiftUI transitions
-        } else {
-            #if DEBUG
-            let hasSource = info.sourceAnchor != nil
-            let hasDest = info.destinationAnchor != nil
-            let hasLayer = info.layerView != nil
-            _ = {
+            .onAppear {
                 PortalLogs.logger.log(
-                    "Layer hidden",
+                    "Layer showing",
                     level: .debug,
                     tags: [PortalLogs.Tags.transition],
                     metadata: [
                         "id": info.infoID,
-                        "showLayer": "\(info.showLayer)",
                         "hideView": "\(info.hideView)",
-                        "hasSource": "\(hasSource)",
-                        "hasDest": "\(hasDest)",
-                        "hasLayer": "\(hasLayer)"
+                        "cachedSrc": "\(usingCachedSrc)",
+                        "cachedDst": "\(usingCachedDst)"
                     ]
                 )
-            }()
-            #endif
+            }
+        } else {
+            let hasSource = info.sourceAnchor != nil
+            let hasDest = info.destinationAnchor != nil
+            let hasLayer = info.layerView != nil
+            EmptyView()
+                .onAppear {
+                    PortalLogs.logger.log(
+                        "Layer hidden",
+                        level: .debug,
+                        tags: [PortalLogs.Tags.transition],
+                        metadata: [
+                            "id": info.infoID,
+                            "showLayer": "\(info.showLayer)",
+                            "hideView": "\(info.hideView)",
+                            "hasSource": "\(hasSource)",
+                            "hasDest": "\(hasDest)",
+                            "hasLayer": "\(hasLayer)"
+                        ]
+                    )
+                }
         }
     }
 }
