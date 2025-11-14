@@ -64,7 +64,8 @@ public struct PortalConstants {
     /// Default debug overlay padding
     public static let debugOverlayPadding: CGFloat = 5
 }
-
+#if DEBUG
 #Preview("Card Grid Example") {
     PortalExampleCardGrid()
 }
+#endif

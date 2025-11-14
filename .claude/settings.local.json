@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/aether-patina/Library/Mobile Documents/com~apple~CloudDocs/Documents/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
