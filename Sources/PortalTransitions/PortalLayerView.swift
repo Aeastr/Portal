@@ -105,7 +105,7 @@ private struct PortalLayerContentView: View {
             #if DEBUG
             let usingCachedSrc = info.sourceAnchor == nil
             let usingCachedDst = info.destinationAnchor == nil
-            let _ = {
+            _ = {
                 PortalLogs.logger.log(
                     "Layer showing",
                     level: .debug,
@@ -166,7 +166,7 @@ private struct PortalLayerContentView: View {
             let hasSource = info.sourceAnchor != nil
             let hasDest = info.destinationAnchor != nil
             let hasLayer = info.layerView != nil
-            let _ = {
+            _ = {
                 PortalLogs.logger.log(
                     "Layer hidden",
                     level: .debug,
