@@ -146,7 +146,6 @@ public struct PortalExampleCardGrid: View {
                 }
             }
         }
-        
     }
 }
 

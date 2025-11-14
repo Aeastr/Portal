@@ -7,7 +7,7 @@
 //  Copyright © 2025 Aether. All rights reserved.
 //  Licensed under the MIT License.
 //
-
+#if DEBUG
 import SwiftUI
 
 struct UIPortalViewExample: View {
@@ -132,3 +132,4 @@ struct AnimatedContentView: View {
 #Preview {
     UIPortalViewExample()
 }
+#endif

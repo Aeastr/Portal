@@ -124,98 +124,61 @@ Portal also includes example targets rather than formal unit tests. To verify fu
 Portal uses a protected `main` branch with the following workflow:
 
 1. **Work on the `dev` branch** for all changes
-2. **Create PR**: `dev` → `main` when ready for release
-3. **PR Format for Releases**:
-   - **Title**: Version number (e.g., `4.3.0` or `Release 4.3.0`)
-   - **Description**: Full changelog/release notes (this becomes the GitHub release notes)
-4. **Merge to `main`**: Automatically creates a GitHub release with the version tag
+2. **Create PR**: Open pull requests to `dev` for review
+3. **Merge to `dev`**: After approval, merge triggers automatic dev snapshot creation
+4. **Release to `main`**: When ready for an official release, create a PR from `dev` → `main`
+5. **Create release**: After merging to `main`, manually create the GitHub release
 
 **Branch Protection**: Direct pushes to `main` are not allowed. All changes must go through pull requests, even for maintainers.
 
-### Pre-releases vs Full Releases
+### Development Snapshots
 
-Portal supports two types of releases:
+Portal automatically creates development snapshots when PRs are merged to the `dev` branch:
 
-#### Pre-releases (Testing Versions)
-- **Trigger**: When PRs **with version numbers** are merged to the `dev` branch
-- **Purpose**: Create testable versions before official releases
-- **Format**: `base-version-number` (e.g., `4.3.0-1`, `4.3.0-2`)
-- **How to create**: Merge a PR to `dev` with a version number in the title
-- **Use case**: Testing changes in consuming apps before cutting an official release
+#### Dev Snapshots (Automated Testing Versions)
+- **Trigger**: Automatically when **any PR** is merged to the `dev` branch
+- **Purpose**: Create testable snapshots for testing changes before official releases
+- **Format**: `dev-YYYYMMDD-HHMMSS-sha` (e.g., `dev-20250113-143022-a1b2c3d`)
+- **How it works**: GitHub Actions automatically creates a pre-release snapshot on every merge
+- **Use case**: Testing changes in consuming apps via Swift Package Manager
 
-**Important**: Pre-releases **require** a version number in the PR title. PRs without versions will not trigger pre-release creation.
-
-**Example pre-release PR to `dev`:**
+**Example snapshot usage in Package.swift:**
+```swift
+.package(url: "https://github.com/Aeastr/Portal", exact: "dev-20250113-143022-a1b2c3d")
 ```
-Title: 4.3.0
-Description: Test new PortalHeader snapping behavior
-```
-This creates pre-release tags like `4.3.0-1`, `4.3.0-2`, etc. for testing.
 
-#### Full Releases (Official Versions)
-- **Trigger**: When PRs are merged from `dev` → `main`
-- **Purpose**: Official, stable releases published to the community
-- **Format**: Semantic version (e.g., `4.3.0`)
-- **How to create**: Merge a release PR from `dev` to `main` with version in title
-- **Use case**: Official releases for production use
+**Note**: Snapshots are marked as pre-releases and include a warning that they're for testing only. The workflow will comment on your PR with the snapshot tag and usage instructions.
 
-**Example release PR to `main`:**
-```
-Title: 4.3.0
-Description: [Full changelog with all changes since last release]
-```
-This creates the official `4.3.0` release.
+### Official Releases
+
+Official releases are created **manually** by maintainers:
+
+#### Creating an Official Release
+1. **Prepare the release**: Ensure all desired changes are merged to `dev` and tested
+2. **Create release PR**: `dev` → `main` with a descriptive title
+3. **Review and merge**: After CI passes and review approval
+4. **Create GitHub release**: Manually create a release from the GitHub UI:
+   - Go to the [Releases page](https://github.com/Aeastr/Portal/releases)
+   - Click "Draft a new release"
+   - Choose a tag (e.g., `4.3.0`) or create a new one
+   - Write release notes describing changes
+   - Publish the release
+
+**Release notes should include:**
+- What's new (features, enhancements)
+- Breaking changes (if any)
+- Bug fixes
+- Migration guide (if needed)
 
 ### Standard Pull Requests
 
-For non-release PRs (bug fixes, features):
+For regular PRs (bug fixes, features):
 
 1. Link your PR to the relevant issue (if there is one)
 2. Describe what you've changed and why
 3. Keep PRs focused—one feature or fix per PR
 4. Ensure all examples build and run without warnings or errors
 5. Be responsive to review feedback
-
-### Release Pull Requests
-
-When creating a release PR (`dev` → `main`):
-
-**Example PR Title:**
-```
-4.3.0
-```
-or
-```
-Release 4.3.0
-```
-
-**Example PR Description:**
-```markdown
-## What's New
-- Added support for custom transition curves
-- Improved performance for large view hierarchies
-- Fixed memory leak in portal cleanup
-
-## Breaking Changes
-- Renamed `PortalTransitions` to `PortalEffect` for clarity
-
-## Bug Fixes
-- Fixed issue where portals wouldn't work in nested NavigationStacks
-- Resolved crash on iOS 17.0 when using `.portalDestination` in sheets
-```
-
-Upon merge, this will automatically:
-- Create git tag `4.3.0`
-- Create GitHub draft release with your description as release notes
-- Generate automatic changelog from commits since last release
-
-**Note**: Releases are created as **drafts by default** for safety. You need to manually publish them:
-1. Go to the [Releases page](https://github.com/Aeastr/Portal/releases)
-2. Find your draft release
-3. Review the release notes
-4. Click "Publish release"
-
-To change this behavior and auto-publish releases, edit `.github/workflows/release.yml` and set `DRAFT_RELEASE: 'false'`
 
 ## Continuous Integration
 
@@ -232,39 +195,39 @@ All PRs are validated by CI with separate workflows:
 - Executes all unit tests with 5-minute timeout
 - Uploads test results
 
-### Release Workflow (main branch only)
-- Triggers on PR merge to `main`
-- Extracts version from PR title
-- Creates git tag and GitHub draft release
-- Uses PR description as release notes
-- Generates changelog from commits automatically
+### SwiftLint Workflow
+- Runs SwiftLint on all Swift files
+- Checks code style and formatting
+- Must pass before merging
+
+### Dev Snapshot Workflow (dev branch only)
+- Triggers automatically on PR merge to `dev`
+- Creates timestamped pre-release snapshot
+- Generates changelog from commits since last snapshot
+- Comments on PR with snapshot tag and usage instructions
+- Marks as pre-release with testing-only warning
 
 Please address any CI failures before merging. The build and test badges in the README show current status.
 
-### Failed Release Recovery
+### Failed Snapshot Recovery
 
-If a release fails after the PR is merged, the workflow includes automatic cleanup. However, if manual intervention is needed:
+If a dev snapshot creation fails after a PR is merged, the workflow includes automatic cleanup. However, if manual intervention is needed:
 
 1. **Check the workflow logs**
    - Go to Actions → Failed workflow run
    - Review error messages and identify the issue
 
-2. **If the tag was created but release failed**
+2. **If the tag was created but snapshot failed**
    - The workflow automatically attempts to clean up the tag
-   - If cleanup failed, manually delete: `git push --delete origin X.Y.Z`
-   - Delete the local tag if present: `git tag -d X.Y.Z`
+   - If cleanup failed, manually delete: `git push --delete origin dev-YYYYMMDD-HHMMSS-sha`
+   - Delete the local tag if present: `git tag -d dev-YYYYMMDD-HHMMSS-sha`
 
-3. **Fix and retry**
-   - If version was wrong: Create a new PR with corrected version
-   - If release notes were wrong: Manually create the release from the existing tag
-   - If tag exists but shouldn't: Delete tag and merge a new release PR
+3. **Common recovery scenarios**
+   - **Snapshot failed**: The workflow will retry automatically
+   - **Tag already exists**: Should not happen due to timestamp uniqueness, but can be manually deleted if needed
+   - **Comment failed**: Snapshot is still created, just not commented on PR
 
-4. **Common recovery scenarios**
-   - **Tag exists, no release**: Manually create release from GitHub UI using the existing tag
-   - **Wrong version number**: Delete the tag, create new PR with correct version
-   - **Bad release notes**: Edit the draft release on GitHub before publishing
-
-The workflow will notify you on the PR if anything fails, with links to the relevant logs and common troubleshooting steps.
+The workflow will notify you on the PR if anything fails, with links to the relevant logs.
 
 ### Hotfix Releases
 
@@ -280,15 +243,17 @@ For urgent bug fixes that need to bypass the normal dev → main workflow:
 2. **Make your fix** and commit it
 
 3. **Create PR**: `hotfix/4.2.3` → `main`
-   - **Title**: Next patch version (e.g., `4.2.3`)
-   - **Description**: Explain the critical fix
+   - **Title**: Descriptive title (e.g., "Fix critical crash in PortalLayerView")
+   - **Description**: Explain the critical fix and impact
 
-4. **After merge**: Sync the fix back to dev
-   ```bash
-   git checkout dev
-   git merge main
-   git push origin dev
-   ```
+4. **After merge**:
+   - Manually create a GitHub release with the new version tag
+   - Sync the fix back to dev:
+     ```bash
+     git checkout dev
+     git merge main
+     git push origin dev
+     ```
 
 **Version Selection for Hotfixes**:
 - Increment **PATCH** version only (e.g., 4.2.2 → 4.2.3)
@@ -297,21 +262,27 @@ For urgent bug fixes that need to bypass the normal dev → main workflow:
 ### Edge Case Handling
 
 **Wrong PR merged to main**:
-1. **If release hasn't been created yet**: Cancel the workflow run immediately
-2. **If tag was created**: Delete the tag:
-   ```bash
-   git push --delete origin X.Y.Z
-   git tag -d X.Y.Z
-   ```
-3. **Revert the merge commit** on main:
+1. **Revert the merge commit** on main:
    ```bash
    git revert -m 1 <merge-commit-sha>
    git push origin main
    ```
-4. **Fix the issue** on dev and create a new release PR
+2. **Fix the issue** on dev and create a new release PR
+
+**Wrong PR merged to dev**:
+1. **If snapshot was created**: Snapshots are pre-releases and won't affect production
+2. **Revert the merge** if needed:
+   ```bash
+   git checkout dev
+   git revert -m 1 <merge-commit-sha>
+   git push origin dev
+   ```
+3. **Optional**: Delete the unwanted snapshot tag if desired:
+   ```bash
+   git push --delete origin dev-YYYYMMDD-HHMMSS-sha
+   ```
 
 **Modifying a release after publishing**:
-- **Draft releases**: Edit directly on GitHub before publishing
 - **Published releases**:
   - Edit the release notes on GitHub (doesn't require new tag)
   - For code changes: Create a new hotfix release with incremented version
@@ -320,7 +291,7 @@ For urgent bug fixes that need to bypass the normal dev → main workflow:
 **Multiple releases on same day**:
 - Each release must have a unique version number
 - Increment patch version for each subsequent release (4.2.2 → 4.2.3 → 4.2.4)
-- The workflow prevents duplicate versions automatically
+- Dev snapshots automatically use timestamps to ensure uniqueness
 
 ## Troubleshooting
 

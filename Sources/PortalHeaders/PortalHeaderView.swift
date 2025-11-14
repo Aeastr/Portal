@@ -1,6 +1,6 @@
 //
 //  PortalHeaderView.swift
-//  PortalHeader
+//  Portal
 //
 //  Created by Aether, 2025.
 //
@@ -169,7 +169,7 @@ public struct PortalHeaderView: View {
 }
 
 // MARK: - Preview
-
+#if DEBUG
 @available(iOS 18.0, *)
 #Preview {
     NavigationStack {
@@ -199,3 +199,4 @@ public struct PortalHeaderView: View {
     }
     .portalHeaderDebugOverlays(showing: [.border])
 }
+#endif
