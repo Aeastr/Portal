@@ -8,3 +8,6 @@ DerivedData/
 .netrc
 Package.resolved
 .swiftpm/
+
+# Claude Code local settings
+.claude/
