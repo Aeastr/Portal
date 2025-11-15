@@ -13,6 +13,7 @@ import SwiftUI
 import LogOutLoudConsole
 
 /// Portal list example showing photo transitions in a native SwiftUI List
+@available(iOS 17, *)
 public struct PortalExampleList: View {
     @State private var selectedItem: PortalExampleListItem?
     @State private var listItems: [PortalExampleListItem] = PortalExampleList.generateLargeDataSet()

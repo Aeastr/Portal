@@ -12,6 +12,7 @@
 import SwiftUI
 
 /// Portal card grid example showing dynamic item parameter usage
+@available(iOS 17, *)
 public struct PortalExampleCardGrid: View {
     @State private var selectedCard: PortalExampleCard?
     @State private var cards: [PortalExampleCard] = [

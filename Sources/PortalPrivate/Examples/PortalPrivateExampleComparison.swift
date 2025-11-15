@@ -14,6 +14,7 @@ import Portal
 
 /// Comparison example showing PortalPrivate vs native iOS transitions
 /// Shows PortalPrivate's view mirroring vs native iOS transition features
+@available(iOS 17, *)
 public struct PortalPrivateExampleComparison: View {
     @State private var showPortalSheet = false
     @State private var showNativeSheet = false

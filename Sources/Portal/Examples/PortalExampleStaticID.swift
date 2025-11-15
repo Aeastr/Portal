@@ -12,6 +12,7 @@
 import SwiftUI
 
 /// Portal static ID example showing code block transitions
+@available(iOS 17, *)
 public struct PortalExampleStaticID: View {
     @State private var showDetail = false
 

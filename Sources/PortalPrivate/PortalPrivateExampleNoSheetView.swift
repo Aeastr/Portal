@@ -12,6 +12,7 @@ import SwiftUI
 import Portal
 import PortalView
 
+@available(iOS 17, *)
 public struct PortalPrivateExampleNoSheetView: View {
     @State private var selectedItem: Item?
     @State private var items = Item.sampleItems

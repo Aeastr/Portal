@@ -25,6 +25,7 @@ import UIKit
 ///   - content: The main content of your view hierarchy.
 /// Prefer using `PortalContainer` unless you specifically need to reference the modern-only
 /// implementation (e.g. for conditional compilation).
+@available(iOS 17, *)
 public struct PortalContainerModern<Content: View>: View {
     @ViewBuilder public var content: Content
     @Environment(\.scenePhase) private var scene
@@ -88,6 +89,7 @@ public struct PortalContainerModern<Content: View>: View {
 /// Type-erased portal container that automatically selects the appropriate implementation
 /// for the current OS version. Use this at the root of your app (e.g. in your `Scene` or
 /// `App` entry point) to install the portal layer once.
+@available(iOS 17, *)
 public struct PortalContainer<Content: View>: View {
     private let hideStatusBar: Bool
     private let modernPortalModelBox: Any?
@@ -111,6 +113,7 @@ public struct PortalContainer<Content: View>: View {
     }
 }
 
+@available(iOS 17, *)
 public extension PortalContainer {
     init(
         hideStatusBar: Bool = false,

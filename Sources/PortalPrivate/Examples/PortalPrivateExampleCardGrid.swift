@@ -13,6 +13,7 @@ import SwiftUI
 import Portal
 
 /// PortalPrivate card grid example showing dynamic item parameter usage with view mirroring
+@available(iOS 17, *)
 public struct PortalPrivateExampleCardGrid: View {
     @State private var selectedCard: PortalExampleCard?
     @State private var cards: [PortalExampleCard] = [

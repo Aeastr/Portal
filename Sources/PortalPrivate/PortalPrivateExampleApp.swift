@@ -26,6 +26,7 @@ public struct PortalPrivateExampleApp: App {
 
 // MARK: - Main Example View
 
+@available(iOS 17, *)
 public struct PortalPrivateExampleView: View {
     @State private var selectedItem: Item?
     @State private var items = Item.sampleItems

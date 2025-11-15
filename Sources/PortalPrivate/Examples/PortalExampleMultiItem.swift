@@ -12,6 +12,7 @@
 import SwiftUI
 import Portal
 /// Portal multi-item example showing coordinated transitions for multiple elements
+@available(iOS 17, *)
 public struct PortalExampleMultiItem: View {
     @State private var selectedPhotos: [MultiItemPhoto] = []
     @State private var allPhotos: [MultiItemPhoto] = MultiItemPhoto.samplePhotos

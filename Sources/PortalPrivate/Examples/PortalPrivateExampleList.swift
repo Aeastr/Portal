@@ -14,6 +14,7 @@ import Portal
 import LogOutLoudConsole
 
 /// PortalPrivate list example showing photo transitions in a native SwiftUI List with view mirroring
+@available(iOS 17, *)
 public struct PortalPrivateExampleList: View {
     @State private var selectedItem: PortalExampleListItem?
     @State private var listItems: [PortalExampleListItem] = PortalPrivateExampleList.generateLargeDataSet()

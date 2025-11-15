@@ -93,6 +93,7 @@ private class PortalPrivateStorage {
 // MARK: - PortalPrivate View Wrapper
 
 /// A view that manages a single SwiftUI view instance that can be shown in multiple places
+@available(iOS 17, *)
 public struct PortalPrivate<Content: View>: View {
     private let id: String
     private let groupID: String?
@@ -186,6 +187,7 @@ public struct PortalPrivate<Content: View>: View {
 
 // MARK: - View Extensions
 
+@available(iOS 17, *)
 public extension View {
     /// Marks this view as a private portal that uses view mirroring
     ///
@@ -981,6 +983,7 @@ struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifie
 // MARK: - Destination View for Private Portals
 
 /// A destination view that shows a portal of the private source
+@available(iOS 17, *)
 public struct PortalPrivateDestination: View {
     let id: String
     let hidesSource: Bool

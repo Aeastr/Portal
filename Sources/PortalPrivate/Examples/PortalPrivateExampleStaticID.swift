@@ -13,6 +13,7 @@ import SwiftUI
 import Portal
 
 /// PortalPrivate static ID example showing code block transitions with view mirroring
+@available(iOS 17, *)
 public struct PortalPrivateExampleStaticID: View {
     @State private var showDetail = false
 
