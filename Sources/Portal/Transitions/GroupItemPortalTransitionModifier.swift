@@ -34,6 +34,7 @@ import SwiftUI
 ///         PhotoView(photo: photo)
 ///     }
 /// ```
+@available(iOS 17, *)
 public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: View>: ViewModifier {
     /// Binding to the array of items that controls the portal transitions.
     @Binding public var items: [Item]
@@ -298,6 +299,7 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
     }
 }
 
+@available(iOS 17, *)
 public extension View {
     /// Applies coordinated portal transitions for multiple `Identifiable` items.
     ///

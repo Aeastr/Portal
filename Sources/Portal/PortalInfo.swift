@@ -19,6 +19,7 @@ import SwiftUI
 /// Each `PortalInfo` instance represents one unique portal animation identified by its `infoID`.
 /// The struct tracks both the geometric information (anchors, progress) and behavioral aspects
 /// (duration, visibility, completion handling) of the transition.
+@available(iOS 17, *)
 public struct PortalInfo: Identifiable {
     /// Unique identifier for SwiftUI's `Identifiable` protocol.
     ///

@@ -191,6 +191,7 @@ public struct PortalExampleList: View {
 }
 
 /// List item model for the Portal example
+@available(iOS 17, *)
 public struct PortalExampleListItem: Identifiable {
     public let id = UUID()
     public let title: String
@@ -206,6 +207,7 @@ public struct PortalExampleListItem: Identifiable {
     }
 }
 
+@available(iOS 17, *)
 private struct PortalExampleListDetail: View {
     let item: PortalExampleListItem
     @Environment(\.dismiss) var dismiss
@@ -270,20 +272,30 @@ private struct PortalExampleListDetail: View {
     }
 }
 
+#if os(iOS)
 #Preview("List Example") {
-    PortalExampleList()
+    if #available(iOS 17, *) {
+        PortalExampleList()
+    } else {
+        Text("Requires iOS 17 or newer")
+    }
 }
 
 #Preview("Detail View") {
-    PortalExampleListDetail(
-        item: PortalExampleListItem(
-            title: "Mountain Peak",
-            description: "Breathtaking views from the summit",
-            color: .blue,
-            icon: "mountain.2.fill"
+    if #available(iOS 17, *) {
+        PortalExampleListDetail(
+            item: PortalExampleListItem(
+                title: "Mountain Peak",
+                description: "Breathtaking views from the summit",
+                color: .blue,
+                icon: "mountain.2.fill"
+            )
         )
-    )
+    } else {
+        Text("Requires iOS 17 or newer")
+    }
 }
+#endif
 
 
 #endif

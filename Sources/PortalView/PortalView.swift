@@ -190,8 +190,10 @@ public class SourceViewContainer<Content: View> {
     public init(content: Content) {
         self.hostingController = UIHostingController(rootView: content)
         self.hostingController.view.backgroundColor = .clear
-        // Use preferredContentSize instead of intrinsicContentSize for more flexible sizing
-        self.hostingController.sizingOptions = .preferredContentSize
+        // Use preferredContentSize instead of intrinsicContentSize for more flexible sizing when available
+        if #available(iOS 16, *) {
+            self.hostingController.sizingOptions = .preferredContentSize
+        }
 
         // Don't lock the frame size here - let it be determined by the layout system
         hostingController.view.setNeedsLayout()

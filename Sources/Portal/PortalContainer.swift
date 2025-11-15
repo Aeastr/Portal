@@ -130,6 +130,7 @@ public extension PortalContainer {
 import UIKit
 
 /// Manages the overlay window for the portal layer.
+@available(iOS 17, *)
 @MainActor
 final class OverlayWindowManager {
     static let shared = OverlayWindowManager()
@@ -240,6 +241,7 @@ final class OverlayWindowManager {
 
 #if DEBUG
 /// Debug indicator view to visualize overlay window presence
+@available(iOS 17, *)
 internal struct DebugOverlayIndicator: View {
     let text: String
     let color: Color
@@ -274,6 +276,7 @@ internal struct DebugOverlayIndicator: View {
 }
 
 /// Complete debug overlay component with border and label
+@available(iOS 17, *)
 internal struct PortalDebugOverlay: View {
     let text: String
     let color: Color
@@ -310,15 +313,22 @@ internal struct PortalDebugOverlay: View {
     }
 }
 
-#Preview{
-    DebugOverlayIndicator("PortalContainerOverlay")
-        .padding(20)
-        .ignoresSafeArea()
-}
+#if os(iOS)
+    #Preview{
+        if #available(iOS 17, *) {
+            DebugOverlayIndicator("PortalContainerOverlay")
+                .padding(20)
+                .ignoresSafeArea()
+        } else {
+            Text("Requires iOS 17 or newer")
+        }
+    }
+    #endif
 #endif
 
 // MARK: - Root Views
 
+@available(iOS 17, *)
 private struct PortalContainerRootView: View {
     let portalModel: CrossModel
     let debugOverlaysEnabled: PortalDebugOverlayComponent

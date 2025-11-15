@@ -18,6 +18,7 @@ import SwiftUI
 ///
 /// The model uses the `@Observable` macro for SwiftUI integration and is marked with
 /// `@MainActor` to ensure all UI-related operations happen on the main thread.
+@available(iOS 17, *)
 @MainActor @Observable
 public class CrossModel {
     /// Array containing information about all active portal animations.

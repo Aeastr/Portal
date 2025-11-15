@@ -64,6 +64,7 @@ public struct PortalPrivateExampleNoSheetView: View {
     }
 }
 
+@available(iOS 17, *)
 struct DetailOverlayView: View {
     let item: Item
     @Binding var selectedItem: Item?
@@ -105,9 +106,15 @@ struct DetailOverlayView: View {
 // MARK: - Preview
 
 #if DEBUG
+#if os(iOS)
 struct PortalPrivateExampleNoSheetViewPreviews: PreviewProvider {
     static var previews: some View {
-        PortalPrivateExampleNoSheetView()
+        if #available(iOS 17, *) {
+            PortalPrivateExampleNoSheetView()
+        } else {
+            Text("Requires iOS 17 or newer")
+        }
     }
 }
+#endif
 #endif

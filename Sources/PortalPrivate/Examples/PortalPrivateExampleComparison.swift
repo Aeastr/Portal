@@ -180,6 +180,7 @@ public struct PortalPrivateExampleComparison: View {
     }
 }
 
+@available(iOS 17, *)
 private struct PortalExamplePortalComparisonSheet: View {
     @Environment(\.dismiss) var dismiss
 
@@ -310,8 +311,14 @@ private struct PortalExampleZoomComparisonSheet: View {
     }
 }
 
+#if os(iOS)
 #Preview {
-    PortalPrivateExampleComparison()
+    if #available(iOS 17, *) {
+        PortalPrivateExampleComparison()
+    } else {
+        Text("Requires iOS 17 or newer")
+    }
 }
+#endif
 
 #endif

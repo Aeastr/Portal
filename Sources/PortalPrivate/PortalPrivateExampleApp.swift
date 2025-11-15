@@ -14,6 +14,7 @@ import PortalView
 
 // MARK: - Example App
 
+@available(iOS 17, *)
 public struct PortalPrivateExampleApp: App {
     public init() {}
 
@@ -78,6 +79,7 @@ public struct PortalPrivateExampleView: View {
 
 // MARK: - Card View (Source)
 
+@available(iOS 17, *)
 struct CardView: View {
     let item: Item
 
@@ -102,6 +104,7 @@ struct CardView: View {
 
 // MARK: - Detail View (Destination)
 
+@available(iOS 17, *)
 struct DetailView: View {
     let item: Item
     @Binding var selectedItem: Item?
@@ -143,6 +146,7 @@ struct DetailView: View {
 
 // MARK: - Data Model
 
+@available(iOS 17, *)
 struct Item: Identifiable, Equatable {
     let id = UUID()
     let name: String
@@ -162,9 +166,15 @@ struct Item: Identifiable, Equatable {
 // MARK: - Preview
 
 #if DEBUG
+#if os(iOS)
 struct PortalPrivateExampleViewPreviews: PreviewProvider {
     static var previews: some View {
-        PortalPrivateExampleView()
+        if #available(iOS 17, *) {
+            PortalPrivateExampleView()
+        } else {
+            Text("Requires iOS 17 or newer")
+        }
     }
 }
+#endif
 #endif
