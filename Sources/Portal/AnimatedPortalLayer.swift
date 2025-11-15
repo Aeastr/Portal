@@ -30,6 +30,7 @@ import SwiftUI
 ///     }
 /// }
 /// ```
+@available(iOS 17, *)
 public protocol AnimatedPortalLayer: View {
     associatedtype Content: View
     associatedtype AnimatedContent: View
@@ -46,6 +47,7 @@ public protocol AnimatedPortalLayer: View {
     @ViewBuilder func animatedContent(isActive: Bool) -> AnimatedContent
 }
 
+@available(iOS 17, *)
 public extension AnimatedPortalLayer {
     @ViewBuilder
     var body: some View {
@@ -53,6 +55,7 @@ public extension AnimatedPortalLayer {
     }
 }
 
+@available(iOS 17, *)
 private struct AnimatedPortalLayerHost<Layer: AnimatedPortalLayer>: View {
     @Environment(CrossModel.self) private var portalModel
     let layer: Layer

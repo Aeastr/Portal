@@ -23,6 +23,7 @@ import SwiftUI
 /// - Boolean state control for transitions
 /// - Synchronized timing for all portals in the group
 /// - Proper cleanup when animations complete
+@available(iOS 17, *)
 public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
     /// Array of portal IDs to animate together.
     public let ids: [String]
@@ -177,6 +178,7 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
     }
 }
 
+@available(iOS 17, *)
 public extension View {
     /// Applies coordinated portal transitions for multiple portal IDs.
     ///

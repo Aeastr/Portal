@@ -12,6 +12,7 @@
 import SwiftUI
 import Portal
 /// Portal multi-item example showing coordinated transitions for multiple elements
+@available(iOS 17, *)
 public struct PortalExampleMultiItem: View {
     @State private var selectedPhotos: [MultiItemPhoto] = []
     @State private var allPhotos: [MultiItemPhoto] = MultiItemPhoto.samplePhotos
@@ -73,6 +74,8 @@ public struct PortalExampleMultiItem: View {
 }
 
 /// Detail view showing the coordinated destination views
+@available(iOS 17, *)
+@available(iOS 17, *)
 struct MultiItemDetailView: View {
     let photos: [MultiItemPhoto]
     let onDismiss: () -> Void
@@ -102,6 +105,7 @@ struct MultiItemDetailView: View {
 }
 
 /// Individual photo view - MUST be identical for source and destination
+@available(iOS 17, *)
 struct PhotoView: View {
     let photo: MultiItemPhoto
 
@@ -124,6 +128,7 @@ struct PhotoView: View {
 }
 
 /// Wrapper for thumbnail (source) - adds frame constraints
+@available(iOS 17, *)
 struct PhotoThumbnailView: View {
     let photo: MultiItemPhoto
 
@@ -133,6 +138,7 @@ struct PhotoThumbnailView: View {
 }
 
 /// Wrapper for detail (destination) - adds different frame constraints
+@available(iOS 17, *)
 struct PhotoDetailView: View {
     let photo: MultiItemPhoto
 
@@ -143,6 +149,7 @@ struct PhotoDetailView: View {
 }
 
 /// Sample data model for multi-item photo examples
+@available(iOS 17, *)
 struct MultiItemPhoto: Identifiable {
     let id = UUID()
     let title: String
@@ -190,7 +197,13 @@ struct MultiItemPhoto: Identifiable {
     ]
 }
 
+#if os(iOS)
 #Preview{
-    PortalExampleMultiItem()
+    if #available(iOS 17, *) {
+        PortalExampleMultiItem()
+    } else {
+        Text("Requires iOS 17 or newer")
+    }
 }
+#endif
 #endif

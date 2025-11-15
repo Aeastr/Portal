@@ -12,6 +12,7 @@
 import SwiftUI
 
 /// Portal static ID example showing code block transitions
+@available(iOS 17, *)
 public struct PortalExampleStaticID: View {
     @State private var showDetail = false
 
@@ -155,6 +156,7 @@ public struct PortalExampleStaticID: View {
     }
 }
 
+@available(iOS 17, *)
 private struct PortalExampleStaticIDDetail: View {
     @Environment(\.dismiss) var dismiss
 
@@ -237,12 +239,22 @@ private struct PortalExampleStaticIDDetail: View {
     }
 }
 
+#if os(iOS)
 #Preview("Static ID Example") {
-    PortalExampleStaticID()
+    if #available(iOS 17, *) {
+        PortalExampleStaticID()
+    } else {
+        Text("Requires iOS 17 or newer")
+    }
 }
 
 #Preview("Static ID Example Detail") {
-    PortalExampleStaticIDDetail()
+    if #available(iOS 17, *) {
+        PortalExampleStaticIDDetail()
+    } else {
+        Text("Requires iOS 17 or newer")
+    }
 }
+#endif
 
 #endif

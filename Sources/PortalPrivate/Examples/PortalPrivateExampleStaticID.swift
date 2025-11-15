@@ -13,6 +13,7 @@ import SwiftUI
 import Portal
 
 /// PortalPrivate static ID example showing code block transitions with view mirroring
+@available(iOS 17, *)
 public struct PortalPrivateExampleStaticID: View {
     @State private var showDetail = false
 
@@ -109,6 +110,7 @@ public struct PortalPrivateExampleStaticID: View {
     }
 }
 
+@available(iOS 17, *)
 private struct PortalExampleStaticIDDetail: View {
     @Environment(\.dismiss) var dismiss
 
@@ -146,12 +148,22 @@ private struct PortalExampleStaticIDDetail: View {
     }
 }
 
+#if os(iOS)
 #Preview("Static ID Example") {
-    PortalPrivateExampleStaticID()
+    if #available(iOS 17, *) {
+        PortalPrivateExampleStaticID()
+    } else {
+        Text("Requires iOS 17 or newer")
+    }
 }
 
 #Preview("Static ID Example Detail") {
-    PortalExampleStaticIDDetail()
+    if #available(iOS 17, *) {
+        PortalExampleStaticIDDetail()
+    } else {
+        Text("Requires iOS 17 or newer")
+    }
 }
+#endif
 
 #endif

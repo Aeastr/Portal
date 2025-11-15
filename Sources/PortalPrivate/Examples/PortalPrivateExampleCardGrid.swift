@@ -13,6 +13,7 @@ import SwiftUI
 import Portal
 
 /// PortalPrivate card grid example showing dynamic item parameter usage with view mirroring
+@available(iOS 17, *)
 public struct PortalPrivateExampleCardGrid: View {
     @State private var selectedCard: PortalExampleCard?
     @State private var cards: [PortalExampleCard] = [
@@ -137,6 +138,7 @@ public struct PortalExampleCard: Identifiable {
     }
 }
 
+@available(iOS 17, *)
 private struct PortalExampleCardDetail: View {
     let card: PortalExampleCard
     @Environment(\.dismiss) var dismiss
@@ -167,14 +169,24 @@ private struct PortalExampleCardDetail: View {
     }
 }
 
+#if os(iOS)
 #Preview("PortalPrivate Card Grid") {
-    PortalPrivateExampleCardGrid()
+    if #available(iOS 17, *) {
+        PortalPrivateExampleCardGrid()
+    } else {
+        Text("Requires iOS 17 or newer")
+    }
 }
 
 #Preview("Detail View") {
-    PortalExampleCardDetail(
-        card: PortalExampleCard(title: "Portal", subtitle: "Seamless Transitions", color: .purple, icon: "arrow.triangle.2.circlepath")
-    )
+    if #available(iOS 17, *) {
+        PortalExampleCardDetail(
+            card: PortalExampleCard(title: "Portal", subtitle: "Seamless Transitions", color: .purple, icon: "arrow.triangle.2.circlepath")
+        )
+    } else {
+        Text("Requires iOS 17 or newer")
+    }
 }
+#endif
 
 #endif

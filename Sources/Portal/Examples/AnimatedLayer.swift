@@ -26,6 +26,7 @@ let portalAnimationExampleExtraBounce = Animation.smooth(duration: portalAnimati
 /// specific to this bounce effect choreography, NOT system constants. They control when the
 /// second bounce animation triggers relative to the first one. When you copy this component,
 /// these values are meant to be tuned for your specific animation design.
+@available(iOS 17, *)
 struct AnimatedLayer<Content: View>: AnimatedPortalLayer {
     let portalID: String
     var scale: CGFloat = 1.25
@@ -72,8 +73,14 @@ struct AnimatedLayer<Content: View>: AnimatedPortalLayer {
     }
 }
 
+#if os(iOS)
 #Preview("Card Grid Example") {
-    PortalExampleCardGrid()
+    if #available(iOS 17, *) {
+        PortalExampleCardGrid()
+    } else {
+        Text("Requires iOS 17 or newer")
+    }
 }
+#endif
 
 #endif

@@ -10,6 +10,7 @@
 
 import SwiftUI
 
+@available(iOS 17, *)
 struct UIPortalViewExample: View {
     @State private var rotation: Double = 0
     @State private var scale: CGFloat = 1.0
@@ -98,6 +99,7 @@ struct UIPortalViewExample: View {
     }
 }
 
+@available(iOS 17, *)
 struct AnimatedContentView: View {
     let rotation: Double
     let scale: CGFloat
@@ -129,6 +131,12 @@ struct AnimatedContentView: View {
     }
 }
 
+#if os(iOS)
 #Preview {
-    UIPortalViewExample()
+    if #available(iOS 17, *) {
+        UIPortalViewExample()
+    } else {
+        Text("Requires iOS 17 or newer")
+    }
 }
+#endif

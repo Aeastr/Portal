@@ -37,6 +37,7 @@ import SwiftUI
 ///             .aspectRatio(contentMode: .fit)
 ///     }
 /// ```
+@available(iOS 17, *)
 public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: View>: ViewModifier {
     /// Binding to the optional item that controls the portal transition.
     ///
@@ -307,6 +308,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
     }
 }
 
+@available(iOS 17, *)
 public extension View {
     /// Applies a portal transition controlled by an optional `Identifiable` item.
     ///

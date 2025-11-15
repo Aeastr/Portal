@@ -25,6 +25,7 @@ import SwiftUI
 /// - Uses `GeometryReader` to access coordinate space for position calculations
 /// - Iterates through all active portal animations in the model
 /// - Delegates individual animation rendering to `PortalLayerContentView`
+@available(iOS 17, *)
 internal struct PortalLayerView: View {
     /// The shared model containing all portal animation data and state.
     @Environment(CrossModel.self) private var portalModel
@@ -63,6 +64,7 @@ internal struct PortalLayerView: View {
 /// 2. Animates smoothly to destination position/size
 /// 3. Handles cleanup and state reset after animation completes
 /// 4. Calls completion handlers to notify the system of animation status
+@available(iOS 17, *)
 private struct PortalLayerContentView: View {
     /// Geometry proxy for coordinate space calculations and position conversions.
     var proxy: GeometryProxy

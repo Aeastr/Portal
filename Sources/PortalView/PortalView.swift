@@ -148,6 +148,7 @@ public class PortalViewWrapper: UIView {
 // MARK: - UIViewRepresentable Wrapper
 
 /// UIViewRepresentable wrapper for the portal view
+@available(iOS 17, *)
 public struct PortalViewRepresentable: UIViewRepresentable {
     let sourceView: UIView
     var hidesSourceView: Bool = false
@@ -189,8 +190,10 @@ public class SourceViewContainer<Content: View> {
     public init(content: Content) {
         self.hostingController = UIHostingController(rootView: content)
         self.hostingController.view.backgroundColor = .clear
-        // Use preferredContentSize instead of intrinsicContentSize for more flexible sizing
-        self.hostingController.sizingOptions = .preferredContentSize
+        // Use preferredContentSize instead of intrinsicContentSize for more flexible sizing when available
+        if #available(iOS 16, *) {
+            self.hostingController.sizingOptions = .preferredContentSize
+        }
 
         // Don't lock the frame size here - let it be determined by the layout system
         hostingController.view.setNeedsLayout()
@@ -241,6 +244,7 @@ public class SourceViewWrapper: UIView {
 }
 
 /// UIViewRepresentable that displays the source view
+@available(iOS 17, *)
 public struct SourceViewRepresentable<Content: View>: UIViewRepresentable {
     let container: SourceViewContainer<Content>
     let content: Content
@@ -263,6 +267,7 @@ public struct SourceViewRepresentable<Content: View>: UIViewRepresentable {
 // MARK: - Portal View Helper
 
 /// Creates a portal of a UIView from a SourceViewContainer
+@available(iOS 17, *)
 public struct PortalView<Content: View>: View {
     let source: SourceViewContainer<Content>
     var hidesSource: Bool = false

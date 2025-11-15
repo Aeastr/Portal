@@ -21,6 +21,7 @@ import SwiftUI
 ///   - id: A unique string identifier for this portal. This should match the `id` used for the corresponding portal transition.
 ///   - source: A boolean flag indicating whether this is a source (true) or destination (false) portal.
 ///   - content: The view content to be marked as the portal.
+@available(iOS 17, *)
 public struct Portal<Content: View>: View {
     private let id: String
     private let source: Bool
@@ -119,6 +120,7 @@ public enum PortalRole {
 
 // MARK: - View Extensions
 
+@available(iOS 17, *)
 public extension View {
     /// Marks this view as a portal with the specified role.
     ///

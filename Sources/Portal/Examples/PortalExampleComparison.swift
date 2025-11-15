@@ -13,6 +13,7 @@ import SwiftUI
 
 /// Comparison example showing Portal vs native iOS transitions
 /// Shows Portal vs native iOS transition features
+@available(iOS 17, *)
 public struct PortalExampleComparison: View {
     @State private var showPortalSheet = false
     @State private var showNativeSheet = false
@@ -201,6 +202,7 @@ public struct PortalExampleComparison: View {
     }
 }
 
+@available(iOS 17, *)
 private struct PortalExamplePortalComparisonSheet: View {
     @Environment(\.dismiss) var dismiss
 
@@ -253,6 +255,7 @@ private struct PortalExamplePortalComparisonSheet: View {
     }
 }
 
+@available(iOS 17, *)
 private struct PortalExampleNativeComparisonSheet: View {
     @Environment(\.dismiss) var dismiss
 
@@ -303,6 +306,7 @@ private struct PortalExampleNativeComparisonSheet: View {
 }
 
 @available(iOS 18.0, *)
+@available(iOS 17, *)
 private struct PortalExampleZoomComparisonSheet: View {
     @Environment(\.dismiss) var dismiss
     let namespace: Namespace.ID
@@ -353,8 +357,14 @@ private struct PortalExampleZoomComparisonSheet: View {
     }
 }
 
+#if os(iOS)
 #Preview {
-    PortalExampleComparison()
+    if #available(iOS 17, *) {
+        PortalExampleComparison()
+    } else {
+        Text("Requires iOS 17 or newer")
+    }
 }
+#endif
 
 #endif

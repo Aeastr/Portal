@@ -14,6 +14,7 @@ import Portal
 import LogOutLoudConsole
 
 /// PortalPrivate list example showing photo transitions in a native SwiftUI List with view mirroring
+@available(iOS 17, *)
 public struct PortalPrivateExampleList: View {
     @State private var selectedItem: PortalExampleListItem?
     @State private var listItems: [PortalExampleListItem] = PortalPrivateExampleList.generateLargeDataSet()
@@ -193,6 +194,7 @@ public struct PortalExampleListItem: Identifiable {
     }
 }
 
+@available(iOS 17, *)
 private struct PortalExampleListDetail: View {
     let item: PortalExampleListItem
     @Environment(\.dismiss) var dismiss
@@ -246,20 +248,30 @@ private struct PortalExampleListDetail: View {
     }
 }
 
+#if os(iOS)
 #Preview("PortalPrivate List") {
-    PortalPrivateExampleList()
+    if #available(iOS 17, *) {
+        PortalPrivateExampleList()
+    } else {
+        Text("Requires iOS 17 or newer")
+    }
 }
 
 #Preview("Detail View") {
-    PortalExampleListDetail(
-        item: PortalExampleListItem(
-            title: "Mountain Peak",
-            description: "Breathtaking views from the summit",
-            color: .blue,
-            icon: "mountain.2.fill"
+    if #available(iOS 17, *) {
+        PortalExampleListDetail(
+            item: PortalExampleListItem(
+                title: "Mountain Peak",
+                description: "Breathtaking views from the summit",
+                color: .blue,
+                icon: "mountain.2.fill"
+            )
         )
-    )
+    } else {
+        Text("Requires iOS 17 or newer")
+    }
 }
+#endif
 
 
 #endif

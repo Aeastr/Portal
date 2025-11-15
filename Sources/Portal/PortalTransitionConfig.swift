@@ -36,6 +36,7 @@ import SwiftUI
 /// ```
 ///
 /// - Deprecated: Use direct Animation parameters instead of PortalTransitionConfig
+@available(iOS 17, *)
 @available(*, deprecated, message: "Use direct Animation parameters instead of PortalTransitionConfig")
 public struct PortalTransitionConfig {
     /// Animation timing and behavior configuration.
@@ -88,6 +89,7 @@ public struct PortalTransitionConfig {
 /// used interchangeably in the portal system while maintaining type safety.
 ///
 /// - Deprecated: Use SwiftUI's Animation type directly instead
+@available(iOS 17, *)
 @available(*, deprecated, message: "Use SwiftUI's Animation type directly instead")
 public protocol PortalAnimationProtocol {
     /// The SwiftUI animation curve and timing configuration.
@@ -139,6 +141,7 @@ public protocol PortalAnimationProtocol {
 /// - Reliable completion detection across all iOS versions
 ///
 /// - Deprecated: Use SwiftUI's Animation type directly instead
+@available(iOS 17, *)
 @available(*, deprecated, message: "Use SwiftUI's Animation type directly instead")
 public struct PortalAnimation: PortalAnimationProtocol {
     /// The SwiftUI animation curve and timing configuration.
@@ -221,6 +224,7 @@ public struct PortalAnimation: PortalAnimationProtocol {
 /// ```
 ///
 /// - Deprecated: Use SwiftUI's Animation type and AnimationCompletionCriteria directly instead
+@available(iOS 17, *)
 @available(*, deprecated, message: "Use SwiftUI's Animation type and AnimationCompletionCriteria directly instead")
 public struct PortalAnimationWithCompletion: PortalAnimationProtocol {
     /// The SwiftUI animation curve and timing configuration.

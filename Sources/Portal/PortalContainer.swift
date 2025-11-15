@@ -25,6 +25,7 @@ import UIKit
 ///   - content: The main content of your view hierarchy.
 /// Prefer using `PortalContainer` unless you specifically need to reference the modern-only
 /// implementation (e.g. for conditional compilation).
+@available(iOS 17, *)
 public struct PortalContainerModern<Content: View>: View {
     @ViewBuilder public var content: Content
     @Environment(\.scenePhase) private var scene
@@ -88,6 +89,7 @@ public struct PortalContainerModern<Content: View>: View {
 /// Type-erased portal container that automatically selects the appropriate implementation
 /// for the current OS version. Use this at the root of your app (e.g. in your `Scene` or
 /// `App` entry point) to install the portal layer once.
+@available(iOS 17, *)
 public struct PortalContainer<Content: View>: View {
     private let hideStatusBar: Bool
     private let modernPortalModelBox: Any?
@@ -111,6 +113,7 @@ public struct PortalContainer<Content: View>: View {
     }
 }
 
+@available(iOS 17, *)
 public extension PortalContainer {
     init(
         hideStatusBar: Bool = false,
@@ -127,6 +130,7 @@ public extension PortalContainer {
 import UIKit
 
 /// Manages the overlay window for the portal layer.
+@available(iOS 17, *)
 @MainActor
 final class OverlayWindowManager {
     static let shared = OverlayWindowManager()
@@ -237,6 +241,7 @@ final class OverlayWindowManager {
 
 #if DEBUG
 /// Debug indicator view to visualize overlay window presence
+@available(iOS 17, *)
 internal struct DebugOverlayIndicator: View {
     let text: String
     let color: Color
@@ -271,6 +276,7 @@ internal struct DebugOverlayIndicator: View {
 }
 
 /// Complete debug overlay component with border and label
+@available(iOS 17, *)
 internal struct PortalDebugOverlay: View {
     let text: String
     let color: Color
@@ -307,15 +313,22 @@ internal struct PortalDebugOverlay: View {
     }
 }
 
-#Preview{
-    DebugOverlayIndicator("PortalContainerOverlay")
-        .padding(20)
-        .ignoresSafeArea()
-}
+#if os(iOS)
+    #Preview{
+        if #available(iOS 17, *) {
+            DebugOverlayIndicator("PortalContainerOverlay")
+                .padding(20)
+                .ignoresSafeArea()
+        } else {
+            Text("Requires iOS 17 or newer")
+        }
+    }
+    #endif
 #endif
 
 // MARK: - Root Views
 
+@available(iOS 17, *)
 private struct PortalContainerRootView: View {
     let portalModel: CrossModel
     let debugOverlaysEnabled: PortalDebugOverlayComponent

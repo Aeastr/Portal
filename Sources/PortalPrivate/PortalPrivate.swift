@@ -93,6 +93,7 @@ private class PortalPrivateStorage {
 // MARK: - PortalPrivate View Wrapper
 
 /// A view that manages a single SwiftUI view instance that can be shown in multiple places
+@available(iOS 17, *)
 public struct PortalPrivate<Content: View>: View {
     private let id: String
     private let groupID: String?
@@ -186,6 +187,7 @@ public struct PortalPrivate<Content: View>: View {
 
 // MARK: - View Extensions
 
+@available(iOS 17, *)
 public extension View {
     /// Marks this view as a private portal that uses view mirroring
     ///
@@ -537,6 +539,7 @@ public extension View {
 // MARK: - Transition Modifiers
 
 /// Transition modifier for private portals with boolean state
+@available(iOS 17, *)
 struct PortalPrivateTransitionModifier: ViewModifier {
     let id: String
     @Binding var isActive: Bool
@@ -607,6 +610,7 @@ struct PortalPrivateTransitionModifier: ViewModifier {
 }
 
 /// Transition modifier for private portals with optional item
+@available(iOS 17, *)
 struct PortalPrivateItemTransitionModifier<Item: Identifiable>: ViewModifier {
     @Binding var item: Item?
     let animation: Animation
@@ -705,6 +709,7 @@ struct PortalPrivateItemTransitionModifier<Item: Identifiable>: ViewModifier {
 // MARK: - Multi-ID Portal Private Transition Modifier
 
 /// A view modifier that manages coordinated portal transitions for multiple private portal IDs.
+@available(iOS 17, *)
 struct MultiIDPortalPrivateTransitionModifier: ViewModifier {
     let ids: [String]
     let groupID: String
@@ -813,6 +818,7 @@ struct MultiIDPortalPrivateTransitionModifier: ViewModifier {
 // MARK: - Multi-Item Portal Private Transition Modifier
 
 /// A view modifier that manages coordinated portal transitions for multiple private portal items.
+@available(iOS 17, *)
 struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifier {
     @Binding var items: [Item]
     let groupID: String
@@ -981,6 +987,7 @@ struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifie
 // MARK: - Destination View for Private Portals
 
 /// A destination view that shows a portal of the private source
+@available(iOS 17, *)
 public struct PortalPrivateDestination: View {
     let id: String
     let hidesSource: Bool
