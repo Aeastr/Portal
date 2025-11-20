@@ -27,13 +27,15 @@ public struct PortalDebugOverlayComponent: OptionSet, Sendable {
 
     /// Show all debug overlay components
     public static let all: PortalDebugOverlayComponent = [.label, .border]
+    
+    public static let none: PortalDebugOverlayComponent = []
 }
 
 // MARK: - Debug Overlays Environment Key
 
 /// Environment key for controlling which debug overlay components are shown.
 private struct PortalDebugOverlaysKey: EnvironmentKey {
-    static let defaultValue: PortalDebugOverlayComponent = .all
+    static let defaultValue: PortalDebugOverlayComponent = .none
 }
 
 public extension EnvironmentValues {
@@ -95,6 +97,6 @@ public extension View {
     ///     .portalDebugOverlays(enabled: false)
     /// ```
     func portalDebugOverlays(enabled: Bool) -> some View {
-        environment(\.portalDebugOverlays, enabled ? .all : [])
+        environment(\.portalDebugOverlays, enabled ? .all : .none)
     }
 }
