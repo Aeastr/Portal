@@ -50,9 +50,12 @@ import SwiftUI
 ///   advanced scroll tracking APIs.
 @available(iOS 18.0, *)
 public struct PortalHeaderView: View {
+    // Note: We intentionally do NOT read titleProgress here.
+    // Reading titleProgress would cause this view to re-render on every scroll frame,
+    // which creates significant lag. Instead, the fade effect is applied in the overlay's
+    // renderAccessory function, which already re-renders per-frame anyway.
     @Environment(\.portalHeaderContent) private var config
     @Environment(\.portalHeaderAccessoryView) private var accessoryView
-    @Environment(\.titleProgress) private var titleProgress
     @Environment(\.accessoryFlowing) private var accessoryFlowing
     @Environment(\.portalHeaderDebugOverlays) private var debugOverlaysEnabled
 
@@ -69,7 +72,15 @@ public struct PortalHeaderView: View {
         self.visibleComponents = displays
     }
 
+    private func timestamp() -> String {
+        let now = Date()
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm:ss.SSS"
+        return formatter.string(from: now)
+    }
+
     public var body: some View {
+        let _ = print("[portal] \(timestamp()) PortalHeaderView.body called")
         Group {
             if let config = config, config.id == id {
                 headerContent(config: config)
@@ -95,20 +106,22 @@ public struct PortalHeaderView: View {
         let createTitleAnchor = flowComponents.contains(.title)
 
         VStack(spacing: showAccessory ? 12 : 8) {
-            // Calculate accessory fade using centralized, testable function
-            let fadeValue = PortalHeaderCalculations.calculateAccessoryFade(
-                progress: titleProgress,
-                fadeMultiplier: PortalHeaderTokens.accessoryFadeMultiplier
-            )
-
             // Show accessory if in visibleComponents
+            // Source is always invisible (opacity: 0) - it only provides layout and anchor.
+            // The overlay's renderAccessory handles the actual visible rendering with fade/position.
+            // This avoids re-rendering PortalHeaderView on every scroll frame.
             if showAccessory, let accessoryView = accessoryView {
                 if createAccessoryAnchor {
-                    // Create anchor - hide if actually flowing (has destination)
                     accessoryView
-                        .opacity(accessoryFlowing ? 0 : fadeValue)
-                        .scaleEffect(accessoryFlowing ? 1 : fadeValue, anchor: .top)
-                        .animation(.smooth(duration: PortalHeaderTokens.transitionDuration), value: fadeValue)
+                        .opacity(0)
+                        .background(
+                            GeometryReader { geo in
+                                Color.clear.preference(
+                                    key: AccessorySourceHeightKey.self,
+                                    value: geo.size.height
+                                )
+                            }
+                        )
                         .overlay(
                             Group {
                                 #if DEBUG
@@ -120,11 +133,8 @@ public struct PortalHeaderView: View {
                             return [AnchorKeyID(kind: "source", id: config.id, type: "accessory"): anchor]
                         }
                 } else {
-                    // Not creating anchor, but still apply fade/scale effect
+                    // Not flowing - just show the accessory normally (no transition)
                     accessoryView
-                        .opacity(fadeValue)
-                        .scaleEffect(fadeValue, anchor: .top)
-                        .animation(.smooth(duration: PortalHeaderTokens.transitionDuration), value: fadeValue)
                 }
             }
 

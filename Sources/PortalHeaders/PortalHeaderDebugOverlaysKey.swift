@@ -28,6 +28,8 @@ public struct PortalHeaderDebugOverlayComponent: OptionSet, Sendable {
 
     /// Show all debug overlay components
     public static let all: PortalHeaderDebugOverlayComponent = [.label, .border]
+    
+    public static let none: PortalHeaderDebugOverlayComponent = []
 }
 
 // MARK: - Debug Overlays Environment Key
@@ -35,7 +37,7 @@ public struct PortalHeaderDebugOverlayComponent: OptionSet, Sendable {
 /// Environment key for controlling which debug overlay components are shown.
 @available(iOS 18.0, *)
 private struct PortalHeaderDebugOverlaysKey: EnvironmentKey {
-    static let defaultValue: PortalHeaderDebugOverlayComponent = .all
+    static let defaultValue: PortalHeaderDebugOverlayComponent = .none
 }
 
 @available(iOS 18.0, *)
@@ -43,7 +45,7 @@ public extension EnvironmentValues {
     /// Controls which flowing header debug overlay components are shown.
     ///
     /// Debug overlays are only visible in DEBUG builds. This environment value
-    /// provides control over which components to show.
+    /// provides control over which components to show.x
     ///
     /// **Default:** `.all` (both label and border shown in DEBUG builds)
     ///

@@ -146,6 +146,15 @@ private struct PortalHeaderModifier<AccessoryContent: View>: ViewModifier {
     let config: PortalHeaderContent
     let accessoryContent: AccessoryContent?
 
+    // Cache the type-erased accessory view to avoid recreating AnyView on every body call
+    private let accessoryAnyView: AnyView?
+
+    init(config: PortalHeaderContent, accessoryContent: AccessoryContent?) {
+        self.config = config
+        self.accessoryContent = accessoryContent
+        self.accessoryAnyView = accessoryContent.map { AnyView($0) }
+    }
+
     @State private var titleProgress: Double = 0.0
     @State private var isScrolling = false
     @State private var scrollOffset: CGFloat = 0
@@ -155,37 +164,36 @@ private struct PortalHeaderModifier<AccessoryContent: View>: ViewModifier {
     @State private var accessoryFlowing = false
     @State private var accessorySourceHeight: CGFloat = 0
 
-    func body(content: Content) -> some View {
-        let measuredAccessory = accessoryContent.map { accessory in
-            AnyView(
-                accessory
-                    .onGeometryChange(for: CGSize.self) { proxy in
-                        proxy.size
-                    } action: { newSize in
-                        accessorySourceHeight = newSize.height
-                    }
-            )
-        }
+    // Cache last known source sizes for when source scrolls off-screen
+    @State private var lastKnownTitleSourceSize: CGSize = .zero
+    @State private var lastKnownAccessorySourceSize: CGSize = .zero
 
+    func body(content: Content) -> some View {
         content
             .environment(\.portalHeaderContent, config)
-            .environment(\.portalHeaderAccessoryView, measuredAccessory)
+            .environment(\.portalHeaderAccessoryView, accessoryAnyView)
             .environment(\.portalHeaderLayout, config.layout)
             .environment(\.titleProgress, titleProgress)
             .environment(\.accessoryFlowing, accessoryFlowing)
+            .onPreferenceChange(AccessorySourceHeightKey.self) { height in
+                accessorySourceHeight = height
+            }
             .onScrollPhaseChange { _, newPhase in
+                print("[portal] \(timestamp()) onScrollPhaseChange phase=\(newPhase)")
                 let wasScrolling = isScrolling
                 isScrolling = [ScrollPhase.interacting, ScrollPhase.decelerating].contains(newPhase)
 
                 // When scrolling stops, snap based on configured behavior
                 // Only snap if we're in the transition zone (progress between 0 and 1)
                 if wasScrolling && !isScrolling && titleProgress > 0.0 && titleProgress < 1.0 {
+                    print("[portal] \(timestamp()) SNAP triggered progress=\(titleProgress)")
                     let snapTarget: Double?
 
                     switch config.snappingBehavior {
                     case .directional:
                         // Snap based on scroll direction: down → 1.0, up → 0.0
                         snapTarget = lastScrollDirection.isDown ? 1.0 : 0.0
+                        print("[portal] \(timestamp()) SNAP directional target=\(snapTarget!)")
                         PortalHeaderLogs.logger.log(
                             "Directional snap triggered",
                             level: .debug,
@@ -200,6 +208,7 @@ private struct PortalHeaderModifier<AccessoryContent: View>: ViewModifier {
                     case .nearest:
                         // Snap to nearest position based on midpoint
                         snapTarget = titleProgress > 0.5 ? 1.0 : 0.0
+                        print("[portal] \(timestamp()) SNAP nearest target=\(snapTarget!)")
                         PortalHeaderLogs.logger.log(
                             "Nearest snap triggered",
                             level: .debug,
@@ -213,6 +222,7 @@ private struct PortalHeaderModifier<AccessoryContent: View>: ViewModifier {
                     case .none:
                         // No snapping
                         snapTarget = nil
+                        print("[portal] \(timestamp()) SNAP none")
                         PortalHeaderLogs.logger.log(
                             "Snap disabled",
                             level: .debug,
@@ -235,6 +245,7 @@ private struct PortalHeaderModifier<AccessoryContent: View>: ViewModifier {
             .onScrollGeometryChange(for: CGFloat.self) { geometry in
                 return geometry.contentOffset.y + geometry.contentInsets.top
             } action: { _, newOffset in
+                print("[portal] \(timestamp()) onScrollGeometryChange offset=\(String(format: "%.1f", newOffset)) isScrolling=\(isScrolling)")
                 let currentDirection: ScrollDirection = newOffset > scrollOffset ? .down : .up
 
                 // Track direction during scroll (ignore tiny movements to prevent jitter)
@@ -263,12 +274,14 @@ private struct PortalHeaderModifier<AccessoryContent: View>: ViewModifier {
 
                 // Only update progress while actively scrolling
                 if isScrolling {
+                    print("[portal] \(timestamp()) updating progress to \(String(format: "%.2f", progress)) hasSnapped=\(hasSnapped)")
                     // If we've snapped and user continues scrolling in same direction, keep it snapped
                     if hasSnapped {
                         let shouldKeepSnapped = (snappedValue == 1.0 && currentDirection.isDown) || (snappedValue == 0.0 && !currentDirection.isDown)
 
                         if shouldKeepSnapped {
                             // Keep snapped, don't update progress
+                            print("[portal] \(timestamp()) keeping snapped at \(snappedValue)")
                             PortalHeaderLogs.logger.log(
                                 "Maintaining snap position",
                                 level: .debug,
@@ -278,6 +291,7 @@ private struct PortalHeaderModifier<AccessoryContent: View>: ViewModifier {
                             return
                         } else {
                             // User reversed direction, reset snap state
+                            print("[portal] \(timestamp()) releasing snap, direction reversed")
                             PortalHeaderLogs.logger.log(
                                 "Direction reversed, releasing snap",
                                 level: .debug,
@@ -314,6 +328,7 @@ private struct PortalHeaderModifier<AccessoryContent: View>: ViewModifier {
 
     @ViewBuilder
     private func renderTransition(anchors: [AnchorKeyID: Anchor<CGRect>]) -> some View {
+        let _ = print("[portal] \(timestamp()) renderTransition called anchors=\(anchors.count)")
         GeometryReader { geometry in
             let titleSrcKey = AnchorKeyID(kind: "source", id: config.id, type: "title")
             let titleDstKey = AnchorKeyID(kind: "destination", id: config.id, type: "title")
@@ -324,23 +339,39 @@ private struct PortalHeaderModifier<AccessoryContent: View>: ViewModifier {
             let progress = CGFloat(titleProgress)
             let hasBothAccessoryAnchors = anchors[accessorySrcKey] != nil && anchors[accessoryDstKey] != nil
 
+            let _ = print("[portal] \(timestamp()) GeometryReader body progress=\(String(format: "%.2f", progress))")
+
             // Update accessoryFlowing based on whether both anchors exist
             // onAppear: Set initial state when view first renders
             // onChange: Update state when anchors change (e.g., during navigation or config changes)
             Color.clear
                 .onAppear {
+                    print("[portal] \(timestamp()) accessoryFlowing onAppear hasBoth=\(hasBothAccessoryAnchors)")
                     accessoryFlowing = hasBothAccessoryAnchors
                 }
                 .onChange(of: hasBothAccessoryAnchors) { _, newValue in
+                    print("[portal] \(timestamp()) accessoryFlowing onChange newValue=\(newValue)")
                     accessoryFlowing = newValue
                 }
 
-            if let titleSrc = anchors[titleSrcKey], let titleDst = anchors[titleDstKey] {
-                renderTitle(geometry: geometry, srcAnchor: titleSrc, dstAnchor: titleDst, progress: progress)
+            // Title transition: render at interpolated position, or at destination if source scrolled off
+            if let titleDst = anchors[titleDstKey] {
+                if let titleSrc = anchors[titleSrcKey] {
+                    renderTitle(geometry: geometry, srcAnchor: titleSrc, dstAnchor: titleDst, progress: progress)
+                } else {
+                    // Source off-screen, render at destination
+                    renderTitleAtDestination(geometry: geometry, dstAnchor: titleDst)
+                }
             }
 
-            if let accessorySrc = anchors[accessorySrcKey], let accessoryDst = anchors[accessoryDstKey] {
-                renderAccessory(geometry: geometry, srcAnchor: accessorySrc, dstAnchor: accessoryDst, progress: progress)
+            // Accessory transition: render at interpolated position, or at destination if source scrolled off
+            if let accessoryDst = anchors[accessoryDstKey] {
+                if let accessorySrc = anchors[accessorySrcKey] {
+                    renderAccessory(geometry: geometry, srcAnchor: accessorySrc, dstAnchor: accessoryDst, progress: progress)
+                } else {
+                    // Source off-screen, render at destination
+                    renderAccessoryAtDestination(geometry: geometry, dstAnchor: accessoryDst)
+                }
             }
         }
     }
@@ -354,7 +385,6 @@ private struct PortalHeaderModifier<AccessoryContent: View>: ViewModifier {
             progress: progress
         )
 
-
         // Use ratio of rect heights as proxy for font size ratio
         let scaleRatio = dstRect.height / srcRect.height
         let currentScale = 1 + (scaleRatio - 1) * progress
@@ -364,6 +394,30 @@ private struct PortalHeaderModifier<AccessoryContent: View>: ViewModifier {
             .foregroundStyle(.primary)
             .scaleEffect(currentScale)
             .position(x: position.x, y: position.y)
+            .onChange(of: srcRect.size) { _, newSize in
+                if newSize != .zero {
+                    lastKnownTitleSourceSize = newSize
+                }
+            }
+            .onAppear {
+                if srcRect.size != .zero {
+                    lastKnownTitleSourceSize = srcRect.size
+                }
+            }
+    }
+
+    private func renderTitleAtDestination(geometry: GeometryProxy, dstAnchor: Anchor<CGRect>) -> some View {
+        let dstRect = geometry[dstAnchor]
+
+        // Use cached source size to calculate final scale
+        let sourceSize = lastKnownTitleSourceSize != .zero ? lastKnownTitleSourceSize : dstRect.size
+        let scaleRatio = sourceSize.height > 0 ? dstRect.height / sourceSize.height : 1.0
+
+        return Text(config.title)
+            .font(.title.weight(.semibold))
+            .foregroundStyle(.primary)
+            .scaleEffect(scaleRatio)
+            .position(x: dstRect.midX, y: dstRect.midY)
     }
 
     @ViewBuilder
@@ -382,10 +436,52 @@ private struct PortalHeaderModifier<AccessoryContent: View>: ViewModifier {
                 progress: progress
             )
 
+            // Calculate fade - accessory fades out as it moves toward destination.
+            // This fade is applied here in the overlay rather than in PortalHeaderView
+            // to avoid causing PortalHeaderView to re-render on every scroll frame.
+            let fadeValue = PortalHeaderCalculations.calculateAccessoryFade(
+                progress: Double(progress),
+                fadeMultiplier: PortalHeaderTokens.accessoryFadeMultiplier
+            )
+
+            // Cache source size only when it meaningfully changes (avoid per-frame updates)
+            let shouldUpdateCache = srcRect.size != .zero && srcRect.size != lastKnownAccessorySourceSize
+
             accessory
                 .frame(width: srcRect.size.width, height: srcRect.size.height)
                 .scaleEffect(x: scale.x, y: scale.y)
+                .opacity(fadeValue)
                 .position(x: position.x, y: position.y)
+                .onAppear {
+                    if srcRect.size != .zero {
+                        lastKnownAccessorySourceSize = srcRect.size
+                    }
+                }
+                .task(id: shouldUpdateCache) {
+                    if shouldUpdateCache {
+                        lastKnownAccessorySourceSize = srcRect.size
+                    }
+                }
+        }
+    }
+
+    @ViewBuilder
+    private func renderAccessoryAtDestination(geometry: GeometryProxy, dstAnchor: Anchor<CGRect>) -> some View {
+        if let accessory = accessoryContent {
+            let dstRect = geometry[dstAnchor]
+
+            // Use cached source size to maintain proper frame and calculate final scale
+            let sourceSize = lastKnownAccessorySourceSize != .zero ? lastKnownAccessorySourceSize : dstRect.size
+            let scale = PortalHeaderCalculations.calculateScale(
+                sourceSize: sourceSize,
+                destinationSize: dstRect.size,
+                progress: 1.0  // Fully transitioned
+            )
+
+            accessory
+                .frame(width: sourceSize.width, height: sourceSize.height)
+                .scaleEffect(x: scale.x, y: scale.y)
+                .position(x: dstRect.midX, y: dstRect.midY)
         }
     }
 }

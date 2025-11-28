@@ -22,3 +22,16 @@ extension EnvironmentValues {
         set { self[AccessoryFlowingKey.self] = newValue }
     }
 }
+
+// MARK: - Accessory Source Height Preference
+
+/// Preference key for reporting accessory source height from PortalHeaderView to the modifier.
+internal struct AccessorySourceHeightKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        let next = nextValue()
+        if next > 0 {
+            value = next
+        }
+    }
+}
