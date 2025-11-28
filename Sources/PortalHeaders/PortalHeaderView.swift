@@ -72,15 +72,7 @@ public struct PortalHeaderView: View {
         self.visibleComponents = displays
     }
 
-    private func timestamp() -> String {
-        let now = Date()
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm:ss.SSS"
-        return formatter.string(from: now)
-    }
-
     public var body: some View {
-        let _ = print("[portal] \(timestamp()) PortalHeaderView.body called")
         Group {
             if let config = config, config.id == id {
                 headerContent(config: config)
