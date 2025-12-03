@@ -57,7 +57,7 @@ public struct PortalHeaderView: View {
     @Environment(\.portalHeaderContent) private var config
     @Environment(\.portalHeaderAccessoryView) private var accessoryView
     @Environment(\.accessoryFlowing) private var accessoryFlowing
-    @Environment(\.portalHeaderDebugOverlays) private var debugOverlaysEnabled
+    @Environment(\.portalHeaderDebugSettings) private var debugSettings
 
     private let id: String
     private let visibleComponents: Set<PortalHeaderDisplayComponent>?
@@ -117,7 +117,10 @@ public struct PortalHeaderView: View {
                         .overlay(
                             Group {
                                 #if DEBUG
-                                PortalHeaderDebugOverlay("Source", color: .blue, showing: debugOverlaysEnabled)
+                                let sourceStyle = debugSettings.style(for: .source)
+                                if !sourceStyle.isEmpty {
+                                    PortalHeaderDebugOverlay("Source", color: .blue, showing: sourceStyle)
+                                }
                                 #endif
                             }
                         )
@@ -141,7 +144,10 @@ public struct PortalHeaderView: View {
                             .overlay(
                                 Group {
                                     #if DEBUG
-                                    PortalHeaderDebugOverlay("Source", color: .blue, showing: debugOverlaysEnabled)
+                                    let sourceStyle = debugSettings.style(for: .source)
+                                    if !sourceStyle.isEmpty {
+                                        PortalHeaderDebugOverlay("Source", color: .blue, showing: sourceStyle)
+                                    }
                                     #endif
                                 }
                             )
@@ -199,6 +205,6 @@ public struct PortalHeaderView: View {
             .font(.system(size: 64))
             .foregroundStyle(.yellow)
     }
-    .portalHeaderDebugOverlays(showing: [.border])
+    .portalHeaderDebugOverlays([.border], for: .all)
 }
 #endif

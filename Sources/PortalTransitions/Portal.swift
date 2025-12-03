@@ -27,7 +27,7 @@ public struct Portal<Content: View>: View {
     private let groupID: String?
     @ViewBuilder private let content: Content
     @Environment(CrossModel.self) private var portalModel
-    @Environment(\.portalDebugOverlays) private var debugOverlaysEnabled
+    @Environment(\.portalTransitionDebugSettings) private var debugSettings
 
     /// Initializes a new Portal view.
     ///
@@ -66,7 +66,8 @@ public struct Portal<Content: View>: View {
             .overlay(
                 Group {
                     #if DEBUG
-                    PortalDebugOverlay(isSource ? "Source" : "Destination", color: isSource ? .blue : .orange, showing: debugOverlaysEnabled)
+                    let target: PortalTransitionDebugTarget = isSource ? .source : .destination
+                    PortalDebugOverlay(isSource ? "Source" : "Destination", color: isSource ? .blue : .orange, showing: debugSettings.style(for: target))
                     #endif
                 }
             )

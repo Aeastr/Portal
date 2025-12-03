@@ -51,31 +51,26 @@ internal struct DebugOverlayIndicator: View {
 internal struct PortalHeaderDebugOverlay: View {
     let text: String
     let color: Color
-    let components: PortalHeaderDebugOverlayComponent
+    let style: PortalHeaderDebugStyle
 
-    init(_ text: String, color: Color, showing components: PortalHeaderDebugOverlayComponent) {
+    init(_ text: String, color: Color, showing style: PortalHeaderDebugStyle) {
         self.text = text
         self.color = color
-        self.components = components
+        self.style = style
     }
 
     var body: some View {
         Group {
-            if components.contains(.border) {
-                RoundedRectangle(cornerRadius: 4)
-                    .stroke(color, lineWidth: 2)
-                    .overlay(
-                        Group {
-                            if components.contains(.label) {
-                                DebugOverlayIndicator(text, color: color)
-                                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
-                                    .padding(5)
-                            }
-                        }
-                    )
+            if style.contains(.background) {
+                color.opacity(0.1)
             }
 
-            if components.contains(.label) && !components.contains(.border) {
+            if style.contains(.border) {
+                RoundedRectangle(cornerRadius: 4)
+                    .stroke(color, lineWidth: 2)
+            }
+
+            if style.contains(.label) {
                 DebugOverlayIndicator(text, color: color)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
                     .padding(5)

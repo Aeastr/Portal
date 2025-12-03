@@ -217,7 +217,7 @@ private struct PortalExampleCardDetail: View {
 }
 
 #Preview("Card Grid") {
-    PortalExampleCardGrid().portalDebugOverlays(enabled: false)
+    PortalExampleCardGrid().portalTransitionDebugOverlays(false)
 }
 
 #Preview("Detail View") {

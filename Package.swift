@@ -14,8 +14,8 @@ let package = Package(
             name: "PortalHeaders",
             targets: ["PortalHeaders"]),
         .library(
-            name: "_PortalMirror",
-            targets: ["_PortalMirror"]),
+            name: "_PortalPrivate",
+            targets: ["_PortalPrivate"]),
     ],
     dependencies: [
         .package(url: "https://github.com/Aeastr/Chronicle.git", from: "3.0.1"),
@@ -39,12 +39,12 @@ let package = Package(
             path: "Sources/PortalHeaders"
         ),
         .target(
-            name: "_PortalMirror",
+            name: "_PortalPrivate",
             dependencies: [
                 "PortalTransitions",
                 .product(name: "Obfuscate", package: "Obfuscate")
             ],
-            path: "Sources/_PortalMirror"
+            path: "Sources/_PortalPrivate"
         ),
         .testTarget(
             name: "PortalHeadersTests",
@@ -57,9 +57,9 @@ let package = Package(
             path: "Tests/PortalTransitionsTests"
         ),
         .testTarget(
-            name: "_PortalMirrorTests",
-            dependencies: ["_PortalMirror"],
-            path: "Tests/_PortalMirrorTests"
+            name: "_PortalPrivateTests",
+            dependencies: ["_PortalPrivate"],
+            path: "Tests/_PortalPrivateTests"
         ),
     ]
 )

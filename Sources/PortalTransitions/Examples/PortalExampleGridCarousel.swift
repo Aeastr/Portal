@@ -23,15 +23,11 @@ public struct PortalExampleGridCarousel: View {
 
     public var body: some View {
         PortalContainer {
-            NavigationView {
+            NavigationStack {
                 ScrollView {
                     VStack(spacing: 20) {
                         // Explanation text
                         VStack(spacing: 12) {
-                            Text("Grid to Carousel")
-                                .font(.title2)
-                                .fontWeight(.semibold)
-
                             Text("Tap any item to open a fullscreen carousel. Swipe horizontally to browse between items while maintaining the portal connection.")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
@@ -55,7 +51,7 @@ public struct PortalExampleGridCarousel: View {
                     }
                     .padding(.bottom, 40)
                 }
-                .navigationTitle("Grid Carousel")
+                .navigationTitle("Grid to Carousel")
                 .navigationBarTitleDisplayMode(.inline)
                 .background(Color(.systemGroupedBackground).ignoresSafeArea())
             }
@@ -68,7 +64,7 @@ public struct PortalExampleGridCarousel: View {
             }
             .portalTransition(
                 item: $portalItem,
-                animation: .smooth(duration: 0.4),
+                animation: .smooth(duration: 0.25),
                 transition: .fade
             ) { item in
                 GridItemView(item: item)
@@ -246,7 +242,7 @@ private struct CarouselPageView: View {
 
 #Preview("Grid Carousel") {
     PortalExampleGridCarousel()
-        .portalDebugOverlays(enabled: true)
+        .portalTransitionDebugOverlays(true)
 }
 
 #endif

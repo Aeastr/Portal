@@ -11,7 +11,7 @@
 import XCTest
 import SwiftUI
 @testable import PortalTransitions
-@testable import _PortalMirror
+@testable import _PortalPrivate
 
 final class PortalPrivateTests: XCTestCase {
     // MARK: - PortalView Tests

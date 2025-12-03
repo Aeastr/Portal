@@ -58,7 +58,7 @@ Scroll-based header transitions that smoothly flow into the navigation bar.
 - Visual debug overlays and structured logging
 - **iOS 18+** • Advanced scroll tracking APIs
 
-### 🔮 View Mirroring (`_PortalMirror`)
+### 🔮 View Mirroring (`_PortalPrivate`)
 Advanced view mirroring using `_UIPortalView` for perfect state preservation.
 - Single shared view instance (same size at source/destination)
 - Direct UIKit integration available via low-level `PortalView`
@@ -76,12 +76,12 @@ Advanced view mirroring using `_UIPortalView` for perfect state preservation.
 
 Each target includes example implementations:
 
-| **PortalTransitions** | **_PortalMirror** | **PortalHeaders** |
+| **PortalTransitions** | **_PortalPrivate** | **PortalHeaders** |
 |:---|:---|:---|
-| [Static ID](Sources/PortalTransitions/Examples/PortalExample_StaticID.swift) | [Static ID](Sources/_PortalMirror/Transitions/Examples/PortalPrivateExampleStaticID.swift) | [No Accessory](Sources/PortalHeaders/Examples/PortalHeaderExampleNoAccessory.swift) |
-| [Card Grid](Sources/PortalTransitions/Examples/PortalExample_CardGrid.swift) | [Card Grid](Sources/_PortalMirror/Transitions/Examples/PortalPrivateExampleCardGrid.swift) | [Title Only](Sources/PortalHeaders/Examples/PortalHeaderExampleTitleOnly.swift) |
-| [List](Sources/PortalTransitions/Examples/PortalExample_List.swift) | [List](Sources/_PortalMirror/Transitions/Examples/PortalPrivateExampleList.swift) | [With Accessory](Sources/PortalHeaders/Examples/PortalHeaderExampleWithAccessory.swift) |
-| [Comparison](Sources/PortalTransitions/Examples/PortalExample_Comparison.swift) | [Comparison](Sources/_PortalMirror/Transitions/Examples/PortalPrivateExampleComparison.swift) | |
+| [Static ID](Sources/PortalTransitions/Examples/PortalExample_StaticID.swift) | [Static ID](Sources/_PortalPrivate/Transitions/Examples/PortalPrivateExampleStaticID.swift) | [No Accessory](Sources/PortalHeaders/Examples/PortalHeaderExampleNoAccessory.swift) |
+| [Card Grid](Sources/PortalTransitions/Examples/PortalExample_CardGrid.swift) | [Card Grid](Sources/_PortalPrivate/Transitions/Examples/PortalPrivateExampleCardGrid.swift) | [Title Only](Sources/PortalHeaders/Examples/PortalHeaderExampleTitleOnly.swift) |
+| [List](Sources/PortalTransitions/Examples/PortalExample_List.swift) | [List](Sources/_PortalPrivate/Transitions/Examples/PortalPrivateExampleList.swift) | [With Accessory](Sources/PortalHeaders/Examples/PortalHeaderExampleWithAccessory.swift) |
+| [Comparison](Sources/PortalTransitions/Examples/PortalExample_Comparison.swift) | [Comparison](Sources/_PortalPrivate/Transitions/Examples/PortalPrivateExampleComparison.swift) | |
 
 ## Contributing & Support
 

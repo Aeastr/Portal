@@ -70,7 +70,7 @@ private struct PortalLayerContentView: View {
     /// Binding to the portal animation data, allowing direct state modifications.
     @Binding var info: PortalInfo
 
-    @Environment(\.portalDebugOverlays) private var debugOverlaysEnabled
+    @Environment(\.portalTransitionDebugSettings) private var debugSettings
 
     /// Builds the animated layer view that transitions between source and destination.
     ///
@@ -135,10 +135,9 @@ private struct PortalLayerContentView: View {
             .overlay(
                 Group {
                     #if DEBUG
-                    if !debugOverlaysEnabled.isEmpty {
-                        DebugOverlayIndicator("Portal Layer", color: .green)
-                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                            .padding(5)
+                    let layerStyle = debugSettings.style(for: .layer)
+                    if !layerStyle.isEmpty {
+                        PortalDebugOverlay("Portal Layer", color: .green, showing: layerStyle)
                     }
                     #endif
                 }

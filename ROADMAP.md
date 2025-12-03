@@ -17,7 +17,7 @@ The current module structure will be reorganized for better clarity and discover
   - iOS 18+ for advanced scroll tracking
 
 **Private API Module**
-- `PortalView` + `PortalPrivate` → `_PortalMirror`
+- `PortalView` + `PortalPrivate` → `_PortalPrivate`
   - Provides `_UIPortalView` primitive and a `PortalTransitions`-style API that uses it
   - **View**: Low-level `_UIPortalView` wrapper for direct UIKit integration
   - **Transitions**: Wrapper around `PortalTransitions` that uses view mirroring for perfect state preservation
@@ -31,11 +31,11 @@ The current module structure will be reorganized for better clarity and discover
 **Clearer naming:**
 - `PortalTransitions` clearly describes discrete transitions
 - `PortalHeaders` describes what it does (header transitions)
-- `_PortalMirror` groups all private API functionality with conventional `_` warning prefix
+- `_PortalPrivate` groups all private API functionality with conventional `_` warning prefix
 
 **Binary safety:**
 - Public modules (`PortalTransitions`, `PortalHeaders`) have no private API code
-- Private API isolated to `_PortalMirror` - users opt-in explicitly
+- Private API isolated to `_PortalPrivate` - users opt-in explicitly
 - No risk of accidentally including obfuscated code
 
 **Better discoverability:**
@@ -68,7 +68,7 @@ PortalHeaders/
       ├── DebugOverlays.swift
       └── PortalHeaderLogs.swift
 
-_PortalMirror/
+_PortalPrivate/
   ├── View/
   │   └── PortalView.swift
   └── Transitions/

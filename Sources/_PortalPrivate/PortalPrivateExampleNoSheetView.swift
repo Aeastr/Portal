@@ -59,7 +59,7 @@ public struct PortalPrivateExampleNoSheetView: View {
                 }
             }
         }
-        .environment(\.portalDebugOverlays, [])
+        .portalTransitionDebugOverlays(false)
     }
 }
 

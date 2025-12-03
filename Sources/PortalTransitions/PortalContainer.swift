@@ -28,7 +28,7 @@ import UIKit
 public struct PortalContainerModern<Content: View>: View {
     @ViewBuilder public var content: Content
     @Environment(\.scenePhase) private var scene
-    @Environment(\.portalDebugOverlays) private var debugOverlaysEnabled
+    @Environment(\.portalTransitionDebugSettings) private var debugSettings
     // The @State property will no longer have an initial value directly here.
     // Its initial value will be set in the initializer.
     @State private var portalModel: CrossModel
@@ -69,7 +69,7 @@ public struct PortalContainerModern<Content: View>: View {
                 tags: [PortalLogs.Tags.container],
                 metadata: ["scenePhase": "active"]
             )
-            OverlayWindowManager.shared.addOverlayWindow(with: portalModel, hideStatusBar: hideStatusBar, debugOverlaysEnabled: debugOverlaysEnabled)
+            OverlayWindowManager.shared.addOverlayWindow(with: portalModel, hideStatusBar: hideStatusBar, debugSettings: debugSettings)
         } else {
             PortalLogs.logger.log(
                 "Scene no longer active; removing portal overlay window",
@@ -136,11 +136,11 @@ final class OverlayWindowManager {
     /// - Parameters:
     ///   - portalModel: The shared portal model.
     ///   - hideStatusBar: Whether the overlay should hide the status bar.
-    ///   - debugOverlaysEnabled: Whether debug overlays should be shown.
+    ///   - debugSettings: Debug overlay settings.
     func addOverlayWindow(
         with portalModel: CrossModel,
         hideStatusBar: Bool,
-        debugOverlaysEnabled: PortalDebugOverlayComponent
+        debugSettings: PortalTransitionDebugSettings
     ) {
         guard overlayWindow == nil else {
             PortalLogs.logger.log(
@@ -161,7 +161,6 @@ final class OverlayWindowManager {
                     tags: [PortalLogs.Tags.overlay],
                     metadata: [
                         "hideStatusBar": hideStatusBar,
-                        "debugOverlays": !debugOverlaysEnabled.isEmpty,
                         "scene": windowScene.session.persistentIdentifier
                     ]
                 )
@@ -174,11 +173,11 @@ final class OverlayWindowManager {
                 let root: UIViewController
                 if hideStatusBar {
                     root = HiddenStatusHostingController(
-                        rootView: PortalContainerRootView(portalModel: portalModel, debugOverlaysEnabled: debugOverlaysEnabled)
+                        rootView: PortalContainerRootView(portalModel: portalModel, debugSettings: debugSettings)
                     )
                 } else {
                     root = UIHostingController(
-                        rootView: PortalContainerRootView(portalModel: portalModel, debugOverlaysEnabled: debugOverlaysEnabled)
+                        rootView: PortalContainerRootView(portalModel: portalModel, debugSettings: debugSettings)
                     )
                 }
                 root.view.backgroundColor = .clear
@@ -270,35 +269,30 @@ internal struct DebugOverlayIndicator: View {
     }
 }
 
-/// Complete debug overlay component with border and label
+/// Complete debug overlay component with border, label, and background
 internal struct PortalDebugOverlay: View {
     let text: String
     let color: Color
-    let components: PortalDebugOverlayComponent
+    let style: PortalTransitionDebugStyle
 
-    init(_ text: String, color: Color, showing components: PortalDebugOverlayComponent) {
+    init(_ text: String, color: Color, showing style: PortalTransitionDebugStyle) {
         self.text = text
         self.color = color
-        self.components = components
+        self.style = style
     }
 
     var body: some View {
         Group {
-            if components.contains(.border) {
-                RoundedRectangle(cornerRadius: 4)
-                    .stroke(color, lineWidth: 2)
-                    .overlay(
-                        Group {
-                            if components.contains(.label) {
-                                DebugOverlayIndicator(text, color: color)
-                                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
-                                    .padding(5)
-                            }
-                        }
-                    )
+            if style.contains(.background) {
+                color.opacity(0.1)
             }
 
-            if components.contains(.label) && !components.contains(.border) {
+            if style.contains(.border) {
+                RoundedRectangle(cornerRadius: 4)
+                    .stroke(color, lineWidth: 2)
+            }
+
+            if style.contains(.label) {
                 DebugOverlayIndicator(text, color: color)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
                     .padding(5)
@@ -318,15 +312,16 @@ internal struct PortalDebugOverlay: View {
 
 private struct PortalContainerRootView: View {
     let portalModel: CrossModel
-    let debugOverlaysEnabled: PortalDebugOverlayComponent
+    let debugSettings: PortalTransitionDebugSettings
 
     var body: some View {
         ZStack {
             PortalLayerView()
                 .environment(portalModel)
-                .environment(\.portalDebugOverlays, debugOverlaysEnabled)
+                .portalTransitionDebugOverlays(debugSettings.style(for: .layer), for: .layer)
             #if DEBUG
-            if !debugOverlaysEnabled.isEmpty {
+            let layerStyle = debugSettings.style(for: .layer)
+            if !layerStyle.isEmpty {
                 DebugOverlayIndicator("PortalContainerOverlay")
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
                     .padding(20)

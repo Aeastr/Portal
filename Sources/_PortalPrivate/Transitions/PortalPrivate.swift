@@ -99,7 +99,7 @@ public struct PortalPrivate<Content: View>: View {
     @ViewBuilder private let content: () -> Content
     @State private var sourceContainer: SourceViewContainer<AnyView>?
     @Environment(CrossModel.self) private var portalModel
-    @Environment(\.portalDebugOverlays) private var debugOverlaysEnabled
+    @Environment(\.portalTransitionDebugSettings) private var debugSettings
 
     public init(id: String, groupID: String? = nil, @ViewBuilder content: @escaping () -> Content) {
         self.id = id
@@ -149,14 +149,9 @@ public struct PortalPrivate<Content: View>: View {
                 .overlay(
                     Group {
                         #if DEBUG
-                        if !debugOverlaysEnabled.isEmpty {
-                            RoundedRectangle(cornerRadius: 4)
-                                .stroke(Color.purple, lineWidth: 2)
-                                .overlay(
-                                    DebugOverlayIndicator("PortalPrivate", color: .purple)
-                                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
-                                        .padding(5)
-                                )
+                        let sourceStyle = debugSettings.style(for: .source)
+                        if !sourceStyle.isEmpty {
+                            PortalDebugOverlay("PortalPrivate", color: .purple, showing: sourceStyle)
                         }
                         #endif
                     }
@@ -849,7 +844,7 @@ public struct PortalPrivateDestination: View {
     let matchesTransform: Bool
     let matchesPosition: Bool
     @Environment(CrossModel.self) private var portalModel
-    @Environment(\.portalDebugOverlays) private var debugOverlaysEnabled
+    @Environment(\.portalTransitionDebugSettings) private var debugSettings
 
     public init(
         id: String,
@@ -907,14 +902,9 @@ public struct PortalPrivateDestination: View {
                 .overlay(
                     Group {
                         #if DEBUG
-                        if !debugOverlaysEnabled.isEmpty {
-                            RoundedRectangle(cornerRadius: 4)
-                                .stroke(Color.purple.opacity(0.5), lineWidth: 2)
-                                .overlay(
-                                    DebugOverlayIndicator("PortalPrivate Dest", color: .purple)
-                                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-                                        .padding(5)
-                                )
+                        let destStyle = debugSettings.style(for: .destination)
+                        if !destStyle.isEmpty {
+                            PortalDebugOverlay("PortalPrivate Dest", color: .purple, showing: destStyle)
                         }
                         #endif
                     }
@@ -940,7 +930,8 @@ public struct PortalPrivateDestination: View {
                     .overlay(
                         Group {
                             #if DEBUG
-                            if !debugOverlaysEnabled.isEmpty {
+                            let destStyle = debugSettings.style(for: .destination)
+                            if !destStyle.isEmpty {
                                 Text("Awaiting PortalPrivate: \(id)")
                                     .font(.caption)
                                     .foregroundColor(.purple)
@@ -976,6 +967,38 @@ internal struct DebugOverlayIndicator: View {
             .clipShape(.capsule)
             .foregroundStyle(.white)
             .allowsHitTesting(false)
+    }
+}
+
+/// Complete debug overlay component with border, label, and background
+internal struct PortalDebugOverlay: View {
+    let text: String
+    let color: Color
+    let style: PortalTransitionDebugStyle
+
+    init(_ text: String, color: Color, showing style: PortalTransitionDebugStyle) {
+        self.text = text
+        self.color = color
+        self.style = style
+    }
+
+    var body: some View {
+        Group {
+            if style.contains(.background) {
+                color.opacity(0.1)
+            }
+
+            if style.contains(.border) {
+                RoundedRectangle(cornerRadius: 4)
+                    .stroke(color, lineWidth: 2)
+            }
+
+            if style.contains(.label) {
+                DebugOverlayIndicator(text, color: color)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+                    .padding(5)
+            }
+        }
     }
 }
 #endif

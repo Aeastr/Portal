@@ -38,7 +38,7 @@ internal struct PortalHeaderDestination: ViewModifier {
     @Environment(\.portalHeaderAccessoryView) private var accessoryView
     @Environment(\.portalHeaderLayout) private var layout
     @Environment(\.titleProgress) private var titleProgress
-    @Environment(\.portalHeaderDebugOverlays) private var debugOverlaysEnabled
+    @Environment(\.portalHeaderDebugSettings) private var debugSettings
 
     let id: String
     let displays: Set<PortalHeaderDisplayComponent>?
@@ -126,7 +126,10 @@ internal struct PortalHeaderDestination: ViewModifier {
                     .overlay(
                         Group {
                             #if DEBUG
-                            PortalHeaderDebugOverlay("Destination", color: .orange, showing: debugOverlaysEnabled)
+                            let destStyle = debugSettings.style(for: .destination)
+                            if !destStyle.isEmpty {
+                                PortalHeaderDebugOverlay("Destination", color: .orange, showing: destStyle)
+                            }
                             #endif
                         }
                     )
@@ -153,7 +156,10 @@ internal struct PortalHeaderDestination: ViewModifier {
                 .overlay(
                     Group {
                         #if DEBUG
-                        PortalHeaderDebugOverlay("Destination", color: .orange, showing: debugOverlaysEnabled)
+                        let destStyle = debugSettings.style(for: .destination)
+                        if !destStyle.isEmpty {
+                            PortalHeaderDebugOverlay("Destination", color: .orange, showing: destStyle)
+                        }
                         #endif
                     }
                 )
