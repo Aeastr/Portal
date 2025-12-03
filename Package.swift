@@ -8,66 +8,58 @@ let package = Package(
     platforms: [.iOS(.v17)],
     products: [
         .library(
-            name: "Portal",
-            targets: ["Portal"]),
+            name: "PortalTransitions",
+            targets: ["PortalTransitions"]),
         .library(
-            name: "PortalFlowingHeader",
-            targets: ["PortalFlowingHeader"]),
+            name: "PortalHeaders",
+            targets: ["PortalHeaders"]),
         .library(
-            name: "PortalView",
-            targets: ["PortalView"]),
-        .library(
-            name: "PortalPrivate",
-            targets: ["PortalPrivate"]),
+            name: "_PortalPrivate",
+            targets: ["_PortalPrivate"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/Aeastr/LogOutLoud.git", from: "2.1.2"),
+        .package(url: "https://github.com/Aeastr/Chronicle.git", from: "3.0.1"),
         .package(url: "https://github.com/Aeastr/Obfuscate.git", from: "1.0.0")
     ],
     targets: [
         .target(
-            name: "Portal",
+            name: "PortalTransitions",
             dependencies: [
-                .product(name: "LogOutLoud", package: "LogOutLoud"),
-                .product(name: "LogOutLoudConsole", package: "LogOutLoud")
+                .product(name: "Chronicle", package: "Chronicle"),
+                .product(name: "ChronicleConsole", package: "Chronicle")
             ],
-            path: "Sources/Portal"
+            path: "Sources/PortalTransitions"
         ),
         .target(
-            name: "PortalFlowingHeader",
+            name: "PortalHeaders",
             dependencies: [
-                .product(name: "LogOutLoud", package: "LogOutLoud"),
-                .product(name: "LogOutLoudConsole", package: "LogOutLoud")
+                .product(name: "Chronicle", package: "Chronicle"),
+                .product(name: "ChronicleConsole", package: "Chronicle")
             ],
-            path: "Sources/PortalFlowingHeader"
+            path: "Sources/PortalHeaders"
         ),
         .target(
-            name: "PortalView",
+            name: "_PortalPrivate",
             dependencies: [
+                "PortalTransitions",
                 .product(name: "Obfuscate", package: "Obfuscate")
             ],
-            path: "Sources/PortalView"
-        ),
-        .target(
-            name: "PortalPrivate",
-            dependencies: [
-                "Portal",
-                "PortalView"
-            ],
-            path: "Sources/PortalPrivate"
+            path: "Sources/_PortalPrivate"
         ),
         .testTarget(
-            name: "PortalFlowingHeaderTests",
-            dependencies: ["PortalFlowingHeader"],
-            path: "Tests/PortalFlowingHeaderTests"
+            name: "PortalHeadersTests",
+            dependencies: ["PortalHeaders"],
+            path: "Tests/PortalHeadersTests"
         ),
         .testTarget(
-            name: "PortalViewTests",
-            dependencies: ["PortalView"]
+            name: "PortalTransitionsTests",
+            dependencies: ["PortalTransitions"],
+            path: "Tests/PortalTransitionsTests"
         ),
         .testTarget(
-            name: "PortalPrivateTests",
-            dependencies: ["Portal", "PortalView", "PortalPrivate"]
+            name: "_PortalPrivateTests",
+            dependencies: ["_PortalPrivate"],
+            path: "Tests/_PortalPrivateTests"
         ),
     ]
 )

@@ -2,9 +2,13 @@ name: SwiftLint
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, dev ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, dev ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
 
 jobs:
   swiftlint:
