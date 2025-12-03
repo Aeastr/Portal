@@ -98,9 +98,13 @@ As the user scrolls, the title transitions from inline to the navigation bar wit
 
 ### _PortalPrivate
 
+> **WARNING: Private API Usage**
+>
+> This module uses Apple's private `_UIPortalView` API. Apps using private APIs **may be rejected by App Store Review**. Use at your own discretion. Portal, Aether, and any maintainers assume no responsibility for App Store rejections, app crashes, or any other issues arising from the use of this module. By importing `_PortalPrivate`, you accept full responsibility for any consequences.
+
 Same API as PortalTransitions, but uses Apple's private `_UIPortalView` for true view mirroring instead of layer snapshots. The view instance is shared rather than recreated.
 
-Class names are obfuscated at compile-time. See the [wiki]([wiki/_PortalPrivate.md]) for details.
+Class names are obfuscated at compile-time. See the [wiki](wiki/_PortalPrivate.md) for details.
 
 
 ## Documentation
