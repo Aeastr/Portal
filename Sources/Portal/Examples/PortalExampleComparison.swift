@@ -306,7 +306,6 @@ private struct PortalExampleNativeComparisonSheet: View {
 }
 
 @available(iOS 18.0, *)
-@available(iOS 17, *)
 private struct PortalExampleZoomComparisonSheet: View {
     @Environment(\.dismiss) var dismiss
     let namespace: Namespace.ID
