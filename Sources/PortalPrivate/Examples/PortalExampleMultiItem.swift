@@ -75,7 +75,6 @@ public struct PortalExampleMultiItem: View {
 
 /// Detail view showing the coordinated destination views
 @available(iOS 17, *)
-@available(iOS 17, *)
 struct MultiItemDetailView: View {
     let photos: [MultiItemPhoto]
     let onDismiss: () -> Void
