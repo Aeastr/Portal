@@ -314,10 +314,31 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
 
     /// Applies the modifier to the content view.
     ///
-    /// Attaches an onChange handler that monitors the presence of the item
+    /// Attaches onChange handlers that monitor both the presence and identity of the item
     /// and triggers portal transitions accordingly.
     public func body(content: Content) -> some View {
-        content.onChange(of: item != nil, onChange)
+        content
+            .onChange(of: item != nil, onChange)
+            .onChange(of: item?.id) { oldID, newID in
+                // Update lastKey and layerView when the item changes to a different item (while remaining non-nil)
+                // This enables carousels where swiping between items should update the return target
+                guard let oldID, let newID, oldID != newID, let newItem = item else { return }
+
+                let newKey = "\(newID)"
+                lastKey = newKey
+
+                // Update the layerView to show the new item's content
+                if let idx = portalModel.info.firstIndex(where: { $0.infoID == newKey }) {
+                    portalModel.info[idx].layerView = AnyView(layerView(newItem))
+                }
+
+                PortalLogs.logger.log(
+                    "Portal item changed, updated return target and layer",
+                    level: .debug,
+                    tags: [PortalLogs.Tags.transition],
+                    metadata: ["fromID": "\(oldID)", "toID": "\(newID)"]
+                )
+            }
     }
 }
 

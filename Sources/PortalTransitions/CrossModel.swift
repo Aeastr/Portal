@@ -31,4 +31,90 @@ public class CrossModel {
     /// Initializes a new CrossModel instance.
     /// Creates empty arrays for managing portal information.
     public init() {}
+
+    /// Transfers the active portal state from one ID to another without animation.
+    ///
+    /// Use this when the user navigates between items in a detail view (e.g., a carousel)
+    /// and you want the dismiss animation to return to the new item's source position
+    /// rather than the original item.
+    ///
+    /// This method:
+    /// 1. Cleans up the old portal's state (resets it to uninitialized)
+    /// 2. Sets up the new portal as if it was already transitioned (ready for reverse animation)
+    ///
+    /// - Parameters:
+    ///   - fromID: The ID of the currently active portal to deactivate
+    ///   - toID: The ID of the new portal to activate
+    ///
+    /// Example usage:
+    /// ```swift
+    /// // In a carousel, when the user swipes to a new item:
+    /// .onChange(of: currentIndex) { _, newIndex in
+    ///     let newItem = items[newIndex]
+    ///     portalModel.transferActivePortal(from: "\(oldItem.id)", to: "\(newItem.id)")
+    /// }
+    /// ```
+    public func transferActivePortal(from fromID: String, to toID: String) {
+        guard fromID != toID else { return }
+
+        // Find the source portal and copy its configuration
+        guard let fromIndex = info.firstIndex(where: { $0.infoID == fromID }) else {
+            PortalLogs.logger.log(
+                "Transfer failed: source portal not found",
+                level: .warning,
+                tags: [PortalLogs.Tags.transition],
+                metadata: ["fromID": fromID, "toID": toID]
+            )
+            return
+        }
+
+        let sourceInfo = info[fromIndex]
+
+        // Create or update the destination portal
+        if let toIndex = info.firstIndex(where: { $0.infoID == toID }) {
+            // Transfer state to existing portal
+            info[toIndex].initialized = true
+            info[toIndex].animateView = true
+            info[toIndex].hideView = true
+            info[toIndex].showLayer = false
+            info[toIndex].animation = sourceInfo.animation
+            info[toIndex].completionCriteria = sourceInfo.completionCriteria
+            info[toIndex].corners = sourceInfo.corners
+            info[toIndex].fade = sourceInfo.fade
+            info[toIndex].completion = sourceInfo.completion
+            info[toIndex].layerView = sourceInfo.layerView
+        } else {
+            // Create new portal info with transferred state
+            var newInfo = PortalInfo(id: toID)
+            newInfo.initialized = true
+            newInfo.animateView = true
+            newInfo.hideView = true
+            newInfo.showLayer = false
+            newInfo.animation = sourceInfo.animation
+            newInfo.completionCriteria = sourceInfo.completionCriteria
+            newInfo.corners = sourceInfo.corners
+            newInfo.fade = sourceInfo.fade
+            newInfo.completion = sourceInfo.completion
+            newInfo.layerView = sourceInfo.layerView
+            info.append(newInfo)
+        }
+
+        // Reset the source portal
+        info[fromIndex].initialized = false
+        info[fromIndex].animateView = false
+        info[fromIndex].hideView = false
+        info[fromIndex].showLayer = false
+        info[fromIndex].layerView = nil
+        info[fromIndex].sourceAnchor = nil
+        info[fromIndex].destinationAnchor = nil
+        info[fromIndex].cachedSourceAnchor = nil
+        info[fromIndex].cachedDestinationAnchor = nil
+
+        PortalLogs.logger.log(
+            "Transferred active portal",
+            level: .notice,
+            tags: [PortalLogs.Tags.transition],
+            metadata: ["fromID": fromID, "toID": toID]
+        )
+    }
 }
