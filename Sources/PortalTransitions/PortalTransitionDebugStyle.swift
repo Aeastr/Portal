@@ -1,5 +1,5 @@
 //
-//  PortalDebugOverlaysKey.swift
+//  PortalTransitionDebugStyle.swift
 //  Portal
 //
 //  Created by Aether, 2025.
@@ -72,10 +72,8 @@ public struct PortalTransitionDebugSettings: Sendable {
         }
 
         // Check if this target is included in a broader setting
-        for (key, value) in settings {
-            if key.contains(target) {
-                return value
-            }
+        for (key, value) in settings where key.contains(target) {
+            return value
         }
 
         return .none

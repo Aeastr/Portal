@@ -110,7 +110,7 @@ public struct CarouselItem: Identifiable, Hashable, Sendable {
         CarouselItem(title: "Calendar", subtitle: "Events", color: .red, icon: "calendar"),
         CarouselItem(title: "Notes", subtitle: "Quick thoughts", color: .yellow, icon: "note.text"),
         CarouselItem(title: "Maps", subtitle: "Navigate", color: .green, icon: "map.fill"),
-        CarouselItem(title: "Mail", subtitle: "Inbox", color: .blue, icon: "envelope.fill"),
+        CarouselItem(title: "Mail", subtitle: "Inbox", color: .blue, icon: "envelope.fill")
     ]
 }
 
