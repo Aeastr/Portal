@@ -2,7 +2,7 @@
   <img width="200" height="200" src="/Resources/icon/icon.png" alt="Portal Logo">
   <h1><b>Portal</b></h1>
   <p>
-    Advanced element transitions across navigation contexts, scroll-based flowing headers, and advanced view mirroring capabilities.
+    Element transitions across navigation contexts, scroll-based flowing headers, and view mirroring for SwiftUI.
   </p>
 </div>
 
@@ -21,79 +21,118 @@
 
 ## Installation
 
-Add Portal to your project using Swift Package Manager:
-
 ```swift
 dependencies: [
     .package(url: "https://github.com/Aeastr/Portal", from: "4.0.0")
 ]
 ```
 
-> Targeting iOS 15/16? Pin your dependency to `v2.1.0` or the `legacy/ios15` branch.
+Then import the module you need:
 
-## Documentation & Wiki
+```swift
+import PortalTransitions  // Element transitions (iOS 17+)
+import PortalHeaders      // Flowing headers (iOS 18+)
+import _PortalPrivate     // View mirroring with private API
+```
 
-The [Portal Wiki](https://github.com/Aeastr/Portal/wiki) has the detailed docs - full API references, guides, and explanations.
-
-The wiki is included as a git submodule at `/wiki`, so you get all the docs when you clone. Great for offline reference and LLMs.
+> Targeting iOS 15/16? Pin to `v2.1.0` or the `legacy/ios15` branch.
 
 
-## What's Included
+## Modules
 
-Portal provides three main capabilities:
+### PortalTransitions
 
-### 🎯 Element Transitions (`PortalTransitions`)
-Animate views between navigation contexts (sheets, navigation stacks, tabs) with floating overlays.
-- Simple `.portalSource()` / `.portalDestination()` modifiers
-- Works with standard SwiftUI presentations (`.sheet`, `.navigationDestination`)
-- Flexible keying by static IDs or `Identifiable` items
-- Customizable animations via `AnimatedPortalLayer` protocol
-- **iOS 17+** • Standard SwiftUI APIs
+Animate views between navigation contexts — sheets, navigation stacks, tabs — using a floating overlay layer.
 
-### 📱 Flowing Headers (`PortalHeaders`)
-Scroll-based header transitions that smoothly flow into the navigation bar.
-- Titles and accessories animate to navigation bar on scroll
-- Native iOS-feeling transitions with automatic snapping
-- Configurable snapping behavior (directional, nearest, none)
-- Visual debug overlays and structured logging
-- **iOS 18+** • Advanced scroll tracking APIs
+```swift
+// 1. Wrap your app in PortalContainer
+PortalContainer {
+    ContentView()
+}
 
-### 🔮 View Mirroring (`_PortalPrivate`)
-Advanced view mirroring using `_UIPortalView` for perfect state preservation.
-- Single shared view instance (same size at source/destination)
-- Direct UIKit integration available via low-level `PortalView`
-- **⚠️ Private API** • Obfuscated for App Store compliance
+// 2. Mark the source view
+Image("cover")
+    .portal(id: "book", .source)
 
-## Key Features
+// 3. Mark the destination view
+Image("cover")
+    .portal(id: "book", .destination)
 
-✅ **One-time setup** – Install `PortalContainer` at your root, every presentation gains portal support
-✅ **Debug overlays** – Visual indicators in DEBUG builds, zero overhead in Release, off by default
-✅ **Structured logging** – Built-in diagnostics via [Chronicle](https://github.com/Aeastr/Chronicle)
-✅ **Modern SwiftUI** – Built for iOS 17+ with latest APIs and animation completion criteria
+// 4. Apply the transition
+.fullScreenCover(item: $selectedBook) { book in
+    BookDetail(book: book)
+}
+.portalTransition(item: $selectedBook)
+```
+
+The view animates smoothly from source to destination when the cover presents, and back when it dismisses.
+
+**iOS 17+** · Uses standard SwiftUI APIs
+
+---
+
+### PortalHeaders
+
+Scroll-based header transitions that flow into the navigation bar, like Music or Photos.
+
+```swift
+NavigationStack {
+    ScrollView {
+        PortalHeaderView()
+
+        // Your content
+        ForEach(items) { item in
+            ItemRow(item: item)
+        }
+    }
+    .portalHeaderDestination()
+}
+.portalHeader(title: "Favorites", subtitle: "Your starred items")
+```
+
+As the user scrolls, the title transitions from inline to the navigation bar with configurable snapping behavior.
+
+**iOS 18+** · Uses advanced scroll tracking APIs
+
+---
+
+### _PortalPrivate
+
+Same API as PortalTransitions, but uses Apple's private `_UIPortalView` for true view mirroring instead of layer snapshots. The view instance is shared rather than recreated.
+
+Class names are obfuscated at compile-time. See the [wiki]([wiki/_PortalPrivate.md]) for details.
+
+
+## Documentation
+
+The **[Portal Wiki](https://github.com/Aeastr/Portal/wiki)** has full guides and API reference for each module.
+
+The wiki is included at `/wiki` when you clone, so it's available offline.
 
 
 ## Examples
 
-Each target includes example implementations:
+Each module includes working examples in `Sources/*/Examples/`:
 
-| **PortalTransitions** | **_PortalPrivate** | **PortalHeaders** |
+| PortalTransitions | PortalHeaders | _PortalPrivate |
 |:---|:---|:---|
-| [Static ID](Sources/PortalTransitions/Examples/PortalExample_StaticID.swift) | [Static ID](Sources/_PortalPrivate/Transitions/Examples/PortalPrivateExampleStaticID.swift) | [No Accessory](Sources/PortalHeaders/Examples/PortalHeaderExampleNoAccessory.swift) |
-| [Card Grid](Sources/PortalTransitions/Examples/PortalExample_CardGrid.swift) | [Card Grid](Sources/_PortalPrivate/Transitions/Examples/PortalPrivateExampleCardGrid.swift) | [Title Only](Sources/PortalHeaders/Examples/PortalHeaderExampleTitleOnly.swift) |
-| [List](Sources/PortalTransitions/Examples/PortalExample_List.swift) | [List](Sources/_PortalPrivate/Transitions/Examples/PortalPrivateExampleList.swift) | [With Accessory](Sources/PortalHeaders/Examples/PortalHeaderExampleWithAccessory.swift) |
-| [Comparison](Sources/PortalTransitions/Examples/PortalExample_Comparison.swift) | [Comparison](Sources/_PortalPrivate/Transitions/Examples/PortalPrivateExampleComparison.swift) | |
+| [Card Grid](Sources/PortalTransitions/Examples/PortalExampleCardGrid.swift) | [With Accessory](Sources/PortalHeaders/Examples/PortalHeaderExampleWithAccessory.swift) | [Card Grid](Sources/_PortalPrivate/Transitions/Examples/PortalPrivateExampleCardGrid.swift) |
+| [List](Sources/PortalTransitions/Examples/PortalExampleList.swift) | [Title Only](Sources/PortalHeaders/Examples/PortalHeaderExampleTitleOnly.swift) | [List](Sources/_PortalPrivate/Transitions/Examples/PortalPrivateExampleList.swift) |
+| [Grid Carousel](Sources/PortalTransitions/Examples/PortalExampleGridCarousel.swift) | [No Accessory](Sources/PortalHeaders/Examples/PortalHeaderExampleNoAccessory.swift) | [Comparison](Sources/_PortalPrivate/Transitions/Examples/PortalPrivateExampleComparison.swift) |
 
-## Contributing & Support
 
-Contributions are welcome! Please feel free to submit a Pull Request. See the [Contributing Guide](CONTRIBUTING.md) for details.
+## Contributing
 
-This project is released under the [MIT License](LICENSE.md). If you like Portal, please give it a ⭐️.
+Contributions welcome. See the [Contributing Guide](CONTRIBUTING.md) for details.
 
-## Where to find me:  
-- here, obviously.  
-- [Twitter](https://x.com/AetherAurelia)  
-- [Threads](https://www.threads.net/@aetheraurelia)  
-- [Bluesky](https://bsky.app/profile/aethers.world)  
+Released under the [MIT License](LICENSE.md).
+
+
+## Contact
+
+- [Twitter](https://x.com/AetherAurelia)
+- [Threads](https://www.threads.net/@aetheraurelia)
+- [Bluesky](https://bsky.app/profile/aethers.world)
 - [LinkedIn](https://www.linkedin.com/in/willjones24)
 
 <p align="center">Built with 🍏🌀🚪 by Aether</p>
