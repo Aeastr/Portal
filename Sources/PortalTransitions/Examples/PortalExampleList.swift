@@ -10,7 +10,7 @@
 
 #if DEBUG
 import SwiftUI
-import LogOutLoudConsole
+import ChronicleConsole
 
 /// Portal list example showing photo transitions in a native SwiftUI List
 public struct PortalExampleList: View {

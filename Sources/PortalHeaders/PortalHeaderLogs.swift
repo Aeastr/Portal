@@ -9,9 +9,9 @@
 //
 
 import Foundation
-import LogOutLoud
-#if canImport(LogOutLoudConsole)
-import LogOutLoudConsole
+import Chronicle
+#if canImport(ChronicleConsole)
+import ChronicleConsole
 #endif
 
 /// Central logging namespace for the PortalHeader package.
@@ -57,8 +57,8 @@ public enum PortalHeaderLogs {
         public static let anchors = Tag("Anchors")
     }
 
-#if canImport(LogOutLoudConsole)
-    /// Enables the optional in-app log console backed by LogOutLoudConsole.
+#if canImport(ChronicleConsole)
+    /// Enables the optional in-app log console backed by ChronicleConsole.
     /// - Parameter maxEntries: Maximum number of log entries to retain.
     /// - Returns: The underlying console store so apps can present `LogConsolePanel`.
     @MainActor

@@ -115,7 +115,7 @@ Debug indicators are automatically removed:
 
 ## Console Logging
 
-Portal provides structured logging through [`PortalLogs`](https://github.com/Aeastr/Portal#logging--diagnostics), powered by [LogOutLoud](https://github.com/Aeastr/LogOutLoud).
+Portal provides structured logging through [`PortalLogs`](https://github.com/Aeastr/Portal#logging--diagnostics), powered by [Chronicle](https://github.com/Aeastr/Chronicle).
 
 ```swift
 PortalLogs.logger.log(
@@ -128,7 +128,7 @@ PortalLogs.logger.log(
 - Logs surface lifecycle events from `PortalContainer`, overlay management, and transition state changes.
 - In DEBUG builds all levels are enabled; Release builds default to notices and above.
 - Call `PortalLogs.configure(allowedLevels:)` during app launch to tighten or expand filtering.
-- Want an on-device console? Add the `LogOutLoudConsole` product and apply `.logConsole(enabled: true, logger: PortalLogs.logger)` (or call `PortalLogs.enableConsole()` manually) to power `LogConsolePanel()` or a custom viewer.
+- Want an on-device console? Add the `ChronicleConsole` product and apply `.logConsole(enabled: true, logger: PortalLogs.logger)` (or call `PortalLogs.enableConsole()` manually) to power `LogConsolePanel()` or a custom viewer.
 
 ---
 

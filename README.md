@@ -68,7 +68,7 @@ Advanced view mirroring using `_UIPortalView` for perfect state preservation.
 
 ✅ **One-time setup** – Install `PortalContainer` at your root, every presentation gains portal support
 ✅ **Debug overlays** – Visual indicators in DEBUG builds, zero overhead in Release, off by default
-✅ **Structured logging** – Built-in diagnostics via [LogOutLoud](https://github.com/Aeastr/LogOutLoud)
+✅ **Structured logging** – Built-in diagnostics via [Chronicle](https://github.com/Aeastr/Chronicle)
 ✅ **Modern SwiftUI** – Built for iOS 17+ with latest APIs and animation completion criteria
 
 

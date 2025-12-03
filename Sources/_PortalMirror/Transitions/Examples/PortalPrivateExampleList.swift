@@ -11,7 +11,7 @@
 #if DEBUG
 import SwiftUI
 import PortalTransitions
-import LogOutLoudConsole
+import ChronicleConsole
 
 /// PortalPrivate list example showing photo transitions in a native SwiftUI List with view mirroring
 public struct PortalPrivateExampleList: View {

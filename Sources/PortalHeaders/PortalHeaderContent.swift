@@ -9,7 +9,7 @@
 //
 
 import SwiftUI
-import LogOutLoud
+import Chronicle
 
 /// Layout style for accessory view positioning in the navigation bar.
 @available(iOS 18.0, *)
