@@ -190,28 +190,30 @@ private struct PortalHeaderModifier<AccessoryContent: View>: ViewModifier {
                     switch config.snappingBehavior {
                     case .directional:
                         // Snap based on scroll direction: down → 1.0, up → 0.0
-                        snapTarget = lastScrollDirection.isDown ? 1.0 : 0.0
+                        let target = lastScrollDirection.isDown ? 1.0 : 0.0
+                        snapTarget = target
                         PortalHeaderLogs.logger.log(
                             "Directional snap triggered",
                             level: .debug,
                             tags: [PortalHeaderLogs.Tags.snapping],
                             metadata: [
                                 "direction": lastScrollDirection.isDown ? "down" : "up",
-                                "target": "\(snapTarget!)",
+                                "target": "\(target)",
                                 "currentProgress": "\(titleProgress)"
                             ]
                         )
 
                     case .nearest:
                         // Snap to nearest position based on midpoint
-                        snapTarget = titleProgress > 0.5 ? 1.0 : 0.0
+                        let target = titleProgress > 0.5 ? 1.0 : 0.0
+                        snapTarget = target
                         PortalHeaderLogs.logger.log(
                             "Nearest snap triggered",
                             level: .debug,
                             tags: [PortalHeaderLogs.Tags.snapping],
                             metadata: [
                                 "progress": "\(titleProgress)",
-                                "target": "\(snapTarget!)"
+                                "target": "\(target)"
                             ]
                         )
 

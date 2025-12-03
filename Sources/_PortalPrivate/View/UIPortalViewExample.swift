@@ -111,7 +111,7 @@ struct AnimatedContentView: View {
         "globe", "star.fill", "heart.fill", "flame.fill",
         "bolt.fill", "leaf.fill", "cloud.fill", "moon.fill",
         "sun.max.fill", "sparkles"
-    ].randomElement()!
+    ].randomElement() ?? "globe"
 
     var body: some View {
         VStack {

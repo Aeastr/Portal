@@ -654,8 +654,9 @@ struct MultiIDPortalPrivateTransitionModifier: ViewModifier {
                                 portalModel.info[idx].sourceAnchor = nil
                                 portalModel.info[idx].destinationAnchor = nil
                                 portalModel.info[idx].groupID = nil
+                                let wasCoordinator = portalModel.info[idx].isGroupCoordinator
                                 portalModel.info[idx].isGroupCoordinator = false
-                                if portalModel.info[idx].isGroupCoordinator {
+                                if wasCoordinator {
                                     portalModel.info[idx].completion(false)
                                 }
                             }
@@ -796,8 +797,9 @@ struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifie
                     portalModel.info[idx].sourceAnchor = nil
                     portalModel.info[idx].destinationAnchor = nil
                     portalModel.info[idx].groupID = nil
+                    let wasCoordinator = portalModel.info[idx].isGroupCoordinator
                     portalModel.info[idx].isGroupCoordinator = false
-                    if portalModel.info[idx].isGroupCoordinator {
+                    if wasCoordinator {
                         portalModel.info[idx].completion(false)
                     }
                 }
