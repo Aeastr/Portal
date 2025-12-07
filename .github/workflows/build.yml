@@ -1,10 +1,10 @@
 name: Build
 
 on:
-  push:
-    branches: [ main, dev ]
   pull_request:
     branches: [ main, dev ]
+    paths-ignore:
+      - 'wiki/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.head.ref || github.ref_name }}
