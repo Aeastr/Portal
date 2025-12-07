@@ -74,23 +74,8 @@ public struct PortalExampleCardGrid: View {
                         LazyVGrid(columns: columns, spacing: 12) {
                             ForEach(cards) { card in
                                 VStack(spacing: 12) {
-                                    AnimatedLayer(portalID: "\(card.id)") {
-                                        Group {
-                                            RoundedRectangle(cornerRadius: 16)
-                                                .fill(card.color.gradient)
-                                        }
-                                        .overlay(
-                                            VStack(spacing: 8) {
-                                                Image(systemName: card.icon)
-                                                    .font(.system(size: 32, weight: .medium))
-                                                    .foregroundColor(.white)
-
-                                                Text(card.title)
-                                                    .font(.headline)
-                                                    .fontWeight(.semibold)
-                                                    .foregroundColor(.white)
-                                            }
-                                        )
+                                    AnimatedItemLayerExample(item: card) { card in
+                                        PortalExampleCardContent(card: card)
                                     }
                                     .frame(height: 120)
                                     .portal(item: card, .source)
@@ -126,23 +111,8 @@ public struct PortalExampleCardGrid: View {
                 item: $selectedCard,
                 transition: .fade
             ) { card in
-                AnimatedLayer(portalID: "\(card.id)") {
-                    Group {
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(card.color.gradient)
-                    }
-                    .overlay(
-                        VStack(spacing: 8) {
-                            Image(systemName: card.icon)
-                                .font(.system(size: 32, weight: .medium))
-                                .foregroundColor(.white)
-
-                            Text(card.title)
-                                .font(.headline)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.white)
-                        }
-                    )
+                AnimatedItemLayerExample(item: $selectedCard) { card in
+                    PortalExampleCardContent(card: card)
                 }
             }
         }
@@ -165,6 +135,98 @@ public struct PortalExampleCard: Identifiable {
     }
 }
 
+// MARK: - Shared Card Content
+
+private struct PortalExampleCardContent: View {
+    let card: PortalExampleCard
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: 16)
+            .fill(card.color.gradient)
+            .overlay(
+                VStack(spacing: 8) {
+                    Image(systemName: card.icon)
+                        .font(.system(size: 32, weight: .medium))
+                        .foregroundColor(.white)
+
+                    Text(card.title)
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.white)
+                }
+            )
+    }
+}
+
+// MARK: - Animated Item Layer Example
+
+/// An example implementation of `AnimatedItemPortalLayer` for item-based portal transitions.
+/// Provides the same bounce animation as `AnimatedLayer`, but works with `Identifiable` items.
+///
+/// Can be initialized with either:
+/// - A non-optional item (for source/destination views)
+/// - An optional item binding (for transition layers)
+private struct AnimatedItemLayerExample<Item: Identifiable, Content: View>: AnimatedItemPortalLayer {
+    let item: Item?
+    var scale: CGFloat = 1.1
+    @ViewBuilder let content: (Item) -> Content
+
+    @State private var layerScale: CGFloat = 1
+
+    /// Initialize with a non-optional item (for source/destination views)
+    init(item: Item, scale: CGFloat = 1.1, @ViewBuilder content: @escaping (Item) -> Content) {
+        self.item = item
+        self.scale = scale
+        self.content = content
+    }
+
+    /// Initialize with an optional item binding (for transition layers)
+    init(item: Binding<Item?>, scale: CGFloat = 1.1, @ViewBuilder content: @escaping (Item) -> Content) {
+        self.item = item.wrappedValue
+        self.scale = scale
+        self.content = content
+    }
+
+    func animatedContent(item: Item?, isActive: Bool) -> some View {
+        Group {
+            if let item {
+                content(item)
+                    .scaleEffect(layerScale)
+            }
+        }
+        .onAppear {
+            layerScale = 1
+        }
+        .onChange(of: isActive) { oldValue, newValue in
+            handleActiveChange(oldValue: oldValue, newValue: newValue)
+        }
+    }
+
+    private func handleActiveChange(oldValue: Bool, newValue: Bool) {
+        if newValue {
+            withAnimation(portalAnimationExample) {
+                layerScale = scale
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                withAnimation(portalAnimationExampleExtraBounce) {
+                    layerScale = 1
+                }
+            }
+        } else {
+            withAnimation(portalAnimationExample) {
+                layerScale = 1.15
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                withAnimation(portalAnimationExampleExtraBounce) {
+                    layerScale = 1
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Card Detail View
+
 private struct PortalExampleCardDetail: View {
     let card: PortalExampleCard
     @Environment(\.dismiss) var dismiss
@@ -174,29 +236,12 @@ private struct PortalExampleCardDetail: View {
             ScrollView {
                 VStack(spacing: 32) {
                     // MARK: Destination Card
-                    AnimatedLayer(portalID: "\(card.id)") {
-                        Group {
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(
-                                    card.color.gradient
-                                )
-                        }
-                        .overlay(
-                            VStack(spacing: 8) {
-                                Image(systemName: card.icon)
-                                    .font(.system(size: 32, weight: .medium))
-                                    .foregroundColor(.white)
-
-                                Text(card.title)
-                                    .font(.headline)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(.white)
-                            }
-                        )
+                    AnimatedItemLayerExample(item: card) { card in
+                        PortalExampleCardContent(card: card)
                     }
                     .frame(width: 240, height: 180)
                     .portal(item: card, .destination)
-                    .padding(.top, 20)
+                        .padding(.top, 20)
                     Spacer()
                 }
                 .frame(maxWidth: .infinity)
