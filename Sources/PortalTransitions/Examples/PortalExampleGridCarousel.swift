@@ -8,9 +8,7 @@
 //  Licensed under the MIT License.
 //
 
-// TODO: Re-enable when Swift compiler crash in Xcode 26.2 beta is fixed
-// This file triggers a crash in swift-frontend during compilation
-#if false // DEBUG
+#if DEBUG
 import SwiftUI
 
 /// Portal grid-to-carousel example demonstrating a grid that opens into a horizontally paging carousel
@@ -227,10 +225,9 @@ private struct CarouselDetailView: View {
             }
         }
         .onChange(of: currentIndex) { oldIndex, newIndex in
-            // Transfer the active portal to the new item
             let oldItem = items[oldIndex]
             let newItem = items[newIndex]
-            portalModel.transferActivePortal(from: oldItem, to: newItem)
+            portalModel.transferActivePortal(from: oldItem.id, to: newItem.id)
             portalItem = newItem
         }
     }
