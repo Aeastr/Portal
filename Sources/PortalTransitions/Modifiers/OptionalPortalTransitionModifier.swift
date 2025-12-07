@@ -78,7 +78,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
     ///
     /// Since the item becomes `nil` during reverse transitions, we need to remember
     /// the last key to properly clean up the portal state.
-    @State private var lastKey: String?
+    @State private var lastKey: AnyHashable?
 
     /// Initializes a new optional portal transition modifier with direct parameters.
     ///
@@ -155,14 +155,14 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
         return nil
     }
 
-    /// Generates a string key from the current item's ID.
+    /// Generates a key from the current item's ID.
     ///
-    /// Returns `nil` when the item is `nil`, or a string representation of the
-    /// item's ID when the item is present. This key is used to identify the
-    /// portal in the global portal model.
-    private var key: String? {
+    /// Returns `nil` when the item is `nil`, or the item's ID wrapped in `AnyHashable`
+    /// when the item is present. This key is used to identify the portal in the
+    /// global portal model.
+    private var key: AnyHashable? {
         guard let value = item else { return nil }
-        return "\(value.id)"
+        return AnyHashable(value.id)
     }
 
     /// Handles changes to the item's presence, triggering appropriate portal transitions.
@@ -201,7 +201,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
                     "Registered new portal info",
                     level: .debug,
                     tags: [PortalLogs.Tags.transition],
-                    metadata: ["id": key]
+                    metadata: ["id": "\(key)"]
                 )
             }
 
@@ -210,7 +210,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
                     "Portal info lookup failed after registration",
                     level: .error,
                     tags: [PortalLogs.Tags.transition],
-                    metadata: ["id": key]
+                    metadata: ["id": "\(key)"]
                 )
                 return
             }
@@ -230,7 +230,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
                 level: .notice,
                 tags: [PortalLogs.Tags.transition],
                 metadata: [
-                    "id": key,
+                    "id": "\(key)",
                     "delay_ms": Int(PortalConstants.animationDelay * 1_000)
                 ]
             )
@@ -244,7 +244,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
                         "Animation completed, showing destination",
                         level: .debug,
                         tags: [PortalLogs.Tags.transition],
-                        metadata: ["id": key, "hideView": "true"]
+                        metadata: ["id": "\(key)", "hideView": "true"]
                     )
 
                     // Show destination first, then hide layer after ensuring it's rendered
@@ -255,7 +255,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
                             "Hiding transition layer",
                             level: .debug,
                             tags: [PortalLogs.Tags.transition],
-                            metadata: ["id": key, "showLayer": "false"]
+                            metadata: ["id": "\(key)", "showLayer": "false"]
                         )
 
                         // Hide layer after destination is visible
@@ -282,7 +282,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
                 "Reversing portal transition",
                 level: .notice,
                 tags: [PortalLogs.Tags.transition],
-                metadata: ["id": key]
+                metadata: ["id": "\(key)"]
             )
 
             // Start reverse animation
@@ -307,7 +307,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
                 "Completed reverse portal transition cleanup",
                 level: .debug,
                 tags: [PortalLogs.Tags.transition],
-                metadata: ["id": key]
+                metadata: ["id": "\(key)"]
             )
         }
     }
@@ -324,7 +324,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
                 // This enables carousels where swiping between items should update the return target
                 guard let oldID, let newID, oldID != newID, let newItem = item else { return }
 
-                let newKey = "\(newID)"
+                let newKey = AnyHashable(newID)
                 lastKey = newKey
 
                 // Update the layerView to show the new item's content

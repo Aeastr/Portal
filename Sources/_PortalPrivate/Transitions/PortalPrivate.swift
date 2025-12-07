@@ -30,39 +30,34 @@ public class PortalPrivateInfo {
 private class PortalPrivateStorage {
     static let shared = PortalPrivateStorage()
 
-    // Use NSMapTable with strong keys and weak values for automatic cleanup
-    // Weak values ensure that PortalPrivateInfo is deallocated when no longer referenced
-    // by the view hierarchy, preventing memory leaks for transient portals
-    private let storage = NSMapTable<NSString, PortalPrivateInfo>(
-        keyOptions: .strongMemory,
-        valueOptions: .weakMemory
-    )
+    // Use dictionary with AnyHashable keys for type-safe storage
+    private var storage: [AnyHashable: PortalPrivateInfo] = [:]
 
     // Cache for frequently accessed items to avoid repeated lookups
     // Uses a dictionary for O(1) lookups with a separate array to track insertion order for LRU eviction
-    private var cache: [String: PortalPrivateInfo] = [:]
-    private var cacheOrder: [String] = [] // Tracks insertion order for LRU eviction
+    private var cache: [AnyHashable: PortalPrivateInfo] = [:]
+    private var cacheOrder: [AnyHashable] = [] // Tracks insertion order for LRU eviction
     private let cacheLimit = PortalConstants.portalCacheLimit
 
-    func setInfo(_ info: PortalPrivateInfo?, for key: String) {
+    func setInfo(_ info: PortalPrivateInfo?, for key: AnyHashable) {
         if let info = info {
-            storage.setObject(info, forKey: key as NSString)
+            storage[key] = info
             updateCache(key: key, info: info)
         } else {
-            storage.removeObject(forKey: key as NSString)
+            storage.removeValue(forKey: key)
             cache.removeValue(forKey: key)
             cacheOrder.removeAll { $0 == key }
         }
     }
 
-    func getInfo(for key: String) -> PortalPrivateInfo? {
+    func getInfo(for key: AnyHashable) -> PortalPrivateInfo? {
         // Check cache first
         if let cached = cache[key] {
             return cached
         }
 
         // Fall back to storage
-        if let info = storage.object(forKey: key as NSString) {
+        if let info = storage[key] {
             updateCache(key: key, info: info)
             return info
         }
@@ -70,13 +65,13 @@ private class PortalPrivateStorage {
         return nil
     }
 
-    func removeInfo(for key: String) {
-        storage.removeObject(forKey: key as NSString)
+    func removeInfo(for key: AnyHashable) {
+        storage.removeValue(forKey: key)
         cache.removeValue(forKey: key)
         cacheOrder.removeAll { $0 == key }
     }
 
-    private func updateCache(key: String, info: PortalPrivateInfo) {
+    private func updateCache(key: AnyHashable, info: PortalPrivateInfo) {
         // Move to end if already exists (LRU behavior)
         cacheOrder.removeAll { $0 == key }
         cacheOrder.append(key)
@@ -94,15 +89,15 @@ private class PortalPrivateStorage {
 
 /// A view that manages a single SwiftUI view instance that can be shown in multiple places
 public struct PortalPrivate<Content: View>: View {
-    private let id: String
+    private let id: AnyHashable
     private let groupID: String?
     @ViewBuilder private let content: () -> Content
     @State private var sourceContainer: SourceViewContainer<AnyView>?
     @Environment(CrossModel.self) private var portalModel
     @Environment(\.portalTransitionDebugSettings) private var debugSettings
 
-    public init(id: String, groupID: String? = nil, @ViewBuilder content: @escaping () -> Content) {
-        self.id = id
+    public init<ID: Hashable>(id: ID, groupID: String? = nil, @ViewBuilder content: @escaping () -> Content) {
+        self.id = AnyHashable(id)
         self.groupID = groupID
         self.content = content
     }
@@ -157,7 +152,7 @@ public struct PortalPrivate<Content: View>: View {
                     }
                 )
                 .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                    [id: anchor]
+                    [PortalKey(id, role: .source): anchor]
                 }
                 .onPreferenceChange(AnchorKey.self) { prefs in
                     Task { @MainActor in
@@ -166,7 +161,7 @@ public struct PortalPrivate<Content: View>: View {
                         }
 
                         // Don't require initialized - we need to set anchor even before transition
-                        guard let anchor = prefs[id] else {
+                        guard let anchor = prefs[PortalKey(id, role: .source)] else {
                             return
                         }
 
@@ -192,8 +187,8 @@ public extension View {
     /// MyComplexView()
     ///     .portalPrivate(id: "myView")
     /// ```
-    func portalPrivate<Content: View>(
-        id: String,
+    func portalPrivate<ID: Hashable, Content: View>(
+        id: ID,
         @ViewBuilder content: @escaping () -> Content
     ) -> some View {
         self.overlay(
@@ -202,7 +197,7 @@ public extension View {
     }
 
     /// Simplified portal private for when the view itself should be mirrored
-    func portalPrivate(id: String) -> some View {
+    func portalPrivate<ID: Hashable>(id: ID) -> some View {
         PortalPrivate(id: id) {
             self
         }
@@ -215,7 +210,7 @@ public extension View {
     /// MyComplexView()
     ///     .portalPrivate(id: "myView", groupID: "viewGroup")
     /// ```
-    func portalPrivate(id: String, groupID: String) -> some View {
+    func portalPrivate<ID: Hashable>(id: ID, groupID: String) -> some View {
         PortalPrivate(id: id, groupID: groupID) {
             self
         }
@@ -224,8 +219,7 @@ public extension View {
     /// Marks this view as a private portal using an `Identifiable` item's ID
     ///
     /// This creates a single view instance that can be displayed in multiple places
-    /// using _UIPortalView, automatically extracting the string representation of
-    /// an `Identifiable` item's ID.
+    /// using _UIPortalView, using the item's ID directly.
     ///
     /// Example:
     /// ```swift
@@ -233,13 +227,7 @@ public extension View {
     ///     .portalPrivate(item: book)
     /// ```
     func portalPrivate<Item: Identifiable>(item: Item) -> some View {
-        let key: String
-        if let uuid = item.id as? UUID {
-            key = uuid.uuidString
-        } else {
-            key = "\(item.id)"
-        }
-        return PortalPrivate(id: key) {
+        PortalPrivate(id: item.id) {
             self
         }
     }
@@ -255,13 +243,7 @@ public extension View {
     ///     .portalPrivate(item: photo, groupID: "photoStack")
     /// ```
     func portalPrivate<Item: Identifiable>(item: Item, groupID: String) -> some View {
-        let key: String
-        if let uuid = item.id as? UUID {
-            key = uuid.uuidString
-        } else {
-            key = "\(item.id)"
-        }
-        return PortalPrivate(id: key, groupID: groupID) {
+        PortalPrivate(id: item.id, groupID: groupID) {
             self
         }
     }
@@ -282,8 +264,8 @@ public extension View {
     ///     hidesSource: true
     /// )
     /// ```
-    func portalPrivateTransition(
-        id: String,
+    func portalPrivateTransition<ID: Hashable>(
+        id: ID,
         isActive: Binding<Bool>,
         animation: Animation = .smooth(duration: 0.4),
         completionCriteria: AnimationCompletionCriteria = .removed,
@@ -333,8 +315,8 @@ public extension View {
         )
     }
 
-    func portalPrivateTransition(
-        ids: [String],
+    func portalPrivateTransition<ID: Hashable>(
+        ids: [ID],
         groupID: String,
         isActive: Binding<Bool>,
         animation: Animation = .smooth(duration: 0.4),
@@ -394,7 +376,7 @@ public extension View {
 
 /// Transition modifier for private portals with boolean state
 struct PortalPrivateTransitionModifier: ViewModifier {
-    let id: String
+    let id: AnyHashable
     @Binding var isActive: Bool
     let animation: Animation
     let completionCriteria: AnimationCompletionCriteria
@@ -404,6 +386,28 @@ struct PortalPrivateTransitionModifier: ViewModifier {
     let matchesPosition: Bool
     let completion: (Bool) -> Void
     @Environment(CrossModel.self) private var portalModel
+
+    init<ID: Hashable>(
+        id: ID,
+        isActive: Binding<Bool>,
+        animation: Animation,
+        completionCriteria: AnimationCompletionCriteria,
+        hidesSource: Bool,
+        matchesAlpha: Bool,
+        matchesTransform: Bool,
+        matchesPosition: Bool,
+        completion: @escaping (Bool) -> Void
+    ) {
+        self.id = AnyHashable(id)
+        self._isActive = isActive
+        self.animation = animation
+        self.completionCriteria = completionCriteria
+        self.hidesSource = hidesSource
+        self.matchesAlpha = matchesAlpha
+        self.matchesTransform = matchesTransform
+        self.matchesPosition = matchesPosition
+        self.completion = completion
+    }
 
     func body(content: Content) -> some View {
         content
@@ -473,31 +477,24 @@ struct PortalPrivateItemTransitionModifier<Item: Identifiable>: ViewModifier {
     let matchesPosition: Bool
     let completion: (Bool) -> Void
     @Environment(CrossModel.self) private var portalModel
-    @State private var lastKey: String?
+    @State private var lastKey: AnyHashable?
 
     func body(content: Content) -> some View {
         content
             .onChange(of: item != nil) { _, hasValue in
                 if hasValue {
                     guard let item = item else { return }
-                    // Use the same ID format as the source and destination
-                    let key: String
-                    if let uuid = item.id as? UUID {
-                        key = uuid.uuidString
-                    } else {
-                        key = "\(item.id)"
-                    }
+                    let key = AnyHashable(item.id)
                     lastKey = key
 
                     // Ensure portal info exists
                     if !portalModel.info.contains(where: { $0.infoID == key }) {
-                        portalModel.info.append(PortalInfo(id: key))
+                        portalModel.info.append(PortalInfo(id: item.id))
                     }
 
                     guard let idx = portalModel.info.firstIndex(where: { $0.infoID == key }) else {
                         return
                     }
-
 
                     // Initialize portal info
                     portalModel.info[idx].initialized = true
@@ -562,7 +559,7 @@ struct PortalPrivateItemTransitionModifier<Item: Identifiable>: ViewModifier {
 
 /// A view modifier that manages coordinated portal transitions for multiple private portal IDs.
 struct MultiIDPortalPrivateTransitionModifier: ViewModifier {
-    let ids: [String]
+    let ids: [AnyHashable]
     let groupID: String
     @Binding var isActive: Bool
     let animation: Animation
@@ -573,6 +570,30 @@ struct MultiIDPortalPrivateTransitionModifier: ViewModifier {
     let matchesPosition: Bool
     let completion: (Bool) -> Void
     @Environment(CrossModel.self) private var portalModel
+
+    init<ID: Hashable>(
+        ids: [ID],
+        groupID: String,
+        isActive: Binding<Bool>,
+        animation: Animation,
+        completionCriteria: AnimationCompletionCriteria,
+        hidesSource: Bool,
+        matchesAlpha: Bool,
+        matchesTransform: Bool,
+        matchesPosition: Bool,
+        completion: @escaping (Bool) -> Void
+    ) {
+        self.ids = ids.map { AnyHashable($0) }
+        self.groupID = groupID
+        self._isActive = isActive
+        self.animation = animation
+        self.completionCriteria = completionCriteria
+        self.hidesSource = hidesSource
+        self.matchesAlpha = matchesAlpha
+        self.matchesTransform = matchesTransform
+        self.matchesPosition = matchesPosition
+        self.completion = completion
+    }
 
     func body(content: Content) -> some View {
         content
@@ -682,30 +703,18 @@ struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifie
     let matchesPosition: Bool
     let completion: (Bool) -> Void
     @Environment(CrossModel.self) private var portalModel
-    @State private var lastKeys: Set<String> = []
+    @State private var lastKeys: Set<AnyHashable> = []
 
-    private var keys: Set<String> {
-        Set(items.map {
-            if let uuid = $0.id as? UUID {
-                return uuid.uuidString
-            } else {
-                return "\($0.id)"
-            }
-        })
+    private var keys: Set<AnyHashable> {
+        Set(items.map { AnyHashable($0.id) })
     }
 
-    /// Ensures portal info exists for all items with UUID handling.
+    /// Ensures portal info exists for all items.
     private func ensurePortalInfo(for items: [Item]) {
         for item in items {
-            let key: String
-            if let uuid = item.id as? UUID {
-                key = uuid.uuidString
-            } else {
-                key = "\(item.id)"
-            }
-
+            let key = AnyHashable(item.id)
             if !portalModel.info.contains(where: { $0.infoID == key }) {
-                portalModel.info.append(PortalInfo(id: key, groupID: groupID))
+                portalModel.info.append(PortalInfo(id: item.id, groupID: groupID))
             }
         }
     }
@@ -776,7 +785,7 @@ struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifie
     }
 
     /// Performs reverse transition cleanup.
-    private func performReverseTransition(for keys: Set<String>) {
+    private func performReverseTransition(for keys: Set<AnyHashable>) {
         let cleanupIndices = portalModel.info.enumerated().compactMap { index, info in
             keys.contains(info.infoID) ? index : nil
         }
@@ -840,7 +849,7 @@ struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifie
 
 /// A destination view that shows a portal of the private source
 public struct PortalPrivateDestination: View {
-    let id: String
+    let id: AnyHashable
     let hidesSource: Bool
     let matchesAlpha: Bool
     let matchesTransform: Bool
@@ -848,14 +857,14 @@ public struct PortalPrivateDestination: View {
     @Environment(CrossModel.self) private var portalModel
     @Environment(\.portalTransitionDebugSettings) private var debugSettings
 
-    public init(
-        id: String,
+    public init<ID: Hashable>(
+        id: ID,
         hidesSource: Bool = false,
         matchesAlpha: Bool = true,
         matchesTransform: Bool = true,
         matchesPosition: Bool = false
     ) {
-        self.id = id
+        self.id = AnyHashable(id)
         self.hidesSource = hidesSource
         self.matchesAlpha = matchesAlpha
         self.matchesTransform = matchesTransform
@@ -870,13 +879,7 @@ public struct PortalPrivateDestination: View {
         matchesTransform: Bool = true,
         matchesPosition: Bool = false
     ) {
-        let key: String
-        if let uuid = item.id as? UUID {
-            key = uuid.uuidString
-        } else {
-            key = "\(item.id)"
-        }
-        self.id = key
+        self.id = AnyHashable(item.id)
         self.hidesSource = hidesSource
         self.matchesAlpha = matchesAlpha
         self.matchesTransform = matchesTransform
@@ -912,13 +915,13 @@ public struct PortalPrivateDestination: View {
                     }
                 )
                 .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                    ["\(id)DEST": anchor]
+                    [PortalKey(id, role: .destination): anchor]
                 }
                 .onPreferenceChange(AnchorKey.self) { prefs in
                     Task { @MainActor in
                         // Wait for initialization like base Portal does
                         guard portalModel.info[idx].initialized else { return }
-                        guard let anchor = prefs["\(id)DEST"] else {
+                        guard let anchor = prefs[PortalKey(id, role: .destination)] else {
                             return
                         }
 

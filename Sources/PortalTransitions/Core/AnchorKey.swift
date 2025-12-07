@@ -27,7 +27,7 @@ public struct AnchorKey: PreferenceKey {
     ///
     /// An empty dictionary indicates that no portal views have reported their bounds yet.
     /// This is the starting point before any portal views are rendered or positioned.
-    public static let defaultValue: [String: Anchor<CGRect>] = [:]
+    public nonisolated(unsafe) static let defaultValue: [PortalKey: Anchor<CGRect>] = [:]
 
     /// Combines multiple anchor dictionaries as they flow up the view hierarchy.
     ///
@@ -41,7 +41,7 @@ public struct AnchorKey: PreferenceKey {
     /// - Parameters:
     ///   - value: The current accumulated dictionary of portal anchors (modified in-place)
     ///   - nextValue: A closure that returns the next dictionary of anchors to merge
-    public static func reduce(value: inout [String: Anchor<CGRect>], nextValue: () -> [String: Anchor<CGRect>]) {
+    public static func reduce(value: inout [PortalKey: Anchor<CGRect>], nextValue: () -> [PortalKey: Anchor<CGRect>]) {
         value.merge(nextValue()) { $1 }
     }
 }

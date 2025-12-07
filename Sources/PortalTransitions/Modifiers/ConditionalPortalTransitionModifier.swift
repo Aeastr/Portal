@@ -57,7 +57,7 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
     ///
     /// This ID must match the IDs used by the corresponding portal source and
     /// destination views for the transition to work correctly.
-    public let id: String
+    public let id: AnyHashable
 
     /// Animation for the portal transition.
     public let animation: Animation
@@ -101,8 +101,8 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
     ///   - completionCriteria: Criteria for detecting animation completion
     ///   - layerView: Closure that generates the transition layer view
     ///   - completion: Handler called when the transition completes
-    public init(
-        id: String,
+    public init<ID: Hashable>(
+        id: ID,
         isActive: Binding<Bool>,
         in corners: PortalCorners? = nil,
         animation: Animation,
@@ -111,7 +111,7 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
         completion: @escaping (Bool) -> Void,
         @ViewBuilder layerView: @escaping () -> LayerView
     ) {
-        self.id = id
+        self.id = AnyHashable(id)
         self._isActive = isActive
         self.corners = corners
         self.animation = animation
@@ -121,7 +121,7 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
         self.layerView = layerView
 
         // Validate animation duration
-        Self.validateAnimationDuration(animation, id: id)
+        Self.validateAnimationDuration(animation, id: "\(id)")
     }
 
     /// Validates animation duration and logs a warning if it's too short for sheet transitions.
@@ -303,8 +303,8 @@ public extension View {
     ///   - layerView: Closure that returns the view to animate during transition
     ///   - completion: Optional completion handler (defaults to no-op)
     /// - Returns: A view with the portal transition modifier applied
-    func portalTransition<LayerView: View>(
-        id: String,
+    func portalTransition<ID: Hashable, LayerView: View>(
+        id: ID,
         isActive: Binding<Bool>,
         in corners: PortalCorners? = nil,
         animation: Animation = PortalConstants.defaultAnimation,

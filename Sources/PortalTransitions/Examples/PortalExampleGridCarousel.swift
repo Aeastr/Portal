@@ -69,7 +69,7 @@ public struct PortalExampleGridCarousel: View {
                 animation: .smooth(duration: 0.25),
                 transition: .fade
             ) { item in
-                AnimatedCarouselLayer(item: $portalItem) { item in
+                AnimatedCarouselLayer(item: item) { item in
                     GridItemView(item: item)
                 }
             }
@@ -147,28 +147,14 @@ private struct GridItemView: View {
 
 /// An item-based animated layer for the carousel example.
 /// Provides a subtle scale animation during portal transitions.
-private struct AnimatedCarouselLayer<Item: Identifiable, Content: View>: AnimatedItemPortalLayer {
+private struct AnimatedCarouselLayer<Item: Identifiable, Content: View>: View {
     let item: Item?
     var scale: CGFloat = 1.08
     @ViewBuilder let content: (Item) -> Content
 
     @State private var layerScale: CGFloat = 1
 
-    /// Initialize with a non-optional item (for source/destination views)
-    init(item: Item, scale: CGFloat = 1.08, @ViewBuilder content: @escaping (Item) -> Content) {
-        self.item = item
-        self.scale = scale
-        self.content = content
-    }
-
-    /// Initialize with an optional item binding (for transition layers)
-    init(item: Binding<Item?>, scale: CGFloat = 1.08, @ViewBuilder content: @escaping (Item) -> Content) {
-        self.item = item.wrappedValue
-        self.scale = scale
-        self.content = content
-    }
-
-    func animatedContent(item: Item?, isActive: Bool) -> some View {
+    var body: some View {
         Group {
             if let item {
                 content(item)
@@ -177,31 +163,6 @@ private struct AnimatedCarouselLayer<Item: Identifiable, Content: View>: Animate
         }
         .onAppear {
             layerScale = 1
-        }
-        .onChange(of: isActive) { oldValue, newValue in
-            handleActiveChange(oldValue: oldValue, newValue: newValue)
-        }
-    }
-
-    private func handleActiveChange(oldValue: Bool, newValue: Bool) {
-        if newValue {
-            withAnimation(portalAnimationExample) {
-                layerScale = scale
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                withAnimation(portalAnimationExampleExtraBounce) {
-                    layerScale = 1
-                }
-            }
-        } else {
-            withAnimation(portalAnimationExample) {
-                layerScale = 1.12
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                withAnimation(portalAnimationExampleExtraBounce) {
-                    layerScale = 1
-                }
-            }
         }
     }
 }

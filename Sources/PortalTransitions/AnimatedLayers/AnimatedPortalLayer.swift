@@ -18,7 +18,7 @@ import SwiftUI
 /// Example:
 /// ```swift
 /// struct MyCustomAnimation<Content: View>: AnimatedPortalLayer {
-///     let portalID: String
+///     let portalID: AnyHashable
 ///     @ViewBuilder let content: () -> Content
 ///
 ///     func animatedContent(isActive: Bool) -> some View {
@@ -35,7 +35,8 @@ public protocol AnimatedPortalLayer: View {
     associatedtype AnimatedContent: View
 
     /// The unique identifier for this portal layer.
-    var portalID: String { get }
+    /// Can be any `Hashable` type wrapped in `AnyHashable`.
+    var portalID: AnyHashable { get }
 
     /// The content to be animated.
     @ViewBuilder var content: () -> Content { get }
