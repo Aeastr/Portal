@@ -66,11 +66,16 @@ private struct AnimatedItemPortalLayerHost<Layer: AnimatedItemPortalLayer>: View
     /// Tracks the last known item to maintain during reverse transitions.
     @State private var lastItem: Layer.Item?
 
+    /// Tracks the last key for detecting when reverse transition completes.
+    @State private var lastKey: String?
+
     var body: some View {
         let currentItem = layer.item
         let key = currentItem.map { "\($0.id)" }
 
-        let idx = key.flatMap { k in portalModel.info.firstIndex { $0.infoID == k } }
+        // Check active state using lastKey if current key is nil (reverse transition)
+        let lookupKey = key ?? lastKey
+        let idx = lookupKey.flatMap { k in portalModel.info.firstIndex { $0.infoID == k } }
         let isActive = idx.flatMap { portalModel.info[$0].animateView } ?? false
 
         // Use the current item if available, otherwise fall back to the last known item
@@ -81,6 +86,18 @@ private struct AnimatedItemPortalLayerHost<Layer: AnimatedItemPortalLayer>: View
             .onChange(of: currentItem?.id) { _, newID in
                 if newID != nil {
                     lastItem = currentItem
+                    lastKey = key
+                }
+            }
+            .onChange(of: isActive) { _, newActive in
+                // Clear cached item after reverse transition completes to free memory
+                if !newActive && currentItem == nil {
+                    Task { @MainActor in
+                        // Small delay to ensure animation has fully completed
+                        try? await Task.sleep(for: .milliseconds(50))
+                        lastItem = nil
+                        lastKey = nil
+                    }
                 }
             }
     }
@@ -197,16 +214,22 @@ private struct AnimatedGroupPortalLayerHost<Layer: AnimatedGroupPortalLayer>: Vi
     /// Tracks the last known items to maintain during reverse transitions.
     @State private var lastItems: [Layer.Item] = []
 
-    /// Builds active states dictionary for a set of items.
+    /// Tracks whether any item was active, for cleanup detection.
+    @State private var wasActive = false
+
+    /// Builds active states dictionary for a set of items using O(n+m) lookup.
     private func buildActiveStates(for items: [Layer.Item]) -> [Layer.Item.ID: Bool] {
+        // Build lookup dictionary from portal info first: O(m)
+        var infoLookup: [String: Bool] = [:]
+        for info in portalModel.info {
+            infoLookup[info.infoID] = info.animateView
+        }
+
+        // Map items to active states: O(n)
         var states: [Layer.Item.ID: Bool] = [:]
         for item in items {
             let key = "\(item.id)"
-            if let idx = portalModel.info.firstIndex(where: { $0.infoID == key }) {
-                states[item.id] = portalModel.info[idx].animateView
-            } else {
-                states[item.id] = false
-            }
+            states[item.id] = infoLookup[key] ?? false
         }
         return states
     }
@@ -217,11 +240,24 @@ private struct AnimatedGroupPortalLayerHost<Layer: AnimatedGroupPortalLayer>: Vi
 
         // Build active states for display items (handles both current and reverse transition cases)
         let activeStates = buildActiveStates(for: displayItems)
+        let anyActive = activeStates.values.contains(true)
 
         layer.animatedContent(items: displayItems, activeStates: activeStates)
             .onChange(of: currentItems.map { $0.id }) { _, newIDs in
                 if !newIDs.isEmpty {
                     lastItems = currentItems
+                }
+            }
+            .onChange(of: anyActive) { _, newActive in
+                if newActive {
+                    wasActive = true
+                } else if wasActive && currentItems.isEmpty {
+                    // Clear cached items after reverse transition completes to free memory
+                    Task { @MainActor in
+                        try? await Task.sleep(for: .milliseconds(50))
+                        lastItems = []
+                        wasActive = false
+                    }
                 }
             }
     }
