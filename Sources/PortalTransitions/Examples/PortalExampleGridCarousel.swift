@@ -80,7 +80,7 @@ public struct PortalExampleGridCarousel: View {
 // MARK: - Carousel Item Model
 
 /// Model representing an item in the grid/carousel
-public struct CarouselItem: Identifiable, Hashable, Sendable {
+public struct CarouselItem: Identifiable, Hashable {
     public let id = UUID()
     public let title: String
     public let subtitle: String
@@ -102,7 +102,7 @@ public struct CarouselItem: Identifiable, Hashable, Sendable {
         lhs.id == rhs.id
     }
 
-    static let sampleItems: [CarouselItem] = [
+    nonisolated(unsafe) static let sampleItems: [CarouselItem] = [
         CarouselItem(title: "Photos", subtitle: "Your memories", color: .orange, icon: "photo.fill"),
         CarouselItem(title: "Music", subtitle: "Listen now", color: .pink, icon: "music.note"),
         CarouselItem(title: "Videos", subtitle: "Watch later", color: .red, icon: "play.fill"),
