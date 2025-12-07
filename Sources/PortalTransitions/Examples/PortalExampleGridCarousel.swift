@@ -8,7 +8,9 @@
 //  Licensed under the MIT License.
 //
 
-#if DEBUG
+// TODO: Re-enable when Swift compiler crash in Xcode 26.2 beta is fixed
+// This file triggers a crash in swift-frontend during compilation
+#if false // DEBUG
 import SwiftUI
 
 /// Portal grid-to-carousel example demonstrating a grid that opens into a horizontally paging carousel
