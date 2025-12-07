@@ -39,12 +39,14 @@ public struct PortalExampleGridCarousel: View {
                         // Grid of items
                         LazyVGrid(columns: columns, spacing: 12) {
                             ForEach(items) { item in
-                                GridItemView(item: item)
-                                    .portal(item: item, .source)
-                                    .onTapGesture {
-                                        portalItem = item
-                                        selectedItem = item
-                                    }
+                                AnimatedCarouselLayer(item: item) { item in
+                                    GridItemView(item: item)
+                                }
+                                .portal(item: item, .source)
+                                .onTapGesture {
+                                    portalItem = item
+                                    selectedItem = item
+                                }
                             }
                         }
                         .padding(.horizontal)
@@ -67,7 +69,9 @@ public struct PortalExampleGridCarousel: View {
                 animation: .smooth(duration: 0.25),
                 transition: .fade
             ) { item in
-                GridItemView(item: item)
+                AnimatedCarouselLayer(item: $portalItem) { item in
+                    GridItemView(item: item)
+                }
             }
         }
     }
@@ -139,6 +143,69 @@ private struct GridItemView: View {
     }
 }
 
+// MARK: - Animated Carousel Layer
+
+/// An item-based animated layer for the carousel example.
+/// Provides a subtle scale animation during portal transitions.
+private struct AnimatedCarouselLayer<Item: Identifiable, Content: View>: AnimatedItemPortalLayer {
+    let item: Item?
+    var scale: CGFloat = 1.08
+    @ViewBuilder let content: (Item) -> Content
+
+    @State private var layerScale: CGFloat = 1
+
+    /// Initialize with a non-optional item (for source/destination views)
+    init(item: Item, scale: CGFloat = 1.08, @ViewBuilder content: @escaping (Item) -> Content) {
+        self.item = item
+        self.scale = scale
+        self.content = content
+    }
+
+    /// Initialize with an optional item binding (for transition layers)
+    init(item: Binding<Item?>, scale: CGFloat = 1.08, @ViewBuilder content: @escaping (Item) -> Content) {
+        self.item = item.wrappedValue
+        self.scale = scale
+        self.content = content
+    }
+
+    func animatedContent(item: Item?, isActive: Bool) -> some View {
+        Group {
+            if let item {
+                content(item)
+                    .scaleEffect(layerScale)
+            }
+        }
+        .onAppear {
+            layerScale = 1
+        }
+        .onChange(of: isActive) { oldValue, newValue in
+            handleActiveChange(oldValue: oldValue, newValue: newValue)
+        }
+    }
+
+    private func handleActiveChange(oldValue: Bool, newValue: Bool) {
+        if newValue {
+            withAnimation(portalAnimationExample) {
+                layerScale = scale
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                withAnimation(portalAnimationExampleExtraBounce) {
+                    layerScale = 1
+                }
+            }
+        } else {
+            withAnimation(portalAnimationExample) {
+                layerScale = 1.12
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                withAnimation(portalAnimationExampleExtraBounce) {
+                    layerScale = 1
+                }
+            }
+        }
+    }
+}
+
 // MARK: - Carousel Detail View
 
 /// Fullscreen carousel view that pages horizontally through items
@@ -200,7 +267,7 @@ private struct CarouselDetailView: View {
             // Transfer the active portal to the new item
             let oldItem = items[oldIndex]
             let newItem = items[newIndex]
-            portalModel.transferActivePortal(from: "\(oldItem.id)", to: "\(newItem.id)")
+            portalModel.transferActivePortal(from: oldItem, to: newItem)
             portalItem = newItem
         }
     }
@@ -218,8 +285,10 @@ private struct CarouselPageView: View {
             Spacer()
 
             // Main content card - portal destination
-            GridItemView(item: item)
-                .portal(item: item, .destination)
+            AnimatedCarouselLayer(item: item) { item in
+                GridItemView(item: item)
+            }
+            .portal(item: item, .destination)
 
             // Info below the card
             VStack(spacing: 8) {

@@ -48,11 +48,11 @@ public class CrossModel {
     ///
     /// Example usage:
     /// ```swift
-    /// // In a carousel, when the user swipes to a new item:
-    /// .onChange(of: currentIndex) { _, newIndex in
-    ///     let newItem = items[newIndex]
-    ///     portalModel.transferActivePortal(from: "\(oldItem.id)", to: "\(newItem.id)")
-    /// }
+    /// // For static string IDs:
+    /// portalModel.transferActivePortal(from: "panel1", to: "panel2")
+    ///
+    /// // For Identifiable items, prefer the type-safe overload:
+    /// portalModel.transferActivePortal(from: oldItem, to: newItem)
     /// ```
     public func transferActivePortal(from fromID: String, to toID: String) {
         guard fromID != toID else { return }
@@ -116,5 +116,29 @@ public class CrossModel {
             tags: [PortalLogs.Tags.transition],
             metadata: ["fromID": fromID, "toID": toID]
         )
+    }
+
+    /// Transfers the active portal state from one item to another without animation.
+    ///
+    /// This is the item-based version of `transferActivePortal(from:to:)` for use with
+    /// `Identifiable` items. Use this when the user navigates between items in a detail view
+    /// (e.g., a carousel) and you want the dismiss animation to return to the new item's
+    /// source position rather than the original item.
+    ///
+    /// - Parameters:
+    ///   - fromItem: The currently active item to deactivate
+    ///   - toItem: The new item to activate
+    ///
+    /// Example usage:
+    /// ```swift
+    /// // In a carousel, when the user swipes to a new item:
+    /// .onChange(of: currentIndex) { oldIndex, newIndex in
+    ///     let oldItem = items[oldIndex]
+    ///     let newItem = items[newIndex]
+    ///     portalModel.transferActivePortal(from: oldItem, to: newItem)
+    /// }
+    /// ```
+    public func transferActivePortal<Item: Identifiable>(from fromItem: Item, to toItem: Item) {
+        transferActivePortal(from: "\(fromItem.id)", to: "\(toItem.id)")
     }
 }
