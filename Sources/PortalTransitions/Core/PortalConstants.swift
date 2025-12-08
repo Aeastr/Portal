@@ -53,21 +53,6 @@ public struct PortalConstants {
     /// accessed portals performant.
     public static let portalCacheLimit: Int = 10
 
-    // MARK: - ID Conversion
-
-    /// Converts an `Identifiable` item's ID to a string key for portal lookup.
-    ///
-    /// This centralizes the ID-to-string conversion logic, ensuring consistency
-    /// across all portal operations. Uses `String(describing:)` for reliable
-    /// conversion of any ID type.
-    ///
-    /// - Parameter item: An `Identifiable` item
-    /// - Returns: A string representation of the item's ID
-    @inlinable
-    public static func key<Item: Identifiable>(for item: Item) -> String {
-        String(describing: item.id)
-    }
-
     // MARK: - Debug
 
     /// Default debug overlay stroke width

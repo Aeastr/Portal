@@ -117,7 +117,7 @@ public class CrossModel {
             "Transferred active portal",
             level: .notice,
             tags: [PortalLogs.Tags.transition],
-            metadata: ["fromID": "\(fromID)", "toID": "\(toID)"]
+            metadata: ["fromID": String(reflecting: fromID), "toID": String(reflecting: toID)]
         )
     }
 
