@@ -27,8 +27,9 @@ public struct AnchorKey: PreferenceKey {
     ///
     /// An empty dictionary indicates that no portal views have reported their bounds yet.
     /// This is the starting point before any portal views are rendered or positioned.
-    // nonisolated(unsafe) is required because Anchor<CGRect> is not Sendable,
-    // but the empty dictionary is immutable and safe to share across isolation domains.
+    ///
+    /// - Note: `nonisolated(unsafe)` is required because `Anchor<CGRect>` is not `Sendable`,
+    ///   but the empty dictionary is immutable and safe to share across isolation domains.
     public nonisolated(unsafe) static let defaultValue: [PortalKey: Anchor<CGRect>] = [:]
 
     /// Combines multiple anchor dictionaries as they flow up the view hierarchy.
