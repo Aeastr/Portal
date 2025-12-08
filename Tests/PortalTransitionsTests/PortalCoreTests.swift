@@ -107,6 +107,8 @@ final class PortalCoreTests: XCTestCase {
     }
 
     // MARK: - Performance Tests
+    // Note: These tests have no baseline set. Run with Xcode's performance
+    // test UI to establish baselines if needed.
 
     func testPerformancePortalCornersCreation() {
         measure {
