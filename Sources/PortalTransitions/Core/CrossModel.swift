@@ -121,27 +121,18 @@ public class CrossModel {
         )
     }
 
-    /// Transfers the active portal state from one item to another without animation.
-    ///
-    /// This is the item-based version of `transferActivePortal(from:to:)` for use with
-    /// `Identifiable` items. Use this when the user navigates between items in a detail view
-    /// (e.g., a carousel) and you want the dismiss animation to return to the new item's
-    /// source position rather than the original item.
-    ///
-    /// - Parameters:
-    ///   - fromItem: The currently active item to deactivate
-    ///   - toItem: The new item to activate
-    ///
-    /// Example usage:
-    /// ```swift
-    /// // In a carousel, when the user swipes to a new item:
-    /// .onChange(of: currentIndex) { oldIndex, newIndex in
-    ///     let oldItem = items[oldIndex]
-    ///     let newItem = items[newIndex]
-    ///     portalModel.transferActivePortal(from: oldItem, to: newItem)
-    /// }
-    /// ```
-    public func transferActivePortal<Item: Identifiable>(from fromItem: Item, to toItem: Item) {
-        transferActivePortal(from: fromItem.id, to: toItem.id)
-    }
+    // MARK: - Identifiable Overload (Disabled)
+
+    // NOTE: The following overload is commented out due to a Swift compiler crash
+    // in Xcode 26.1 onwards. The crash occurs when a generic `<Item: Identifiable>`
+    // method calls through to a generic `<ID: Hashable>` method.
+    //
+    // Workaround: Use `.id` explicitly when calling transferActivePortal:
+    //   portalModel.transferActivePortal(from: oldItem.id, to: newItem.id)
+    //
+    // Uncomment when Apple fixes the compiler bug.
+    //
+    // public func transferActivePortal<Item: Identifiable>(from fromItem: Item, to toItem: Item) {
+    //     transferActivePortal(from: fromItem.id, to: toItem.id)
+    // }
 }
