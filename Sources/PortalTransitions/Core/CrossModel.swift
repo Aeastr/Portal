@@ -121,30 +121,7 @@ public class CrossModel {
         )
     }
 
-    // MARK: - Identifiable Overload (Disabled due to compiler crash)
-
-    /// Transfers the active portal state from one `Identifiable` item to another.
-    ///
-    /// This is a convenience overload that extracts the IDs from the provided items.
-    ///
-    /// - Parameters:
-    ///   - fromItem: The item whose portal should be deactivated
-    ///   - toItem: The item whose portal should be activated
-    ///
-    /// - Important: This overload is disabled because it causes a Swift compiler crash
-    ///   in Xcode 26.1+ when called from certain SwiftUI view contexts. The crash occurs
-    ///   during type checking when a generic method constrained to `Identifiable` calls
-    ///   through to a generic method constrained to `Hashable`.
-    ///
-    ///   **Workaround:** Use the ID-based overload directly:
-    ///   ```swift
-    ///   portalModel.transferActivePortal(from: oldItem.id, to: newItem.id)
-    ///   ```
-    ///
-    ///   See `CompilerCrashReproducer.swift` for a minimal example that documents this bug.
-    ///   This overload can be re-enabled when the Swift compiler bug is fixed.
-    ///
-    // public func transferActivePortal<Item: Identifiable>(from fromItem: Item, to toItem: Item) {
-    //     transferActivePortal(from: fromItem.id, to: toItem.id)
-    // }
+    public func transferActivePortal<Item: Identifiable>(from fromItem: Item, to toItem: Item) {
+        transferActivePortal(from: fromItem.id, to: toItem.id)
+    }
 }
