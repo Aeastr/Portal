@@ -48,10 +48,7 @@ public struct Portal<Content: View>: View {
     /// - Parameter anchor: The anchor bounds to transform
     /// - Returns: A dictionary mapping portal keys to their anchor bounds
     private func anchorPreferenceTransform(anchor: Anchor<CGRect>) -> [PortalKey: Anchor<CGRect>] {
-        let idx = index
-        let initialized = idx.map { portalModel.info[$0].initialized } ?? false
-        print("🔶 anchorPreferenceTransform: id=\(id), idx=\(String(describing: idx)), initialized=\(initialized), source=\(source)")
-        if let idx, portalModel.info[idx].initialized {
+        if let idx = index, portalModel.info[idx].initialized {
             return [key: anchor]
         }
         return [:]
@@ -75,6 +72,8 @@ public struct Portal<Content: View>: View {
                 }
             )
             .anchorPreference(key: AnchorKey.self, value: .bounds, transform: anchorPreferenceTransform)
+            // Note: This closure must run synchronously (no Task wrapper) to avoid a race
+            // condition where anchors aren't stored before the animation starts.
             .onPreferenceChange(AnchorKey.self) { prefs in
                 guard let idx = currentIndex, model.info[idx].initialized else {
                     return
