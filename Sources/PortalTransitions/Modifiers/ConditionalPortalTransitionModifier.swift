@@ -144,7 +144,7 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
                     message,
                     level: .warning,
                     tags: [PortalLogs.Tags.transition],
-                    metadata: ["id": id, "duration": "\(duration)", "minimum": "\(PortalConstants.minimumSheetAnimationDuration)"]
+                    metadata: ["id": id, "duration": String(reflecting: duration), "minimum": String(reflecting: PortalConstants.minimumSheetAnimationDuration)]
                 )
             }
         }

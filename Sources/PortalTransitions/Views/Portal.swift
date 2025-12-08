@@ -112,7 +112,7 @@ public struct Portal<Content: View>: View {
                 "SOURCE opacity",
                 level: .debug,
                 tags: [PortalLogs.Tags.transition],
-                metadata: ["id": "\(id)", "opacity": "\(op)"]
+                metadata: ["id": String(reflecting: id), "opacity": String(reflecting: op)]
             )
             #endif
             return CGFloat(op)
@@ -123,7 +123,7 @@ public struct Portal<Content: View>: View {
                 "DEST opacity",
                 level: .debug,
                 tags: [PortalLogs.Tags.transition],
-                metadata: ["id": "\(id)", "opacity": "\(op)", "hideView": "\(portalModel.info[idx].hideView)"]
+                metadata: ["id": String(reflecting: id), "opacity": String(reflecting: op), "hideView": String(reflecting: portalModel.info[idx].hideView)]
             )
             #endif
             return CGFloat(op)

@@ -66,7 +66,7 @@ public class CrossModel {
                 "Transfer failed: source portal not found",
                 level: .warning,
                 tags: [PortalLogs.Tags.transition],
-                metadata: ["fromID": "\(fromID)", "toID": "\(toID)"]
+                metadata: ["fromID": String(reflecting: fromID), "toID": String(reflecting: toID)]
             )
             return
         }
@@ -143,7 +143,10 @@ public class CrossModel {
     //
     // Using distinct parameter labels (`fromItem`/`toItem` above) avoids the crash.
     //
-    // Re-enable if Apple fixes the compiler bug:
+    // Radar: FB00000000 (TODO: File bug report with Apple)
+    //
+    // To check if fixed: Uncomment the overload below and run the test target.
+    // If CompilerCrashTests passes, the bug is fixed and this can be re-enabled.
     //
     // public func transferActivePortal<Item: Identifiable>(from fromItem: Item, to toItem: Item) {
     //     transferActivePortal(from: fromItem.id, to: toItem.id)

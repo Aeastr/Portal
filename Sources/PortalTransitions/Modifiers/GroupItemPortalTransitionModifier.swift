@@ -118,7 +118,7 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
                     message,
                     level: .warning,
                     tags: [PortalLogs.Tags.transition],
-                    metadata: ["groupID": groupID, "duration": "\(duration)", "minimum": "\(PortalConstants.minimumSheetAnimationDuration)"]
+                    metadata: ["groupID": groupID, "duration": String(reflecting: duration), "minimum": String(reflecting: PortalConstants.minimumSheetAnimationDuration)]
                 )
             }
         }

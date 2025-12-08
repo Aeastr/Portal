@@ -131,7 +131,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
                     message,
                     level: .warning,
                     tags: [PortalLogs.Tags.transition],
-                    metadata: ["duration": "\(duration)", "minimum": "\(PortalConstants.minimumSheetAnimationDuration)"]
+                    metadata: ["duration": String(reflecting: duration), "minimum": String(reflecting: PortalConstants.minimumSheetAnimationDuration)]
                 )
             }
         }
@@ -201,7 +201,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
                     "Registered new portal info",
                     level: .debug,
                     tags: [PortalLogs.Tags.transition],
-                    metadata: ["id": "\(key)"]
+                    metadata: ["id": String(reflecting: key)]
                 )
             }
 
@@ -210,7 +210,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
                     "Portal info lookup failed after registration",
                     level: .error,
                     tags: [PortalLogs.Tags.transition],
-                    metadata: ["id": "\(key)"]
+                    metadata: ["id": String(reflecting: key)]
                 )
                 return
             }
@@ -244,7 +244,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
                         "Animation completed, showing destination",
                         level: .debug,
                         tags: [PortalLogs.Tags.transition],
-                        metadata: ["id": "\(key)", "hideView": "true"]
+                        metadata: ["id": String(reflecting: key), "hideView": "true"]
                     )
 
                     // Show destination first, then hide layer after ensuring it's rendered
@@ -255,7 +255,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
                             "Hiding transition layer",
                             level: .debug,
                             tags: [PortalLogs.Tags.transition],
-                            metadata: ["id": "\(key)", "showLayer": "false"]
+                            metadata: ["id": String(reflecting: key), "showLayer": "false"]
                         )
 
                         // Hide layer after destination is visible
@@ -282,7 +282,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
                 "Reversing portal transition",
                 level: .notice,
                 tags: [PortalLogs.Tags.transition],
-                metadata: ["id": "\(key)"]
+                metadata: ["id": String(reflecting: key)]
             )
 
             // Start reverse animation
@@ -307,7 +307,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
                 "Completed reverse portal transition cleanup",
                 level: .debug,
                 tags: [PortalLogs.Tags.transition],
-                metadata: ["id": "\(key)"]
+                metadata: ["id": String(reflecting: key)]
             )
         }
     }
@@ -336,7 +336,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
                     "Portal item changed, updated return target and layer",
                     level: .debug,
                     tags: [PortalLogs.Tags.transition],
-                    metadata: ["fromID": "\(oldID)", "toID": "\(newID)"]
+                    metadata: ["fromID": String(reflecting: oldID), "toID": String(reflecting: newID)]
                 )
             }
     }
