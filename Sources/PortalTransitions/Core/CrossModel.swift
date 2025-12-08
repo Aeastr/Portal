@@ -141,8 +141,7 @@ public class CrossModel {
     // 2. You call this method
     // 3. You assign to the binding AFTER the call
     //
-    // The crash is a type inference bug. Using distinct parameter labels
-    // (`fromItem`/`toItem` above) avoids the issue entirely.
+    // Using distinct parameter labels (`fromItem`/`toItem` above) avoids the crash.
     //
     // Re-enable if Apple fixes the compiler bug:
     //
