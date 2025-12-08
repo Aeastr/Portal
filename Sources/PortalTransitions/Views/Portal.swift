@@ -48,7 +48,10 @@ public struct Portal<Content: View>: View {
     /// - Parameter anchor: The anchor bounds to transform
     /// - Returns: A dictionary mapping portal keys to their anchor bounds
     private func anchorPreferenceTransform(anchor: Anchor<CGRect>) -> [PortalKey: Anchor<CGRect>] {
-        if let idx = index, portalModel.info[idx].initialized {
+        let idx = index
+        let initialized = idx.map { portalModel.info[$0].initialized } ?? false
+        print("🔶 anchorPreferenceTransform: id=\(id), idx=\(String(describing: idx)), initialized=\(initialized), source=\(source)")
+        if let idx, portalModel.info[idx].initialized {
             return [key: anchor]
         }
         return [:]
@@ -73,28 +76,31 @@ public struct Portal<Content: View>: View {
             )
             .anchorPreference(key: AnchorKey.self, value: .bounds, transform: anchorPreferenceTransform)
             .onPreferenceChange(AnchorKey.self) { prefs in
-                Task { @MainActor in
-                    guard let idx = currentIndex, model.info[idx].initialized else { return }
-                    guard let anchor = prefs[currentKey] else { return }
+                guard let idx = currentIndex, model.info[idx].initialized else {
+                    return
+                }
+                guard let anchor = prefs[currentKey] else {
+                    return
+                }
 
-                    // Set the group ID if provided
-                    if let groupID = currentGroupID {
-                        model.info[idx].groupID = groupID
+
+                // Set the group ID if provided
+                if let groupID = currentGroupID {
+                    model.info[idx].groupID = groupID
+                }
+
+                // Keep anchors aligned with live layout so animated layer follows scrolling/dragging
+                if isSource {
+                    model.info[idx].sourceAnchor = anchor
+                    // Cache anchor for use during transitions if view is removed
+                    if model.info[idx].initialized {
+                        model.info[idx].cachedSourceAnchor = anchor
                     }
-
-                    // Keep anchors aligned with live layout so animated layer follows scrolling/dragging
-                    if isSource {
-                        model.info[idx].sourceAnchor = anchor
-                        // Cache anchor for use during transitions if view is removed
-                        if model.info[idx].initialized {
-                            model.info[idx].cachedSourceAnchor = anchor
-                        }
-                    } else {
-                        model.info[idx].destinationAnchor = anchor
-                        // Cache anchor for use during transitions if view is removed
-                        if model.info[idx].initialized {
-                            model.info[idx].cachedDestinationAnchor = anchor
-                        }
+                } else {
+                    model.info[idx].destinationAnchor = anchor
+                    // Cache anchor for use during transitions if view is removed
+                    if model.info[idx].initialized {
+                        model.info[idx].cachedDestinationAnchor = anchor
                     }
                 }
             }
