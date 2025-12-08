@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Swift/Xcode Bug (Apple Feedback)
+    url: https://feedbackassistant.apple.com
+    about: For compiler crashes or SDK bugs, file with Apple Feedback Assistant. See CONTRIBUTING.md for guidance.
+  - name: Documentation
+    url: https://github.com/Aeastr/Portal/wiki
+    about: Check the wiki for usage guides and examples.
+  - name: Discussions
+    url: https://github.com/Aeastr/Portal/discussions
+    about: Ask questions or discuss ideas in GitHub Discussions.

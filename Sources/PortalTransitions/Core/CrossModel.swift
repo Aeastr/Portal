@@ -143,7 +143,7 @@ public class CrossModel {
     //
     // Using distinct parameter labels (`fromItem`/`toItem` above) avoids the crash.
     //
-    // Radar: FB00000000 (TODO: File bug report with Apple)
+    // Radar: FB00000000
     //
     // To check if fixed: Uncomment the overload below and run the test target.
     // If CompilerCrashTests passes, the bug is fixed and this can be re-enabled.
