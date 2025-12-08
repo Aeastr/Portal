@@ -1,0 +1,135 @@
+name: Bug Report
+description: Report a bug in Portal
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out the form below.
+
+        **Note**: If this is a Swift compiler crash or Xcode/SDK issue, please file with [Apple Feedback Assistant](https://feedbackassistant.apple.com) instead. See [CONTRIBUTING.md](../../CONTRIBUTING.md#apple-feedback-assistant-swiftxcode-bugs) for guidance.
+
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Prerequisites
+      options:
+        - label: I have searched existing issues to ensure this bug hasn't been reported
+          required: true
+        - label: I have verified this is a Portal bug, not a Swift/Xcode bug
+          required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of the bug
+      placeholder: What happened? What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Minimal steps to reproduce the behavior
+      placeholder: |
+        1. Create a view with...
+        2. Apply `.portalTransition(...)`
+        3. Tap on...
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: code
+    attributes:
+      label: Code Sample
+      description: Minimal code snippet that reproduces the issue
+      render: swift
+      placeholder: |
+        struct ContentView: View {
+            @State private var selectedItem: Item?
+
+            var body: some View {
+                // Your code here
+            }
+        }
+
+  - type: input
+    id: portal-version
+    attributes:
+      label: Portal Version
+      description: Which version of Portal are you using?
+      placeholder: "4.3.0 or dev-20250108-143022-a1b2c3d"
+    validations:
+      required: true
+
+  - type: input
+    id: xcode-version
+    attributes:
+      label: Xcode Version
+      placeholder: "16.2 (16C5032a)"
+    validations:
+      required: true
+
+  - type: input
+    id: swift-version
+    attributes:
+      label: Swift Version
+      placeholder: "6.0.3"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - iOS (Device)
+        - iOS (Simulator)
+        - macOS (Catalyst)
+        - macOS (Designed for iPad)
+    validations:
+      required: true
+
+  - type: input
+    id: os-version
+    attributes:
+      label: OS Version
+      placeholder: "iOS 18.2 / macOS 15.2"
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: Device
+      description: Device model or simulator name
+      placeholder: "iPhone 16 Pro / iPhone 16 Pro Simulator"
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console Logs
+      description: Any relevant console output (wrap in code block)
+      render: shell
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots / Videos
+      description: If applicable, add screenshots or screen recordings
+
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Workaround
+      description: Have you found a workaround? If so, please share it.
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other context about the problem

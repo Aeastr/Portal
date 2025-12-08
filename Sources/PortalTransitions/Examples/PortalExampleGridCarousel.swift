@@ -41,10 +41,10 @@ public struct PortalExampleGridCarousel: View {
                             ForEach(items) { item in
                                 GridItemView(item: item)
                                     .portal(item: item, .source)
-                                    .onTapGesture {
-                                        portalItem = item
-                                        selectedItem = item
-                                    }
+                                .onTapGesture {
+                                    portalItem = item
+                                    selectedItem = item
+                                }
                             }
                         }
                         .padding(.horizontal)
@@ -76,7 +76,7 @@ public struct PortalExampleGridCarousel: View {
 // MARK: - Carousel Item Model
 
 /// Model representing an item in the grid/carousel
-public struct CarouselItem: Identifiable, Hashable, Sendable {
+public struct CarouselItem: Identifiable, Hashable {
     public let id = UUID()
     public let title: String
     public let subtitle: String
@@ -98,7 +98,9 @@ public struct CarouselItem: Identifiable, Hashable, Sendable {
         lhs.id == rhs.id
     }
 
-    static let sampleItems: [CarouselItem] = [
+    // nonisolated(unsafe) is required because Color is not Sendable,
+    // but the array is immutable and safe to share across isolation domains.
+    nonisolated(unsafe) static let sampleItems: [CarouselItem] = [
         CarouselItem(title: "Photos", subtitle: "Your memories", color: .orange, icon: "photo.fill"),
         CarouselItem(title: "Music", subtitle: "Listen now", color: .pink, icon: "music.note"),
         CarouselItem(title: "Videos", subtitle: "Watch later", color: .red, icon: "play.fill"),
@@ -197,10 +199,9 @@ private struct CarouselDetailView: View {
             }
         }
         .onChange(of: currentIndex) { oldIndex, newIndex in
-            // Transfer the active portal to the new item
             let oldItem = items[oldIndex]
             let newItem = items[newIndex]
-            portalModel.transferActivePortal(from: "\(oldItem.id)", to: "\(newItem.id)")
+            portalModel.transferActivePortal(fromItem: oldItem, toItem: newItem)
             portalItem = newItem
         }
     }

@@ -75,7 +75,7 @@ public struct PortalContainerModern<Content: View>: View {
                 "Scene no longer active; removing portal overlay window",
                 level: .notice,
                 tags: [PortalLogs.Tags.container],
-                metadata: ["scenePhase": "\(scenePhase)"]
+                metadata: ["scenePhase": String(reflecting: scenePhase)]
             )
             OverlayWindowManager.shared.removeOverlayWindow()
         }

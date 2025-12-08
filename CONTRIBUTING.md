@@ -8,12 +8,38 @@ Please read and follow the [Code of Conduct](./CODE_OF_CONDUCT.md). I’m commit
 
 ## How to Report Issues
 
+### GitHub Issues (Portal Bugs)
+
 Before opening a new issue, search existing issues to avoid duplicates. When filing a bug report, please include:
-- Portal version (e.g. `0.1.2`) and your Swift/Xcode versions  
-- Target platform (iOS 15.0+), device or simulator  
-- A concise description of the problem and steps to reproduce  
-- Minimal code snippet or sample project demonstrating the issue  
+
+- Portal version (e.g. `4.3.0`) and your Swift/Xcode versions
+- Target platform (iOS 17.0+), device or simulator
+- A concise description of the problem and steps to reproduce
+- Minimal code snippet or sample project demonstrating the issue
 - Any relevant console logs or screenshots
+
+### Apple Feedback Assistant (Swift/Xcode Bugs)
+
+If you encounter a **compiler crash**, **SDK bug**, or issue that appears to be in Swift/Xcode rather than Portal:
+
+1. **Verify it's not a Portal bug** - Check if the issue occurs outside of Portal
+2. **Check existing reports** - Search [Swift issues](https://github.com/swiftlang/swift/issues) and Apple Developer Forums
+3. **Create a minimal reproducer** - Isolate the crash to the smallest possible code
+4. **File with Apple**:
+   - Go to [feedbackassistant.apple.com](https://feedbackassistant.apple.com)
+   - Select: **Developer Tools** → **Xcode** → **Swift Compiler** (or appropriate category)
+   - Include:
+     - Clear title describing the crash
+     - Xcode version, Swift version, macOS version
+     - Target platform and simulator/device info
+     - Step-by-step reproduction instructions
+     - Minimal code sample or project attachment
+     - Expected vs actual behavior
+     - Any workarounds discovered
+5. **Document in Portal** - If the bug affects Portal:
+   - Open a GitHub issue with the `upstream-bug` label
+   - Include reproduction steps, environment, and workaround
+   - Reference the FB number in code comments where the workaround is applied
 
 ## How to Propose Features
 

@@ -29,10 +29,13 @@ public struct PortalInfo: Identifiable {
 
     /// User-defined unique identifier for this portal animation.
     ///
-    /// This string identifier is used to match source and destination views that should
+    /// This identifier is used to match source and destination views that should
     /// be connected by a portal transition. It should be unique within the scope of
     /// active portal animations.
-    public let infoID: String
+    ///
+    /// The ID is stored as `AnyHashable` to support any `Hashable` type, including
+    /// `String`, `UUID`, `Int`, or custom identifier types.
+    public let infoID: AnyHashable
 
     /// Flag indicating whether this portal has been properly initialized.
     ///
@@ -155,9 +158,20 @@ public struct PortalInfo: Identifiable {
     /// Creates a new portal data record with default values for all properties
     /// except the required user-defined identifier.
     ///
-    /// - Parameter id: The unique string identifier for this portal animation
+    /// - Parameter id: The unique identifier for this portal animation (any `Hashable` type)
     /// - Parameter groupID: Optional group identifier for coordinated animations
-    public init(id: String, groupID: String? = nil) {
+    public init<ID: Hashable>(id: ID, groupID: String? = nil) {
+        self.infoID = AnyHashable(id)
+        self.groupID = groupID
+    }
+
+    /// Initializes a new PortalInfo instance with a pre-wrapped AnyHashable identifier.
+    ///
+    /// This overload avoids double-wrapping when the ID is already an AnyHashable.
+    ///
+    /// - Parameter id: The pre-wrapped identifier for this portal animation
+    /// - Parameter groupID: Optional group identifier for coordinated animations
+    public init(id: AnyHashable, groupID: String? = nil) {
         self.infoID = id
         self.groupID = groupID
     }

@@ -9,5 +9,11 @@ DerivedData/
 Package.resolved
 .swiftpm/
 
+# Compiled binaries
+*.o
+*.dylib
+*.a
+*.xcframework
+
 # Claude Code local settings
 .claude/

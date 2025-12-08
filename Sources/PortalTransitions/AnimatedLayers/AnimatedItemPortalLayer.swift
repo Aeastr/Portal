@@ -67,11 +67,11 @@ private struct AnimatedItemPortalLayerHost<Layer: AnimatedItemPortalLayer>: View
     @State private var lastItem: Layer.Item?
 
     /// Tracks the last key for detecting when reverse transition completes.
-    @State private var lastKey: String?
+    @State private var lastKey: AnyHashable?
 
     var body: some View {
         let currentItem = layer.item
-        let key = currentItem.map { "\($0.id)" }
+        let key: AnyHashable? = currentItem.map { AnyHashable($0.id) }
 
         // Check active state using lastKey if current key is nil (reverse transition)
         let lookupKey = key ?? lastKey
@@ -220,7 +220,7 @@ private struct AnimatedGroupPortalLayerHost<Layer: AnimatedGroupPortalLayer>: Vi
     /// Builds active states dictionary for a set of items using O(n+m) lookup.
     private func buildActiveStates(for items: [Layer.Item]) -> [Layer.Item.ID: Bool] {
         // Build lookup dictionary from portal info first: O(m)
-        var infoLookup: [String: Bool] = [:]
+        var infoLookup: [AnyHashable: Bool] = [:]
         for info in portalModel.info {
             infoLookup[info.infoID] = info.animateView
         }
@@ -228,7 +228,7 @@ private struct AnimatedGroupPortalLayerHost<Layer: AnimatedGroupPortalLayer>: Vi
         // Map items to active states: O(n)
         var states: [Layer.Item.ID: Bool] = [:]
         for item in items {
-            let key = "\(item.id)"
+            let key = AnyHashable(item.id)
             states[item.id] = infoLookup[key] ?? false
         }
         return states

@@ -18,11 +18,11 @@ import SwiftUI
 /// view modifiers to identify the source or destination of a portal transition animation.
 ///
 /// - Parameters:
-///   - id: A unique string identifier for this portal. This should match the `id` used for the corresponding portal transition.
+///   - id: A unique identifier for this portal. This should match the `id` used for the corresponding portal transition.
 ///   - source: A boolean flag indicating whether this is a source (true) or destination (false) portal.
 ///   - content: The view content to be marked as the portal.
 public struct Portal<Content: View>: View {
-    private let id: String
+    private let id: AnyHashable
     private let source: Bool
     private let groupID: String?
     @ViewBuilder private let content: Content
@@ -32,12 +32,12 @@ public struct Portal<Content: View>: View {
     /// Initializes a new Portal view.
     ///
     /// - Parameters:
-    ///   - id: A unique string identifier for this portal
+    ///   - id: A unique identifier for this portal (any `Hashable` type)
     ///   - source: Whether this portal acts as a source (true) or destination (false). Defaults to true.
     ///   - groupID: Optional group identifier for coordinated animations. When provided, this portal will animate as part of a coordinated group.
     ///   - content: A view builder closure that returns the content to be wrapped
-    public init(id: String, source: Bool = true, groupID: String? = nil, @ViewBuilder content: () -> Content) {
-        self.id = id
+    public init<ID: Hashable>(id: ID, source: Bool = true, groupID: String? = nil, @ViewBuilder content: () -> Content) {
+        self.id = AnyHashable(id)
         self.source = source
         self.groupID = groupID
         self.content = content()
@@ -46,8 +46,8 @@ public struct Portal<Content: View>: View {
     /// Transforms anchor preferences for this portal.
     ///
     /// - Parameter anchor: The anchor bounds to transform
-    /// - Returns: A dictionary mapping portal IDs to their anchor bounds
-    private func anchorPreferenceTransform(anchor: Anchor<CGRect>) -> [String: Anchor<CGRect>] {
+    /// - Returns: A dictionary mapping portal keys to their anchor bounds
+    private func anchorPreferenceTransform(anchor: Anchor<CGRect>) -> [PortalKey: Anchor<CGRect>] {
         if let idx = index, portalModel.info[idx].initialized {
             return [key: anchor]
         }
@@ -100,7 +100,7 @@ public struct Portal<Content: View>: View {
             }
     }
 
-    private var key: String { source ? id : "\(id)DEST" }
+    private var key: PortalKey { PortalKey(id, role: source ? .source : .destination) }
 
     private var opacity: CGFloat {
         guard let idx = index else { return 1 }
@@ -112,7 +112,7 @@ public struct Portal<Content: View>: View {
                 "SOURCE opacity",
                 level: .debug,
                 tags: [PortalLogs.Tags.transition],
-                metadata: ["id": id, "opacity": "\(op)"]
+                metadata: ["id": String(reflecting: id), "opacity": String(reflecting: op)]
             )
             #endif
             return CGFloat(op)
@@ -123,7 +123,7 @@ public struct Portal<Content: View>: View {
                 "DEST opacity",
                 level: .debug,
                 tags: [PortalLogs.Tags.transition],
-                metadata: ["id": id, "opacity": "\(op)", "hideView": "\(portalModel.info[idx].hideView)"]
+                metadata: ["id": String(reflecting: id), "opacity": String(reflecting: op), "hideView": String(reflecting: portalModel.info[idx].hideView)]
             )
             #endif
             return CGFloat(op)
@@ -138,7 +138,7 @@ public struct Portal<Content: View>: View {
 // MARK: - Portal Role Enum
 
 /// Defines the role of a portal in a transition.
-public enum PortalRole {
+public enum PortalRole: Sendable {
     /// The portal acts as a source (leaving view) - the starting point of the transition.
     case source
     /// The portal acts as a destination (arriving view) - the ending point of the transition.
@@ -154,7 +154,7 @@ public extension View {
     /// It provides a cleaner API compared to separate `.portalSource()` and `.portalDestination()` modifiers.
     ///
     /// - Parameters:
-    ///   - id: A unique string identifier for this portal. This should match the `id` used for the corresponding portal transition.
+    ///   - id: A unique identifier for this portal (any `Hashable` type). This should match the `id` used for the corresponding portal transition.
     ///   - role: The role of this portal (`.source` or `.destination`).
     ///
     /// Example usage:
@@ -167,7 +167,7 @@ public extension View {
     /// Image("cover")
     ///     .portal(id: "Book1", .destination)
     /// ```
-    func portal(id: String, _ role: PortalRole) -> some View {
+    func portal<ID: Hashable>(id: ID, _ role: PortalRole) -> some View {
         let isSource = role == .source
         return Portal(id: id, source: isSource) { self }
     }
@@ -178,7 +178,7 @@ public extension View {
     /// Multiple portals with the same `groupID` will animate together as a coordinated group.
     ///
     /// - Parameters:
-    ///   - id: A unique string identifier for this portal. This should match the `id` used for the corresponding portal transition.
+    ///   - id: A unique identifier for this portal (any `Hashable` type). This should match the `id` used for the corresponding portal transition.
     ///   - role: The role of this portal (`.source` or `.destination`).
     ///   - groupID: A group identifier for coordinated animations. Portals with the same groupID animate together.
     ///
@@ -190,7 +190,7 @@ public extension View {
     /// PhotoView(photo: photo2)
     ///     .portal(id: "photo2", .source, groupID: "photoStack")
     /// ```
-    func portal(id: String, _ role: PortalRole, groupID: String) -> some View {
+    func portal<ID: Hashable>(id: ID, _ role: PortalRole, groupID: String) -> some View {
         let isSource = role == .source
         return Portal(id: id, source: isSource, groupID: groupID) { self }
     }
@@ -198,7 +198,7 @@ public extension View {
     /// Marks this view as a portal with the specified role using an `Identifiable` item's ID.
     ///
     /// This unified modifier can mark a view as either a source or destination for a portal transition,
-    /// automatically extracting the string representation of an `Identifiable` item's ID.
+    /// using the item's ID directly as the portal identifier.
     ///
     /// - Parameters:
     ///   - item: An `Identifiable` item whose ID will be used as the portal identifier.
@@ -222,9 +222,8 @@ public extension View {
     ///     .portal(item: book, .destination)
     /// ```
     func portal<Item: Identifiable>(item: Item, _ role: PortalRole) -> some View {
-        let key = "\(item.id)"
         let isSource = role == .source
-        return Portal(id: key, source: isSource) { self }
+        return Portal(id: item.id, source: isSource) { self }
     }
 
     /// Marks this view as a portal with the specified role using an `Identifiable` item's ID and group.
@@ -252,7 +251,7 @@ public extension View {
     /// }
     /// ```
     func portal<Item: Identifiable>(item: Item, _ role: PortalRole, groupID: String) -> some View {
-        let key = "\(item.id)"
         let isSource = role == .source
-        return Portal(id: key, source: isSource, groupID: groupID) { self }
-    }}
+        return Portal(id: item.id, source: isSource, groupID: groupID) { self }
+    }
+}

@@ -71,7 +71,7 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
     /// Environment corners configuration.
 
     /// Tracks the last set of keys for cleanup during reverse transitions.
-    @State private var lastKeys: Set<String> = []
+    @State private var lastKeys: Set<AnyHashable> = []
 
     public init(
         items: Binding<[Item]>,
@@ -118,7 +118,7 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
                     message,
                     level: .warning,
                     tags: [PortalLogs.Tags.transition],
-                    metadata: ["groupID": groupID, "duration": "\(duration)", "minimum": "\(PortalConstants.minimumSheetAnimationDuration)"]
+                    metadata: ["groupID": groupID, "duration": String(reflecting: duration), "minimum": String(reflecting: PortalConstants.minimumSheetAnimationDuration)]
                 )
             }
         }
@@ -142,15 +142,15 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
         return nil
     }
 
-    /// Generates string keys from the current items' IDs.
-    private var keys: Set<String> {
-        Set(items.map { "\($0.id)" })
+    /// Generates keys from the current items' IDs.
+    private var keys: Set<AnyHashable> {
+        Set(items.map { AnyHashable($0.id) })
     }
 
     /// Ensures portal info exists for all items.
     private func ensurePortalInfo(for items: [Item]) {
         for item in items {
-            let key = "\(item.id)"
+            let key = AnyHashable(item.id)
             if !portalModel.info.contains(where: { $0.infoID == key }) {
                 portalModel.info.append(PortalInfo(id: key, groupID: groupID))
             }
@@ -169,7 +169,7 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
             portalModel.info[idx].isGroupCoordinator = (i == 0)
             portalModel.info[idx].showLayer = true
 
-            if let item = items.first(where: { "\($0.id)" == portalModel.info[idx].infoID }) {
+            if let item = items.first(where: { AnyHashable($0.id) == portalModel.info[idx].infoID }) {
                 portalModel.info[idx].layerView = AnyView(layerView(item))
             }
 
@@ -235,7 +235,7 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
     }
 
     /// Performs reverse transition cleanup.
-    private func performReverseTransition(for keys: Set<String>) {
+    private func performReverseTransition(for keys: Set<AnyHashable>) {
         let cleanupIndices = portalModel.info.enumerated().compactMap { index, info in
             keys.contains(info.infoID) ? index : nil
         }

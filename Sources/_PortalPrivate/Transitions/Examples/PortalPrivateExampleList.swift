@@ -43,18 +43,18 @@ public struct PortalPrivateExampleList: View {
                         ForEach(listItems) { item in
                             HStack(spacing: 16) {
                                 // Photo - PortalPrivate Source
-                                AnimatedLayer(portalID: "\(item.id)") {
-                                    Group {
+                                AnimatedItemLayer(item: item) { item, _ in
+                                    if let item {
                                         RoundedRectangle(cornerRadius: 12)
                                             .fill(item.color.gradient)
+                                            .overlay(
+                                                Image(systemName: item.icon)
+                                                    .font(.system(size: 24, weight: .medium))
+                                                    .foregroundColor(.white)
+                                            )
                                     }
-                                    .overlay(
-                                        Image(systemName: item.icon)
-                                            .font(.system(size: 24, weight: .medium))
-                                            .foregroundColor(.white)
-                                    )
-                                    .portalPrivate(item: item)
                                 }
+                                .portalPrivate(item: item)
                                 .frame(width: 60, height: 60)
 
                                 // Content

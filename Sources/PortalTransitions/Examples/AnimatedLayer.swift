@@ -27,9 +27,15 @@ let portalAnimationExampleExtraBounce = Animation.smooth(duration: portalAnimati
 /// second bounce animation triggers relative to the first one. When you copy this component,
 /// these values are meant to be tuned for your specific animation design.
 struct AnimatedLayer<Content: View>: AnimatedPortalLayer {
-    let portalID: String
+    let portalID: AnyHashable
     var scale: CGFloat = 1.1
     @ViewBuilder let content: () -> Content
+
+    init<ID: Hashable>(portalID: ID, scale: CGFloat = 1.1, @ViewBuilder content: @escaping () -> Content) {
+        self.portalID = AnyHashable(portalID)
+        self.scale = scale
+        self.content = content
+    }
 
     @State private var layerScale: CGFloat = 1
 

@@ -25,7 +25,7 @@ import SwiftUI
 /// - Proper cleanup when animations complete
 public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
     /// Array of portal IDs to animate together.
-    public let ids: [String]
+    public let ids: [AnyHashable]
 
     /// Group identifier for coordinating the animations.
     public let groupID: String
@@ -46,7 +46,7 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
     @Binding public var isActive: Bool
 
     /// Closure that generates the layer view for each ID in the transition.
-    public let layerView: (String) -> LayerView
+    public let layerView: (AnyHashable) -> LayerView
 
     /// Completion handler called when all transitions finish.
     public let completion: (Bool) -> Void
@@ -56,8 +56,8 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
 
     /// Environment corners configuration.
 
-    public init(
-        ids: [String],
+    public init<ID: Hashable>(
+        ids: [ID],
         groupID: String,
         isActive: Binding<Bool>,
         in corners: PortalCorners? = nil,
@@ -65,9 +65,9 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
         transition: PortalRemoveTransition = .none,
         completionCriteria: AnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void,
-        @ViewBuilder layerView: @escaping (String) -> LayerView
+        @ViewBuilder layerView: @escaping (AnyHashable) -> LayerView
     ) {
-        self.ids = ids
+        self.ids = ids.map { AnyHashable($0) }
         self.groupID = groupID
         self._isActive = isActive
         self.corners = corners
@@ -183,7 +183,7 @@ public extension View {
     /// `isActive` changes.
     ///
     /// - Parameters:
-    ///   - ids: Array of IDs for the portals to transition
+    ///   - ids: Array of IDs for the portals to transition (any `Hashable` type)
     ///   - groupID: Common group ID for organizing the IDs
     ///   - isActive: Controls whether the transition is active
     ///   - in corners: Corner radius configuration for visual styling
@@ -194,15 +194,15 @@ public extension View {
     ///   - completion: Called when the transition completes
     ///
     /// - Returns: A modified view with the portal transitions applied
-    func portalTransition<LayerView: View>(
-        ids: [String],
+    func portalTransition<ID: Hashable, LayerView: View>(
+        ids: [ID],
         groupID: String,
         isActive: Binding<Bool>,
         in corners: PortalCorners? = nil,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
         completionCriteria: AnimationCompletionCriteria = .removed,
-        @ViewBuilder layerView: @escaping (String) -> LayerView,
+        @ViewBuilder layerView: @escaping (AnyHashable) -> LayerView,
         completion: @escaping (Bool) -> Void = { _ in }
     ) -> some View {
         return self.modifier(

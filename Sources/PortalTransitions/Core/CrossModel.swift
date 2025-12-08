@@ -48,22 +48,25 @@ public class CrossModel {
     ///
     /// Example usage:
     /// ```swift
-    /// // In a carousel, when the user swipes to a new item:
-    /// .onChange(of: currentIndex) { _, newIndex in
-    ///     let newItem = items[newIndex]
-    ///     portalModel.transferActivePortal(from: "\(oldItem.id)", to: "\(newItem.id)")
-    /// }
+    /// // For static string IDs:
+    /// portalModel.transferActivePortal(from: "panel1", to: "panel2")
+    ///
+    /// // For Identifiable items, prefer the type-safe overload:
+    /// portalModel.transferActivePortal(from: oldItem, to: newItem)
     /// ```
-    public func transferActivePortal(from fromID: String, to toID: String) {
-        guard fromID != toID else { return }
+    public func transferActivePortal<ID: Hashable>(from fromID: ID, to toID: ID) {
+        let fromKey = AnyHashable(fromID)
+        let toKey = AnyHashable(toID)
+
+        guard fromKey != toKey else { return }
 
         // Find the source portal and copy its configuration
-        guard let fromIndex = info.firstIndex(where: { $0.infoID == fromID }) else {
+        guard let fromIndex = info.firstIndex(where: { $0.infoID == fromKey }) else {
             PortalLogs.logger.log(
                 "Transfer failed: source portal not found",
                 level: .warning,
                 tags: [PortalLogs.Tags.transition],
-                metadata: ["fromID": fromID, "toID": toID]
+                metadata: ["fromID": String(reflecting: fromID), "toID": String(reflecting: toID)]
             )
             return
         }
@@ -71,7 +74,7 @@ public class CrossModel {
         let sourceInfo = info[fromIndex]
 
         // Create or update the destination portal
-        if let toIndex = info.firstIndex(where: { $0.infoID == toID }) {
+        if let toIndex = info.firstIndex(where: { $0.infoID == toKey }) {
             // Transfer state to existing portal
             info[toIndex].initialized = true
             info[toIndex].animateView = true
@@ -85,7 +88,7 @@ public class CrossModel {
             info[toIndex].layerView = sourceInfo.layerView
         } else {
             // Create new portal info with transferred state
-            var newInfo = PortalInfo(id: toID)
+            var newInfo = PortalInfo(id: toKey)
             newInfo.initialized = true
             newInfo.animateView = true
             newInfo.hideView = true
@@ -114,7 +117,38 @@ public class CrossModel {
             "Transferred active portal",
             level: .notice,
             tags: [PortalLogs.Tags.transition],
-            metadata: ["fromID": fromID, "toID": toID]
+            metadata: ["fromID": String(reflecting: fromID), "toID": String(reflecting: toID)]
         )
     }
+
+    /// Transfers the active portal state from one `Identifiable` item to another.
+    ///
+    /// This is a convenience method that extracts the IDs from the provided items.
+    /// Uses distinct parameter labels (`fromItem`/`toItem`) to avoid a Swift compiler
+    /// crash in Xcode 26.1+ that occurs with the `from`/`to` overload pattern.
+    ///
+    /// - Parameters:
+    ///   - fromItem: The item whose portal should be deactivated
+    ///   - toItem: The item whose portal should be activated
+    public func transferActivePortal<Item: Identifiable>(fromItem: Item, toItem: Item) {
+        transferActivePortal(from: fromItem.id, to: toItem.id)
+    }
+
+    // MARK: - Disabled Overload (Swift Compiler Crash)
+
+    // This overload causes a Swift compiler crash in Xcode 26.1+ when:
+    // 1. You have a @Binding var of the same Identifiable type
+    // 2. You call this method
+    // 3. You assign to the binding AFTER the call
+    //
+    // Using distinct parameter labels (`fromItem`/`toItem` above) avoids the crash.
+    //
+    // Radar: FB00000000
+    //
+    // To check if fixed: Uncomment the overload below and run the test target.
+    // If CompilerCrashTests passes, the bug is fixed and this can be re-enabled.
+    //
+    // public func transferActivePortal<Item: Identifiable>(from fromItem: Item, to toItem: Item) {
+    //     transferActivePortal(from: fromItem.id, to: toItem.id)
+    // }
 }

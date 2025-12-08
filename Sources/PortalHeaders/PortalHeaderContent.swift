@@ -224,7 +224,7 @@ private struct PortalHeaderModifier<AccessoryContent: View>: ViewModifier {
                             "Snap disabled",
                             level: .debug,
                             tags: [PortalHeaderLogs.Tags.snapping],
-                            metadata: ["progress": "\(titleProgress)"]
+                            metadata: ["progress": String(reflecting: titleProgress)]
                         )
                     }
 
@@ -280,7 +280,7 @@ private struct PortalHeaderModifier<AccessoryContent: View>: ViewModifier {
                                 "Maintaining snap position",
                                 level: .debug,
                                 tags: [PortalHeaderLogs.Tags.scroll],
-                                metadata: ["snappedValue": "\(snappedValue)"]
+                                metadata: ["snappedValue": String(reflecting: snappedValue)]
                             )
                             return
                         } else {

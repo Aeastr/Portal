@@ -71,25 +71,25 @@ public struct PortalPrivateExampleCardGrid: View {
                         LazyVGrid(columns: columns, spacing: 12) {
                             ForEach(cards) { card in
                                 VStack(spacing: 12) {
-                                    AnimatedLayer(portalID: "\(card.id)") {
-                                        Group {
+                                    AnimatedItemLayer(item: card) { card, _ in
+                                        if let card {
                                             RoundedRectangle(cornerRadius: 16)
                                                 .fill(card.color.gradient)
-                                        }
-                                        .overlay(
-                                            VStack(spacing: 8) {
-                                                Image(systemName: card.icon)
-                                                    .font(.system(size: 32, weight: .medium))
-                                                    .foregroundColor(.white)
+                                                .overlay(
+                                                    VStack(spacing: 8) {
+                                                        Image(systemName: card.icon)
+                                                            .font(.system(size: 32, weight: .medium))
+                                                            .foregroundColor(.white)
 
-                                                Text(card.title)
-                                                    .font(.headline)
-                                                    .fontWeight(.semibold)
-                                                    .foregroundColor(.white)
-                                            }
-                                        )
-                                        .portalPrivate(item: card)
+                                                        Text(card.title)
+                                                            .font(.headline)
+                                                            .fontWeight(.semibold)
+                                                            .foregroundColor(.white)
+                                                    }
+                                                )
+                                        }
                                     }
+                                    .portalPrivate(item: card)
                                     .frame(height: 120)
                                 }
                                 .onTapGesture {
