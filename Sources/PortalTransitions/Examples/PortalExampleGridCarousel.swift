@@ -98,6 +98,8 @@ public struct CarouselItem: Identifiable, Hashable {
         lhs.id == rhs.id
     }
 
+    // nonisolated(unsafe) is required because Color is not Sendable,
+    // but the array is immutable and safe to share across isolation domains.
     nonisolated(unsafe) static let sampleItems: [CarouselItem] = [
         CarouselItem(title: "Photos", subtitle: "Your memories", color: .orange, icon: "photo.fill"),
         CarouselItem(title: "Music", subtitle: "Listen now", color: .pink, icon: "music.note"),
