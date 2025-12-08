@@ -199,8 +199,8 @@ private struct CarouselDetailView: View {
         .onChange(of: currentIndex) { oldIndex, newIndex in
             let oldItem = items[oldIndex]
             let newItem = items[newIndex]
-            // Note: Using .id explicitly due to Swift compiler crash in Xcode 26.1+ when
-            // calling the Identifiable overload. See CompilerCrashReproducer.swift for details.
+            // Using .id due to Swift compiler bug in Xcode 26.1+
+            // See CrossModel.swift for details on the disabled Identifiable overload
             portalModel.transferActivePortal(from: oldItem.id, to: newItem.id)
             portalItem = newItem
         }

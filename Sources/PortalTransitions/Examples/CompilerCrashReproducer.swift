@@ -89,7 +89,7 @@ public class ReproducerModel {
     }
 }
 
-// MARK: - SwiftUI View that triggers the crash (matches PortalExampleGridCarousel)
+// MARK: - SwiftUI View using ReproducerModel (does NOT crash)
 
 struct ReproducerContentView: View {
     @State private var items: [ReproducerItem] = [
@@ -110,10 +110,58 @@ struct ReproducerContentView: View {
         .onChange(of: currentIndex) { oldIndex, newIndex in
             let oldItem = items[oldIndex]
             let newItem = items[newIndex]
-            // This line causes the compiler crash in the real code:
+            // This does NOT crash with ReproducerModel:
             model.transferActivePortal(from: oldItem, to: newItem)
-            // Workaround - use .id explicitly:
-            // model.transferActivePortal(from: oldItem.id, to: newItem.id)
+        }
+    }
+}
+
+// MARK: - SwiftUI View using real CrossModel with ReproducerItem (does NOT crash)
+
+struct ReproducerCrossModelView: View {
+    @State private var items: [ReproducerItem] = [
+        ReproducerItem(name: "First", color: .red),
+        ReproducerItem(name: "Second", color: .blue),
+        ReproducerItem(name: "Third", color: .green)
+    ]
+    @State private var currentIndex = 0
+    @Environment(CrossModel.self) private var portalModel
+
+    var body: some View {
+        TabView(selection: $currentIndex) {
+            ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
+                Text(item.name)
+                    .tag(index)
+            }
+        }
+        .onChange(of: currentIndex) { oldIndex, newIndex in
+            let oldItem = items[oldIndex]
+            let newItem = items[newIndex]
+            // This does NOT crash with ReproducerItem:
+            portalModel.transferActivePortal(from: oldItem, to: newItem)
+        }
+    }
+}
+
+// MARK: - SwiftUI View using CrossModel with CarouselItem (CRASHES the compiler!)
+
+struct ReproducerCarouselItemView: View {
+    @State private var items: [CarouselItem] = CarouselItem.sampleItems
+    @State private var currentIndex = 0
+    @Environment(CrossModel.self) private var portalModel
+
+    var body: some View {
+        TabView(selection: $currentIndex) {
+            ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
+                Text(item.title)
+                    .tag(index)
+            }
+        }
+        .onChange(of: currentIndex) { oldIndex, newIndex in
+            let oldItem = items[oldIndex]
+            let newItem = items[newIndex]
+            // THIS CRASHES THE COMPILER:
+            portalModel.transferActivePortal(from: oldItem, to: newItem)
         }
     }
 }
