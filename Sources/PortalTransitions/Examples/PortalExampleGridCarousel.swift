@@ -39,10 +39,8 @@ public struct PortalExampleGridCarousel: View {
                         // Grid of items
                         LazyVGrid(columns: columns, spacing: 12) {
                             ForEach(items) { item in
-                                AnimatedCarouselLayer(item: item) { item in
-                                    GridItemView(item: item)
-                                }
-                                .portal(item: item, .source)
+                                GridItemView(item: item)
+                                    .portal(item: item, .source)
                                 .onTapGesture {
                                     portalItem = item
                                     selectedItem = item
@@ -69,9 +67,7 @@ public struct PortalExampleGridCarousel: View {
                 animation: .smooth(duration: 0.25),
                 transition: .fade
             ) { item in
-                AnimatedCarouselLayer(item: item) { item in
-                    GridItemView(item: item)
-                }
+                GridItemView(item: item)
             }
         }
     }
@@ -143,30 +139,6 @@ private struct GridItemView: View {
     }
 }
 
-// MARK: - Animated Carousel Layer
-
-/// An item-based animated layer for the carousel example.
-/// Provides a subtle scale animation during portal transitions.
-private struct AnimatedCarouselLayer<Item: Identifiable, Content: View>: View {
-    let item: Item?
-    var scale: CGFloat = 1.08
-    @ViewBuilder let content: (Item) -> Content
-
-    @State private var layerScale: CGFloat = 1
-
-    var body: some View {
-        Group {
-            if let item {
-                content(item)
-                    .scaleEffect(layerScale)
-            }
-        }
-        .onAppear {
-            layerScale = 1
-        }
-    }
-}
-
 // MARK: - Carousel Detail View
 
 /// Fullscreen carousel view that pages horizontally through items
@@ -227,6 +199,8 @@ private struct CarouselDetailView: View {
         .onChange(of: currentIndex) { oldIndex, newIndex in
             let oldItem = items[oldIndex]
             let newItem = items[newIndex]
+            // Note: Using .id explicitly due to Swift compiler crash in Xcode 26.1+ when
+            // calling the Identifiable overload. See CompilerCrashReproducer.swift for details.
             portalModel.transferActivePortal(from: oldItem.id, to: newItem.id)
             portalItem = newItem
         }
@@ -245,10 +219,8 @@ private struct CarouselPageView: View {
             Spacer()
 
             // Main content card - portal destination
-            AnimatedCarouselLayer(item: item) { item in
-                GridItemView(item: item)
-            }
-            .portal(item: item, .destination)
+            GridItemView(item: item)
+                .portal(item: item, .destination)
 
             // Info below the card
             VStack(spacing: 8) {
