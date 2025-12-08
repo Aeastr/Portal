@@ -1,16 +1,26 @@
 // Swift Compiler Crash Reproducer
-// Testing CrossModel.transferActivePortal with Identifiable overload
+//
+// CRASH TRIGGER (Xcode 26.1+):
+// The combination of:
+// 1. @Binding var someItem: SomeIdentifiableType?
+// 2. Calling a generic method with Identifiable constraint: func foo<T: Identifiable>(item: T)
+// 3. Then assigning someItem = item AFTER the call
+// ...causes a Swift compiler crash.
+//
+// FIX: Assign to the binding BEFORE calling the Identifiable generic method.
+//
+// CRASHES:
+//   portalModel.transferActivePortal(from: oldItem, to: newItem)
+//   portalItem = newItem  // <-- crash
+//
+// WORKS:
+//   portalItem = newItem  // <-- assign first
+//   portalModel.transferActivePortal(from: oldItem, to: newItem)
 
 #if DEBUG
 import SwiftUI
 
-// CRASH TRIGGER:
-// The combination of:
-// 1. @Binding var portalItem: CarouselItem?
-// 2. Calling portalModel.transferActivePortal(from: oldItem, to: newItem)
-// 3. Then assigning portalItem = newItem
-// ...causes a Swift compiler crash in Xcode 26.1+
-struct CrashTestView: View {
+struct CompilerCrashWorkaroundExample: View {
     let items: [CarouselItem]
     @Binding var portalItem: CarouselItem?
 
@@ -27,9 +37,9 @@ struct CrashTestView: View {
         .onChange(of: currentIndex) { oldIndex, newIndex in
             let oldItem = items[oldIndex]
             let newItem = items[newIndex]
-            // CRASHES: Both lines together cause compiler crash
-            portalModel.transferActivePortal(from: oldItem, to: newItem)
+            // FIX: Assign to binding BEFORE calling Identifiable overload
             portalItem = newItem
+            portalModel.transferActivePortal(from: oldItem, to: newItem)
         }
     }
 }

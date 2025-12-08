@@ -121,6 +121,18 @@ public class CrossModel {
         )
     }
 
+    /// Transfers the active portal state from one `Identifiable` item to another.
+    ///
+    /// This is a convenience overload that extracts the IDs from the provided items.
+    ///
+    /// - Parameters:
+    ///   - fromItem: The item whose portal should be deactivated
+    ///   - toItem: The item whose portal should be activated
+    ///
+    /// - Note: In Xcode 26.1+, there's a Swift compiler bug where calling this method
+    ///   and then assigning to a `@Binding` of the same `Identifiable` type causes a crash.
+    ///   **Workaround:** Assign to the binding BEFORE calling this method.
+    ///   See `CompilerCrashReproducer.swift` for details.
     public func transferActivePortal<Item: Identifiable>(from fromItem: Item, to toItem: Item) {
         transferActivePortal(from: fromItem.id, to: toItem.id)
     }
