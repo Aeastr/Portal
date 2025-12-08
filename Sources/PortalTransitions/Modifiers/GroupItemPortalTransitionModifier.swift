@@ -251,6 +251,11 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
             }
         } completion: {
             Task { @MainActor in
+                // Call completion for coordinator before resetting state
+                if let coordinatorIdx = cleanupIndices.first(where: { portalModel.info[$0].isGroupCoordinator }) {
+                    portalModel.info[coordinatorIdx].completion(false)
+                }
+
                 for idx in cleanupIndices {
                     portalModel.info[idx].showLayer = false
                     portalModel.info[idx].initialized = false
@@ -259,9 +264,6 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
                     portalModel.info[idx].destinationAnchor = nil
                     portalModel.info[idx].groupID = nil
                     portalModel.info[idx].isGroupCoordinator = false
-                    if portalModel.info[idx].isGroupCoordinator {
-                        portalModel.info[idx].completion(false)
-                    }
                 }
             }
         }
