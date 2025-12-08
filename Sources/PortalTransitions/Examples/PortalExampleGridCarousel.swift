@@ -199,10 +199,8 @@ private struct CarouselDetailView: View {
         .onChange(of: currentIndex) { oldIndex, newIndex in
             let oldItem = items[oldIndex]
             let newItem = items[newIndex]
-            // Note: Assignment must come BEFORE the Identifiable overload call
-            // to avoid a Swift compiler crash in Xcode 26.1+
+            portalModel.transferActivePortal(fromItem: oldItem, toItem: newItem)
             portalItem = newItem
-            portalModel.transferActivePortal(from: oldItem, to: newItem)
         }
     }
 }

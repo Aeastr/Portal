@@ -123,17 +123,30 @@ public class CrossModel {
 
     /// Transfers the active portal state from one `Identifiable` item to another.
     ///
-    /// This is a convenience overload that extracts the IDs from the provided items.
+    /// This is a convenience method that extracts the IDs from the provided items.
+    /// Uses distinct parameter labels (`fromItem`/`toItem`) to avoid a Swift compiler
+    /// crash in Xcode 26.1+ that occurs with the `from`/`to` overload pattern.
     ///
     /// - Parameters:
     ///   - fromItem: The item whose portal should be deactivated
     ///   - toItem: The item whose portal should be activated
-    ///
-    /// - Note: In Xcode 26.1+, there's a Swift compiler bug where calling this method
-    ///   and then assigning to a `@Binding` of the same `Identifiable` type causes a crash.
-    ///   **Workaround:** Assign to the binding BEFORE calling this method.
-    ///   See `CompilerCrashReproducer.swift` for details.
-    public func transferActivePortal<Item: Identifiable>(from fromItem: Item, to toItem: Item) {
+    public func transferActivePortal<Item: Identifiable>(fromItem: Item, toItem: Item) {
         transferActivePortal(from: fromItem.id, to: toItem.id)
     }
+
+    // MARK: - Disabled Overload (Swift Compiler Crash)
+
+    // This overload causes a Swift compiler crash in Xcode 26.1+ when:
+    // 1. You have a @Binding var of the same Identifiable type
+    // 2. You call this method
+    // 3. You assign to the binding AFTER the call
+    //
+    // The crash is a type inference bug. Using distinct parameter labels
+    // (`fromItem`/`toItem` above) avoids the issue entirely.
+    //
+    // Re-enable if Apple fixes the compiler bug:
+    //
+    // public func transferActivePortal<Item: Identifiable>(from fromItem: Item, to toItem: Item) {
+    //     transferActivePortal(from: fromItem.id, to: toItem.id)
+    // }
 }
