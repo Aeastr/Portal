@@ -37,7 +37,7 @@ public struct PortalPrivateExampleNoSheetView: View {
                             ], spacing: 16) {
                                 ForEach(items) { item in
                                     CardView(item: item)
-                                        .portalPrivate(id: item.id.uuidString, in: portalNamespace)
+                                        .portalSourcePrivate(id: item.id.uuidString, in: portalNamespace)
                                         .onTapGesture {
                                             withAnimation(.smooth(duration: 0.45)) {
                                                 selectedItem = item

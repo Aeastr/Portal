@@ -51,7 +51,7 @@ public struct PortalPrivateExampleView: View {
                             ForEach(items) { item in
                                 AnimatedLayer(portalID: item.id.uuidString) {
                                     CardView(item: item)
-                                        .portalPrivate(id: item.id.uuidString, in: portalNamespace)
+                                        .portalSourcePrivate(id: item.id.uuidString, in: portalNamespace)
                                         .onTapGesture {
                                             withAnimation(.smooth) {
                                                 selectedItem = item

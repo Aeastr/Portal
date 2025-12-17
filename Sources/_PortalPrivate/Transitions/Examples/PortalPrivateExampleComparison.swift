@@ -67,7 +67,7 @@ public struct PortalPrivateExampleComparison: View {
                                                     .fontWeight(.bold)
                                             }
                                         )
-                                    .portalPrivate(id: "portalDemo", in: portalNamespace)
+                                    .portalSourcePrivate(id: "portalDemo", in: portalNamespace)
                             }
                             .frame(width: 160, height: 120)
                             .onTapGesture {

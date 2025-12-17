@@ -37,7 +37,7 @@ public struct PortalExampleMultiItem: View {
                         ForEach(allPhotos) { photo in
                             AnimatedLayer(portalID: photo.id.uuidString, scale: 1.15) {
                                 PhotoThumbnailView(photo: photo)
-                                    .portalPrivate(item: photo, groupID: "photoStack", in: portalNamespace)
+                                    .portalSourcePrivate(item: photo, groupID: "photoStack", in: portalNamespace)
                             }
                             .frame(height: 160)
                         }

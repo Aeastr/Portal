@@ -86,10 +86,10 @@ private class PortalPrivateStorage {
     }
 }
 
-// MARK: - PortalPrivate View Wrapper
+// MARK: - PortalPrivateSource View Wrapper
 
 /// A view that manages a single SwiftUI view instance that can be shown in multiple places
-public struct PortalPrivate<Content: View>: View {
+public struct PortalPrivateSource<Content: View>: View {
     private let id: AnyHashable
     private let namespace: Namespace.ID
     private let groupID: String?
@@ -180,7 +180,7 @@ public struct PortalPrivate<Content: View>: View {
 // MARK: - View Extensions
 
 public extension View {
-    /// Marks this view as a private portal that uses view mirroring
+    /// Marks this view as a private portal source that uses view mirroring
     ///
     /// Unlike regular portals, this creates a single view instance that can be
     /// displayed in multiple places using _UIPortalView.
@@ -190,26 +190,26 @@ public extension View {
     /// @Namespace var namespace
     ///
     /// MyComplexView()
-    ///     .portalPrivate(id: "myView", in: namespace)
+    ///     .portalSourcePrivate(id: "myView", in: namespace)
     /// ```
-    func portalPrivate<ID: Hashable, Content: View>(
+    func portalSourcePrivate<ID: Hashable, Content: View>(
         id: ID,
         in namespace: Namespace.ID,
         @ViewBuilder content: @escaping () -> Content
     ) -> some View {
         self.overlay(
-            PortalPrivate(id: id, in: namespace, content: content)
+            PortalPrivateSource(id: id, in: namespace, content: content)
         )
     }
 
-    /// Simplified portal private for when the view itself should be mirrored
-    func portalPrivate<ID: Hashable>(id: ID, groupID: String? = nil, in namespace: Namespace.ID) -> some View {
-        PortalPrivate(id: id, in: namespace, groupID: groupID) {
+    /// Simplified portal private source for when the view itself should be mirrored
+    func portalSourcePrivate<ID: Hashable>(id: ID, groupID: String? = nil, in namespace: Namespace.ID) -> some View {
+        PortalPrivateSource(id: id, in: namespace, groupID: groupID) {
             self
         }
     }
 
-    /// Marks this view as a private portal using an `Identifiable` item's ID
+    /// Marks this view as a private portal source using an `Identifiable` item's ID
     ///
     /// This creates a single view instance that can be displayed in multiple places
     /// using _UIPortalView, using the item's ID directly.
@@ -219,10 +219,10 @@ public extension View {
     /// @Namespace var namespace
     ///
     /// MyComplexView()
-    ///     .portalPrivate(item: book, in: namespace)
+    ///     .portalSourcePrivate(item: book, in: namespace)
     /// ```
-    func portalPrivate<Item: Identifiable>(item: Item, groupID: String? = nil, in namespace: Namespace.ID) -> some View {
-        PortalPrivate(id: item.id, in: namespace, groupID: groupID) {
+    func portalSourcePrivate<Item: Identifiable>(item: Item, groupID: String? = nil, in namespace: Namespace.ID) -> some View {
+        PortalPrivateSource(id: item.id, in: namespace, groupID: groupID) {
             self
         }
     }

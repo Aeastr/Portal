@@ -55,7 +55,7 @@ public struct PortalPrivateExampleStaticID: View {
                                 .padding(.top, 12)
 
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text(".portalPrivate(id: \"hero\")")
+                                    Text(".portalSourcePrivate(id: \"hero\")")
                                         .font(.system(.body, design: .monospaced))
                                         .foregroundColor(.blue)
                                     Text(".portalPrivateTransition(")
@@ -78,7 +78,7 @@ public struct PortalPrivateExampleStaticID: View {
                                 RoundedRectangle(cornerRadius: 12)
                                     .fill(Color(.systemBackground))
                             )
-                            .portalPrivate(id: "codeBlock", in: portalNamespace)
+                            .portalSourcePrivate(id: "codeBlock", in: portalNamespace)
                         }
                         .frame(width: 280, height: 140)
                         .onTapGesture {

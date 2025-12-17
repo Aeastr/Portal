@@ -90,7 +90,7 @@ public struct PortalPrivateExampleCardGrid: View {
                                                 )
                                         }
                                     }
-                                    .portalPrivate(item: card, in: portalNamespace)
+                                    .portalSourcePrivate(item: card, in: portalNamespace)
                                     .frame(height: 120)
                                 }
                                 .onTapGesture {
