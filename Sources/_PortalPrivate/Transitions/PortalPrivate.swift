@@ -576,6 +576,7 @@ struct PortalPrivateItemTransitionModifier<Item: Identifiable>: ViewModifier {
 struct MultiIDPortalPrivateTransitionModifier: ViewModifier {
     let ids: [AnyHashable]
     let groupID: String
+    let namespace: Namespace.ID
     @Binding var isActive: Bool
     let animation: Animation
     let completionCriteria: AnimationCompletionCriteria
@@ -589,6 +590,7 @@ struct MultiIDPortalPrivateTransitionModifier: ViewModifier {
     init<ID: Hashable>(
         ids: [ID],
         groupID: String,
+        in namespace: Namespace.ID,
         isActive: Binding<Bool>,
         animation: Animation,
         completionCriteria: AnimationCompletionCriteria,
@@ -600,6 +602,7 @@ struct MultiIDPortalPrivateTransitionModifier: ViewModifier {
     ) {
         self.ids = ids.map { AnyHashable($0) }
         self.groupID = groupID
+        self.namespace = namespace
         self._isActive = isActive
         self.animation = animation
         self.completionCriteria = completionCriteria
@@ -709,6 +712,7 @@ struct MultiIDPortalPrivateTransitionModifier: ViewModifier {
 struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifier {
     @Binding var items: [Item]
     let groupID: String
+    let namespace: Namespace.ID
     let animation: Animation
     let completionCriteria: AnimationCompletionCriteria
     let staggerDelay: TimeInterval
@@ -719,6 +723,32 @@ struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifie
     let completion: (Bool) -> Void
     @Environment(CrossModel.self) private var portalModel
     @State private var lastKeys: Set<AnyHashable> = []
+
+    init(
+        items: Binding<[Item]>,
+        groupID: String,
+        in namespace: Namespace.ID,
+        animation: Animation,
+        completionCriteria: AnimationCompletionCriteria,
+        staggerDelay: TimeInterval,
+        hidesSource: Bool,
+        matchesAlpha: Bool,
+        matchesTransform: Bool,
+        matchesPosition: Bool,
+        completion: @escaping (Bool) -> Void
+    ) {
+        self._items = items
+        self.groupID = groupID
+        self.namespace = namespace
+        self.animation = animation
+        self.completionCriteria = completionCriteria
+        self.staggerDelay = staggerDelay
+        self.hidesSource = hidesSource
+        self.matchesAlpha = matchesAlpha
+        self.matchesTransform = matchesTransform
+        self.matchesPosition = matchesPosition
+        self.completion = completion
+    }
 
     private var keys: Set<AnyHashable> {
         Set(items.map { AnyHashable($0.id) })
@@ -865,6 +895,7 @@ struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifie
 /// A destination view that shows a portal of the private source
 public struct PortalPrivateDestination: View {
     let id: AnyHashable
+    let namespace: Namespace.ID
     let hidesSource: Bool
     let matchesAlpha: Bool
     let matchesTransform: Bool
@@ -874,12 +905,14 @@ public struct PortalPrivateDestination: View {
 
     public init<ID: Hashable>(
         id: ID,
+        in namespace: Namespace.ID,
         hidesSource: Bool = false,
         matchesAlpha: Bool = true,
         matchesTransform: Bool = true,
         matchesPosition: Bool = false
     ) {
         self.id = AnyHashable(id)
+        self.namespace = namespace
         self.hidesSource = hidesSource
         self.matchesAlpha = matchesAlpha
         self.matchesTransform = matchesTransform
@@ -889,12 +922,14 @@ public struct PortalPrivateDestination: View {
     /// Creates a destination for a private portal using an Identifiable item's ID
     public init<Item: Identifiable>(
         item: Item,
+        in namespace: Namespace.ID,
         hidesSource: Bool = false,
         matchesAlpha: Bool = true,
         matchesTransform: Bool = true,
         matchesPosition: Bool = false
     ) {
         self.id = AnyHashable(item.id)
+        self.namespace = namespace
         self.hidesSource = hidesSource
         self.matchesAlpha = matchesAlpha
         self.matchesTransform = matchesTransform
@@ -930,13 +965,13 @@ public struct PortalPrivateDestination: View {
                     }
                 )
                 .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                    [PortalKey(id, role: .destination): anchor]
+                    [PortalKey(id, role: .destination, in: namespace): anchor]
                 }
                 .onPreferenceChange(AnchorKey.self) { prefs in
                     Task { @MainActor in
                         // Wait for initialization like base Portal does
                         guard portalModel.info[idx].initialized else { return }
-                        guard let anchor = prefs[PortalKey(id, role: .destination)] else {
+                        guard let anchor = prefs[PortalKey(id, role: .destination, in: namespace)] else {
                             return
                         }
 
