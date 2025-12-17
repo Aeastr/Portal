@@ -162,42 +162,27 @@ public extension View {
     ///
     /// - Parameters:
     ///   - id: A unique identifier for this portal (any `Hashable` type). This should match the `id` used for the corresponding portal transition.
+    ///   - groupID: Optional group identifier for coordinated animations. Portals with the same groupID animate together.
     ///   - role: The role of this portal (`.source` or `.destination`).
+    ///   - namespace: The namespace for scoping this portal. Portals only match within the same namespace.
     ///
     /// Example usage:
     /// ```swift
+    /// @Namespace var namespace
+    ///
     /// // Source view
     /// Image("cover")
-    ///     .portal(id: "Book1", .source)
+    ///     .portal(id: "Book1", as: .source, in: namespace)
     ///
     /// // Destination view
     /// Image("cover")
-    ///     .portal(id: "Book1", .destination)
-    /// ```
-    func portal<ID: Hashable>(id: ID, _ role: PortalRole, in namespace: Namespace.ID) -> some View {
-        let isSource = role == .source
-        return Portal(id: id, source: isSource, namespace: namespace) { self }
-    }
-
-    /// Marks this view as a portal with the specified role and group.
+    ///     .portal(id: "Book1", as: .destination, in: namespace)
     ///
-    /// This modifier extends the basic portal functionality to support coordinated group animations.
-    /// Multiple portals with the same `groupID` will animate together as a coordinated group.
-    ///
-    /// - Parameters:
-    ///   - id: A unique identifier for this portal (any `Hashable` type). This should match the `id` used for the corresponding portal transition.
-    ///   - role: The role of this portal (`.source` or `.destination`).
-    ///   - groupID: A group identifier for coordinated animations. Portals with the same groupID animate together.
-    ///
-    /// Example usage:
-    /// ```swift
-    /// // Multiple views that should animate together
+    /// // With group ID for coordinated animations
     /// PhotoView(photo: photo1)
-    ///     .portal(id: "photo1", .source, groupID: "photoStack")
-    /// PhotoView(photo: photo2)
-    ///     .portal(id: "photo2", .source, groupID: "photoStack")
+    ///     .portal(id: "photo1", groupID: "photoStack", as: .source, in: namespace)
     /// ```
-    func portal<ID: Hashable>(id: ID, _ role: PortalRole, groupID: String, in namespace: Namespace.ID) -> some View {
+    func portal<ID: Hashable>(id: ID, groupID: String? = nil, as role: PortalRole, in namespace: Namespace.ID) -> some View {
         let isSource = role == .source
         return Portal(id: id, source: isSource, namespace: namespace, groupID: groupID) { self }
     }
@@ -209,10 +194,14 @@ public extension View {
     ///
     /// - Parameters:
     ///   - item: An `Identifiable` item whose ID will be used as the portal identifier.
+    ///   - groupID: Optional group identifier for coordinated animations. Portals with the same groupID animate together.
     ///   - role: The role of this portal (`.source` or `.destination`).
+    ///   - namespace: The namespace for scoping this portal. Portals only match within the same namespace.
     ///
     /// Example usage:
     /// ```swift
+    /// @Namespace var namespace
+    ///
     /// struct Book: Identifiable {
     ///     let id = UUID()
     ///     let title: String
@@ -222,42 +211,19 @@ public extension View {
     ///
     /// // Source view
     /// Image("thumbnail")
-    ///     .portal(item: book, .source)
+    ///     .portal(item: book, as: .source, in: namespace)
     ///
     /// // Destination view
     /// Image("fullsize")
-    ///     .portal(item: book, .destination)
-    /// ```
-    func portal<Item: Identifiable>(item: Item, _ role: PortalRole, in namespace: Namespace.ID) -> some View {
-        let isSource = role == .source
-        return Portal(id: item.id, source: isSource, namespace: namespace) { self }
-    }
-
-    /// Marks this view as a portal with the specified role using an `Identifiable` item's ID and group.
+    ///     .portal(item: book, as: .destination, in: namespace)
     ///
-    /// This modifier extends the basic portal functionality to support coordinated group animations.
-    /// Multiple portals with the same `groupID` will animate together as a coordinated group.
-    ///
-    /// - Parameters:
-    ///   - item: An `Identifiable` item whose ID will be used as the portal identifier.
-    ///   - role: The role of this portal (`.source` or `.destination`).
-    ///   - groupID: A group identifier for coordinated animations. Portals with the same groupID animate together.
-    ///
-    /// Example usage:
-    /// ```swift
-    /// // Multiple photos that should animate together
+    /// // With group ID for coordinated animations
     /// ForEach(photos) { photo in
     ///     PhotoView(photo: photo)
-    ///         .portal(item: photo, .source, groupID: "photoStack")
-    /// }
-    ///
-    /// // Destination views with the same groupID
-    /// ForEach(photos) { photo in
-    ///     PhotoView(photo: photo)
-    ///         .portal(item: photo, .destination, groupID: "photoStack")
+    ///         .portal(item: photo, groupID: "photoStack", as: .source, in: namespace)
     /// }
     /// ```
-    func portal<Item: Identifiable>(item: Item, _ role: PortalRole, in namespace: Namespace.ID, groupID: String) -> some View {
+    func portal<Item: Identifiable>(item: Item, groupID: String? = nil, as role: PortalRole, in namespace: Namespace.ID) -> some View {
         let isSource = role == .source
         return Portal(id: item.id, source: isSource, namespace: namespace, groupID: groupID) { self }
     }
