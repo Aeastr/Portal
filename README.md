@@ -132,6 +132,12 @@ Contributions welcome. See the [Contributing Guide](CONTRIBUTING.md) for details
 Released under the [MIT License](LICENSE.md).
 
 
+## Related
+
+- [UIPortalBridge](https://github.com/Aeastr/UIPortalBridge) - Standalone wrapper for `_UIPortalView`
+- [Transmission](https://github.com/nathantannar4/Transmission) - UIKit-backed presentation and transitions for SwiftUI
+
+
 ## Contact
 
 - [Twitter](https://x.com/AetherAurelia)
