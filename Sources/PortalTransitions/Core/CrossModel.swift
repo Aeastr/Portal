@@ -19,7 +19,7 @@ import SwiftUI
 /// The model uses the `@Observable` macro for SwiftUI integration and is marked with
 /// `@MainActor` to ensure all UI-related operations happen on the main thread.
 @MainActor @Observable
-public class CrossModel {
+public class CrossModel: Hashable {
     /// Array containing information about all active portal animations.
     /// Each `PortalInfo` object tracks the state of a specific portal transition.
     public var info: [PortalInfo] = []
@@ -28,9 +28,22 @@ public class CrossModel {
     /// Used for managing portal hierarchies and nested portal scenarios.
     public var rootInfo: [PortalInfo] = []
 
+    /// Stable identifier for this model instance, used for SwiftUI identity and Hashable conformance.
+    nonisolated let id = UUID()
+
     /// Initializes a new CrossModel instance.
     /// Creates empty arrays for managing portal information.
     public init() {}
+
+    // MARK: - Hashable Conformance (nonisolated to avoid actor isolation issues)
+
+    nonisolated public static func == (lhs: CrossModel, rhs: CrossModel) -> Bool {
+        lhs.id == rhs.id
+    }
+
+    nonisolated public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
 
     /// Transfers the active portal state from one ID to another without animation.
     ///
