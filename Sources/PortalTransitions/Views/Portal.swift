@@ -24,6 +24,7 @@ import SwiftUI
 public struct Portal<Content: View>: View {
     private let id: AnyHashable
     private let source: Bool
+    private let namespace: Namespace.ID
     private let groupID: String?
     @ViewBuilder private let content: Content
     @Environment(CrossModel.self) private var portalModel
@@ -36,9 +37,10 @@ public struct Portal<Content: View>: View {
     ///   - source: Whether this portal acts as a source (true) or destination (false). Defaults to true.
     ///   - groupID: Optional group identifier for coordinated animations. When provided, this portal will animate as part of a coordinated group.
     ///   - content: A view builder closure that returns the content to be wrapped
-    public init<ID: Hashable>(id: ID, source: Bool = true, groupID: String? = nil, @ViewBuilder content: () -> Content) {
+    public init<ID: Hashable>(id: ID, source: Bool = true, namespace: Namespace.ID, groupID: String? = nil, @ViewBuilder content: () -> Content) {
         self.id = AnyHashable(id)
         self.source = source
+        self.namespace = namespace
         self.groupID = groupID
         self.content = content()
     }
@@ -105,7 +107,7 @@ public struct Portal<Content: View>: View {
             }
     }
 
-    private var key: PortalKey { PortalKey(id, role: source ? .source : .destination) }
+    private var key: PortalKey { PortalKey(id, role: source ? .source : .destination, in: namespace) }
 
     private var opacity: CGFloat {
         guard let idx = index else { return 1 }
@@ -172,9 +174,9 @@ public extension View {
     /// Image("cover")
     ///     .portal(id: "Book1", .destination)
     /// ```
-    func portal<ID: Hashable>(id: ID, _ role: PortalRole) -> some View {
+    func portal<ID: Hashable>(id: ID, _ role: PortalRole, in namespace: Namespace.ID) -> some View {
         let isSource = role == .source
-        return Portal(id: id, source: isSource) { self }
+        return Portal(id: id, source: isSource, namespace: namespace) { self }
     }
 
     /// Marks this view as a portal with the specified role and group.
@@ -195,9 +197,9 @@ public extension View {
     /// PhotoView(photo: photo2)
     ///     .portal(id: "photo2", .source, groupID: "photoStack")
     /// ```
-    func portal<ID: Hashable>(id: ID, _ role: PortalRole, groupID: String) -> some View {
+    func portal<ID: Hashable>(id: ID, _ role: PortalRole, groupID: String, in namespace: Namespace.ID) -> some View {
         let isSource = role == .source
-        return Portal(id: id, source: isSource, groupID: groupID) { self }
+        return Portal(id: id, source: isSource, namespace: namespace, groupID: groupID) { self }
     }
 
     /// Marks this view as a portal with the specified role using an `Identifiable` item's ID.
@@ -226,9 +228,9 @@ public extension View {
     /// Image("fullsize")
     ///     .portal(item: book, .destination)
     /// ```
-    func portal<Item: Identifiable>(item: Item, _ role: PortalRole) -> some View {
+    func portal<Item: Identifiable>(item: Item, _ role: PortalRole, in namespace: Namespace.ID) -> some View {
         let isSource = role == .source
-        return Portal(id: item.id, source: isSource) { self }
+        return Portal(id: item.id, source: isSource, namespace: namespace) { self }
     }
 
     /// Marks this view as a portal with the specified role using an `Identifiable` item's ID and group.
@@ -255,8 +257,8 @@ public extension View {
     ///         .portal(item: photo, .destination, groupID: "photoStack")
     /// }
     /// ```
-    func portal<Item: Identifiable>(item: Item, _ role: PortalRole, groupID: String) -> some View {
+    func portal<Item: Identifiable>(item: Item, _ role: PortalRole, in namespace: Namespace.ID, groupID: String) -> some View {
         let isSource = role == .source
-        return Portal(id: item.id, source: isSource, groupID: groupID) { self }
+        return Portal(id: item.id, source: isSource, namespace: namespace, groupID: groupID) { self }
     }
 }

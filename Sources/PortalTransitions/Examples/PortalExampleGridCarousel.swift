@@ -16,6 +16,7 @@ public struct PortalExampleGridCarousel: View {
     @State private var selectedItem: CarouselItem?
     @State private var portalItem: CarouselItem?
     @State private var items: [CarouselItem] = CarouselItem.sampleItems
+    @Namespace private var portalNamespace
 
     private let columns: [GridItem] = Array(repeating: .init(.flexible(), spacing: 12), count: 3)
 
@@ -40,7 +41,7 @@ public struct PortalExampleGridCarousel: View {
                         LazyVGrid(columns: columns, spacing: 12) {
                             ForEach(items) { item in
                                 GridItemView(item: item)
-                                    .portal(item: item, .source)
+                                    .portal(item: item, in: portalNamespace, as: .source)
                                 .onTapGesture {
                                     portalItem = item
                                     selectedItem = item
@@ -59,11 +60,13 @@ public struct PortalExampleGridCarousel: View {
                 CarouselDetailView(
                     items: items,
                     initialItem: item,
-                    portalItem: $portalItem
+                    portalItem: $portalItem,
+                    namespace: portalNamespace
                 )
             }
             .portalTransition(
                 item: $portalItem,
+                in: portalNamespace,
                 animation: .smooth(duration: 0.25),
                 transition: .fade
             ) { item in
@@ -148,6 +151,7 @@ private struct CarouselDetailView: View {
     let items: [CarouselItem]
     let initialItem: CarouselItem
     @Binding var portalItem: CarouselItem?
+    let namespace: Namespace.ID
 
     @State private var currentIndex: Int = 0
     @Environment(\.dismiss) private var dismiss
@@ -163,7 +167,8 @@ private struct CarouselDetailView: View {
                     ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
                         CarouselPageView(
                             item: item,
-                            isSelected: item.id == portalItem?.id
+                            isSelected: item.id == portalItem?.id,
+                            namespace: namespace
                         )
                         .tag(index)
                     }
@@ -213,6 +218,7 @@ private struct CarouselDetailView: View {
 private struct CarouselPageView: View {
     let item: CarouselItem
     let isSelected: Bool
+    let namespace: Namespace.ID
 
     var body: some View {
         VStack(spacing: 24) {
@@ -220,7 +226,7 @@ private struct CarouselPageView: View {
 
             // Main content card - portal destination
             GridItemView(item: item)
-                .portal(item: item, .destination)
+                .portal(item: item, in: namespace, as: .destination)
 
             // Info below the card
             VStack(spacing: 8) {

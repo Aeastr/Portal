@@ -14,6 +14,7 @@ import SwiftUI
 /// Portal static ID example showing code block transitions
 public struct PortalExampleStaticID: View {
     @State private var showDetail = false
+    @Namespace private var portalNamespace
 
     public init() {}
 
@@ -78,7 +79,7 @@ public struct PortalExampleStaticID: View {
                             )
                         }
                         .frame(width: 280, height: 140)
-                        .portal(id: "codeBlock", .source)
+                        .portal(id: "codeBlock", in: portalNamespace, as: .source)
                         .onTapGesture {
                             withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
                                 showDetail.toggle()
@@ -98,10 +99,11 @@ public struct PortalExampleStaticID: View {
                 .background(Color(.systemGroupedBackground).ignoresSafeArea())
             }
             .sheet(isPresented: $showDetail) {
-                PortalExampleStaticIDDetail()
+                PortalExampleStaticIDDetail(namespace: portalNamespace)
             }
             .portalTransition(
                 id: "codeBlock",
+                in: portalNamespace,
                 isActive: $showDetail,
                 animation: .spring(response: 0.4, dampingFraction: 0.8)
             ) {
@@ -156,6 +158,7 @@ public struct PortalExampleStaticID: View {
 }
 
 private struct PortalExampleStaticIDDetail: View {
+    let namespace: Namespace.ID
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
@@ -208,7 +211,7 @@ private struct PortalExampleStaticIDDetail: View {
                                 .fill(Color(.systemBackground))
                         )
                     }
-                    .portal(id: "codeBlock", .destination)
+                    .portal(id: "codeBlock", in: namespace, as: .destination)
                     .padding(.top, 20)
                     .padding(.horizontal, 20)
 
@@ -242,7 +245,8 @@ private struct PortalExampleStaticIDDetail: View {
 }
 
 #Preview("Static ID Example Detail") {
-    PortalExampleStaticIDDetail()
+    @Previewable @Namespace var ns
+    PortalExampleStaticIDDetail(namespace: ns)
 }
 
 #endif
