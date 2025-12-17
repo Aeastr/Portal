@@ -55,7 +55,7 @@ public struct PortalExampleList: View {
                                 )
 
                                 .frame(width: 60, height: 60)
-                                .portal(item: item, in: portalNamespace, as: .source)
+                                .portal(item: item, as: .source, in: portalNamespace)
 
                                 // Content
                                 VStack(alignment: .leading, spacing: 4) {
@@ -227,7 +227,7 @@ private struct PortalExampleListDetail: View {
                     )
 
                     .frame(width: 280, height: 200)
-                    .portal(item: item, in: namespace, as: .destination)
+                    .portal(item: item, as: .destination, in: namespace)
                     .padding(.top, 20)
 
                     // Content

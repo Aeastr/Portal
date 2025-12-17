@@ -79,7 +79,7 @@ public struct PortalExampleCardGrid: View {
                                         PortalExampleCardContent(card: card)
                                     }
                                     .frame(height: 120)
-                                    .portal(item: card, in: portalNamespace, as: .source)
+                                    .portal(item: card, as: .source, in: portalNamespace)
                                 }
                                 .background(
                                     RoundedRectangle(cornerRadius: 16)
@@ -244,7 +244,7 @@ private struct PortalExampleCardDetail: View {
                         PortalExampleCardContent(card: card)
                     }
                     .frame(width: 240, height: 180)
-                    .portal(item: card, in: namespace, as: .destination)
+                    .portal(item: card, as: .destination, in: namespace)
                         .padding(.top, 20)
                     Spacer()
                 }

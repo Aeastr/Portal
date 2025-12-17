@@ -41,7 +41,7 @@ public struct PortalExampleGridCarousel: View {
                         LazyVGrid(columns: columns, spacing: 12) {
                             ForEach(items) { item in
                                 GridItemView(item: item)
-                                    .portal(item: item, in: portalNamespace, as: .source)
+                                    .portal(item: item, as: .source, in: portalNamespace)
                                 .onTapGesture {
                                     portalItem = item
                                     selectedItem = item
@@ -226,7 +226,7 @@ private struct CarouselPageView: View {
 
             // Main content card - portal destination
             GridItemView(item: item)
-                .portal(item: item, in: namespace, as: .destination)
+                .portal(item: item, as: .destination, in: namespace)
 
             // Info below the card
             VStack(spacing: 8) {

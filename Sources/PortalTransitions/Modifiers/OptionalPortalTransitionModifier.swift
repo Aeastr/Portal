@@ -45,6 +45,10 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
     /// with cleanup is performed.
     @Binding public var item: Item?
 
+    /// Namespace for scoping this portal transition.
+    /// Transitions only match portals within the same namespace.
+    public let namespace: Namespace.ID
+
     /// Animation to use for the transition.
     public let animation: Animation
 
@@ -92,7 +96,8 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
     ///   - layerView: Closure that generates the transition layer view
     public init(
         item: Binding<Item?>,
-        in corners: PortalCorners? = nil,
+        in namespace: Namespace.ID,
+        corners: PortalCorners? = nil,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
         completionCriteria: AnimationCompletionCriteria = .removed,
@@ -100,6 +105,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
         @ViewBuilder layerView: @escaping (Item) -> LayerView
     ) {
         self._item = item
+        self.namespace = namespace
         self.corners = corners
         self.animation = animation
         self.transition = transition
@@ -369,7 +375,8 @@ public extension View {
     ///
     /// - Parameters:
     ///   - item: Binding to an optional `Identifiable` item that controls the transition
-    ///   - in corners: Corner radius configuration for visual styling
+    ///   - namespace: The namespace for scoping this portal. Transitions only match portals within the same namespace.
+    ///   - corners: Corner radius configuration for visual styling
     ///   - animation: Animation to use for the transition (defaults to smooth animation)
     ///   - transition: Fade-out behavior for layer removal (defaults to .fade)
     ///   - completionCriteria: How to detect animation completion (defaults to .removed)
@@ -378,7 +385,8 @@ public extension View {
     /// - Returns: A view with the portal transition modifier applied
     func portalTransition<Item: Identifiable, LayerView: View>(
         item: Binding<Item?>,
-        in corners: PortalCorners? = nil,
+        in namespace: Namespace.ID,
+        corners: PortalCorners? = nil,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
         completionCriteria: AnimationCompletionCriteria = .removed,
@@ -388,7 +396,8 @@ public extension View {
         return self.modifier(
             OptionalPortalTransitionModifier(
                 item: item,
-                in: corners,
+                in: namespace,
+                corners: corners,
                 animation: animation,
                 transition: transition,
                 completionCriteria: completionCriteria,

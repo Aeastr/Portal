@@ -91,14 +91,16 @@ private class PortalPrivateStorage {
 /// A view that manages a single SwiftUI view instance that can be shown in multiple places
 public struct PortalPrivate<Content: View>: View {
     private let id: AnyHashable
+    private let namespace: Namespace.ID
     private let groupID: String?
     @ViewBuilder private let content: () -> Content
     @State private var sourceContainer: SourceViewContainer<AnyView>?
     @Environment(CrossModel.self) private var portalModel
     @Environment(\.portalTransitionDebugSettings) private var debugSettings
 
-    public init<ID: Hashable>(id: ID, groupID: String? = nil, @ViewBuilder content: @escaping () -> Content) {
+    public init<ID: Hashable>(id: ID, in namespace: Namespace.ID, groupID: String? = nil, @ViewBuilder content: @escaping () -> Content) {
         self.id = AnyHashable(id)
+        self.namespace = namespace
         self.groupID = groupID
         self.content = content
     }
@@ -153,7 +155,7 @@ public struct PortalPrivate<Content: View>: View {
                     }
                 )
                 .anchorPreference(key: AnchorKey.self, value: .bounds) { anchor in
-                    [PortalKey(id, role: .source): anchor]
+                    [PortalKey(id, role: .source, in: namespace): anchor]
                 }
                 .onPreferenceChange(AnchorKey.self) { prefs in
                     Task { @MainActor in
@@ -162,7 +164,7 @@ public struct PortalPrivate<Content: View>: View {
                         }
 
                         // Don't require initialized - we need to set anchor even before transition
-                        guard let anchor = prefs[PortalKey(id, role: .source)] else {
+                        guard let anchor = prefs[PortalKey(id, role: .source, in: namespace)] else {
                             return
                         }
 
@@ -185,34 +187,24 @@ public extension View {
     ///
     /// Example:
     /// ```swift
+    /// @Namespace var namespace
+    ///
     /// MyComplexView()
-    ///     .portalPrivate(id: "myView")
+    ///     .portalPrivate(id: "myView", in: namespace)
     /// ```
     func portalPrivate<ID: Hashable, Content: View>(
         id: ID,
+        in namespace: Namespace.ID,
         @ViewBuilder content: @escaping () -> Content
     ) -> some View {
         self.overlay(
-            PortalPrivate(id: id, content: content)
+            PortalPrivate(id: id, in: namespace, content: content)
         )
     }
 
     /// Simplified portal private for when the view itself should be mirrored
-    func portalPrivate<ID: Hashable>(id: ID) -> some View {
-        PortalPrivate(id: id) {
-            self
-        }
-    }
-
-    /// Marks this view as a private portal with a groupID for coordinated animations
-    ///
-    /// Example:
-    /// ```swift
-    /// MyComplexView()
-    ///     .portalPrivate(id: "myView", groupID: "viewGroup")
-    /// ```
-    func portalPrivate<ID: Hashable>(id: ID, groupID: String) -> some View {
-        PortalPrivate(id: id, groupID: groupID) {
+    func portalPrivate<ID: Hashable>(id: ID, groupID: String? = nil, in namespace: Namespace.ID) -> some View {
+        PortalPrivate(id: id, in: namespace, groupID: groupID) {
             self
         }
     }
@@ -224,27 +216,13 @@ public extension View {
     ///
     /// Example:
     /// ```swift
+    /// @Namespace var namespace
+    ///
     /// MyComplexView()
-    ///     .portalPrivate(item: book)
+    ///     .portalPrivate(item: book, in: namespace)
     /// ```
-    func portalPrivate<Item: Identifiable>(item: Item) -> some View {
-        PortalPrivate(id: item.id) {
-            self
-        }
-    }
-
-    /// Marks this view as a private portal using an `Identifiable` item's ID and group
-    ///
-    /// This creates a single view instance that can be displayed in multiple places
-    /// using _UIPortalView, with support for coordinated group animations.
-    ///
-    /// Example:
-    /// ```swift
-    /// PhotoView(photo: photo)
-    ///     .portalPrivate(item: photo, groupID: "photoStack")
-    /// ```
-    func portalPrivate<Item: Identifiable>(item: Item, groupID: String) -> some View {
-        PortalPrivate(id: item.id, groupID: groupID) {
+    func portalPrivate<Item: Identifiable>(item: Item, groupID: String? = nil, in namespace: Namespace.ID) -> some View {
+        PortalPrivate(id: item.id, in: namespace, groupID: groupID) {
             self
         }
     }
@@ -257,16 +235,19 @@ public extension View {
     ///
     /// Example:
     /// ```swift
+    /// @Namespace var namespace
+    ///
     /// .portalPrivateTransition(
     ///     id: "myView",
+    ///     in: namespace,
     ///     isActive: $showDetail,
-    ///     in: .rounded,
     ///     animation: .smooth(duration: 0.5),
     ///     hidesSource: true
     /// )
     /// ```
     func portalPrivateTransition<ID: Hashable>(
         id: ID,
+        in namespace: Namespace.ID,
         isActive: Binding<Bool>,
         animation: Animation = .smooth(duration: 0.4),
         completionCriteria: AnimationCompletionCriteria = .removed,
@@ -279,6 +260,7 @@ public extension View {
         self.modifier(
             PortalPrivateTransitionModifier(
                 id: id,
+                in: namespace,
                 isActive: isActive,
                 animation: animation,
                 completionCriteria: completionCriteria,
@@ -294,6 +276,7 @@ public extension View {
     /// Triggers a portal transition for a private portal with an optional item
     func portalPrivateTransition<Item: Identifiable>(
         item: Binding<Item?>,
+        in namespace: Namespace.ID,
         animation: Animation = .smooth(duration: 0.4),
         completionCriteria: AnimationCompletionCriteria = .removed,
         hidesSource: Bool = false,
@@ -305,6 +288,7 @@ public extension View {
         self.modifier(
             PortalPrivateItemTransitionModifier(
                 item: item,
+                in: namespace,
                 animation: animation,
                 completionCriteria: completionCriteria,
                 hidesSource: hidesSource,
@@ -319,6 +303,7 @@ public extension View {
     func portalPrivateTransition<ID: Hashable>(
         ids: [ID],
         groupID: String,
+        in namespace: Namespace.ID,
         isActive: Binding<Bool>,
         animation: Animation = .smooth(duration: 0.4),
         completionCriteria: AnimationCompletionCriteria = .removed,
@@ -332,6 +317,7 @@ public extension View {
             MultiIDPortalPrivateTransitionModifier(
                 ids: ids,
                 groupID: groupID,
+                in: namespace,
                 isActive: isActive,
                 animation: animation,
                 completionCriteria: completionCriteria,
@@ -347,6 +333,7 @@ public extension View {
     func portalPrivateTransition<Item: Identifiable>(
         items: Binding<[Item]>,
         groupID: String,
+        in namespace: Namespace.ID,
         animation: Animation = .smooth(duration: 0.4),
         completionCriteria: AnimationCompletionCriteria = .removed,
         staggerDelay: TimeInterval = 0.0,
@@ -360,6 +347,7 @@ public extension View {
             MultiItemPortalPrivateTransitionModifier(
                 items: items,
                 groupID: groupID,
+                in: namespace,
                 animation: animation,
                 completionCriteria: completionCriteria,
                 staggerDelay: staggerDelay,
@@ -378,6 +366,7 @@ public extension View {
 /// Transition modifier for private portals with boolean state
 struct PortalPrivateTransitionModifier: ViewModifier {
     let id: AnyHashable
+    let namespace: Namespace.ID
     @Binding var isActive: Bool
     let animation: Animation
     let completionCriteria: AnimationCompletionCriteria
@@ -390,6 +379,7 @@ struct PortalPrivateTransitionModifier: ViewModifier {
 
     init<ID: Hashable>(
         id: ID,
+        in namespace: Namespace.ID,
         isActive: Binding<Bool>,
         animation: Animation,
         completionCriteria: AnimationCompletionCriteria,
@@ -400,6 +390,7 @@ struct PortalPrivateTransitionModifier: ViewModifier {
         completion: @escaping (Bool) -> Void
     ) {
         self.id = AnyHashable(id)
+        self.namespace = namespace
         self._isActive = isActive
         self.animation = animation
         self.completionCriteria = completionCriteria
@@ -470,6 +461,7 @@ struct PortalPrivateTransitionModifier: ViewModifier {
 /// Transition modifier for private portals with optional item
 struct PortalPrivateItemTransitionModifier<Item: Identifiable>: ViewModifier {
     @Binding var item: Item?
+    let namespace: Namespace.ID
     let animation: Animation
     let completionCriteria: AnimationCompletionCriteria
     let hidesSource: Bool
@@ -479,6 +471,28 @@ struct PortalPrivateItemTransitionModifier<Item: Identifiable>: ViewModifier {
     let completion: (Bool) -> Void
     @Environment(CrossModel.self) private var portalModel
     @State private var lastKey: AnyHashable?
+
+    init(
+        item: Binding<Item?>,
+        in namespace: Namespace.ID,
+        animation: Animation,
+        completionCriteria: AnimationCompletionCriteria,
+        hidesSource: Bool,
+        matchesAlpha: Bool,
+        matchesTransform: Bool,
+        matchesPosition: Bool,
+        completion: @escaping (Bool) -> Void
+    ) {
+        self._item = item
+        self.namespace = namespace
+        self.animation = animation
+        self.completionCriteria = completionCriteria
+        self.hidesSource = hidesSource
+        self.matchesAlpha = matchesAlpha
+        self.matchesTransform = matchesTransform
+        self.matchesPosition = matchesPosition
+        self.completion = completion
+    }
 
     func body(content: Content) -> some View {
         content

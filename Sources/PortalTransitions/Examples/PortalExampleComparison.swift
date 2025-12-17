@@ -67,7 +67,7 @@ public struct PortalExampleComparison: View {
                                     )
                             }
                             .frame(width: 160, height: 120)
-                            .portal(id: "portalDemo", in: namespace, as: .source)
+                            .portal(id: "portalDemo", as: .source, in: namespace)
                             .onTapGesture {
                                     showPortalSheet.toggle()
                             }
@@ -237,7 +237,7 @@ private struct PortalExamplePortalComparisonSheet: View {
                             .hueRotation(.degrees(100))
                     }
                     .frame(width: 280, height: 200)
-                    .portal(id: "portalDemo", in: namespace, as: .destination)
+                    .portal(id: "portalDemo", as: .destination, in: namespace)
 
                     Text("This element seamlessly transitioned from the main view using Portal. Portal enables cross-boundary transitions that aren't possible with standard SwiftUI.")
                         .font(.body)

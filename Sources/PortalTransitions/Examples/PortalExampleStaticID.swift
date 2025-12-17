@@ -79,7 +79,7 @@ public struct PortalExampleStaticID: View {
                             )
                         }
                         .frame(width: 280, height: 140)
-                        .portal(id: "codeBlock", in: portalNamespace, as: .source)
+                        .portal(id: "codeBlock", as: .source, in: portalNamespace)
                         .onTapGesture {
                             withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
                                 showDetail.toggle()
@@ -211,7 +211,7 @@ private struct PortalExampleStaticIDDetail: View {
                                 .fill(Color(.systemBackground))
                         )
                     }
-                    .portal(id: "codeBlock", in: namespace, as: .destination)
+                    .portal(id: "codeBlock", as: .destination, in: namespace)
                     .padding(.top, 20)
                     .padding(.horizontal, 20)
 

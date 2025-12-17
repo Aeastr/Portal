@@ -59,6 +59,10 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
     /// destination views for the transition to work correctly.
     public let id: AnyHashable
 
+    /// Namespace for scoping this portal transition.
+    /// Transitions only match portals within the same namespace.
+    public let namespace: Namespace.ID
+
     /// Animation for the portal transition.
     public let animation: Animation
 
@@ -103,8 +107,9 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
     ///   - completion: Handler called when the transition completes
     public init<ID: Hashable>(
         id: ID,
+        in namespace: Namespace.ID,
         isActive: Binding<Bool>,
-        in corners: PortalCorners? = nil,
+        corners: PortalCorners? = nil,
         animation: Animation,
         transition: PortalRemoveTransition = .none,
         completionCriteria: AnimationCompletionCriteria,
@@ -112,6 +117,7 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
         @ViewBuilder layerView: @escaping () -> LayerView
     ) {
         self.id = AnyHashable(id)
+        self.namespace = namespace
         self._isActive = isActive
         self.corners = corners
         self.animation = animation
@@ -305,8 +311,9 @@ public extension View {
     /// - Returns: A view with the portal transition modifier applied
     func portalTransition<ID: Hashable, LayerView: View>(
         id: ID,
+        in namespace: Namespace.ID,
         isActive: Binding<Bool>,
-        in corners: PortalCorners? = nil,
+        corners: PortalCorners? = nil,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
         completionCriteria: AnimationCompletionCriteria = .removed,
@@ -316,8 +323,9 @@ public extension View {
         return self.modifier(
             ConditionalPortalTransitionModifier(
                 id: id,
+                in: namespace,
                 isActive: isActive,
-                in: corners,
+                corners: corners,
                 animation: animation,
                 transition: transition,
                 completionCriteria: completionCriteria,
