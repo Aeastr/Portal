@@ -29,6 +29,7 @@ public struct PortalPrivateExampleApp: App {
 public struct PortalPrivateExampleView: View {
     @State private var selectedItem: Item?
     @State private var items = Item.sampleItems
+    @Namespace private var portalNamespace
 
     public init() {}
 
@@ -50,7 +51,7 @@ public struct PortalPrivateExampleView: View {
                             ForEach(items) { item in
                                 AnimatedLayer(portalID: item.id.uuidString) {
                                     CardView(item: item)
-                                        .portalPrivate(id: item.id.uuidString)
+                                        .portalPrivate(id: item.id.uuidString, in: portalNamespace)
                                         .onTapGesture {
                                             withAnimation(.smooth) {
                                                 selectedItem = item
@@ -65,11 +66,11 @@ public struct PortalPrivateExampleView: View {
                 }
                 .navigationTitle("PortalPrivate")
                 .sheet(item: $selectedItem) { item in
-                    DetailView(item: item, selectedItem: $selectedItem)
+                    DetailView(item: item, selectedItem: $selectedItem, namespace: portalNamespace)
                 }
             }
             // Trigger the portal transition with AnimatedLayer wrapper
-            .portalPrivateTransition(item: $selectedItem)
+            .portalPrivateTransition(item: $selectedItem, in: portalNamespace)
         }
 //        .portalTransitionDebugOverlays(false)
     }
@@ -104,12 +105,13 @@ struct CardView: View {
 struct DetailView: View {
     let item: Item
     @Binding var selectedItem: Item?
+    let namespace: Namespace.ID
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
                 // Use PortalPrivateDestination to show the mirrored view
-                PortalPrivateDestination(id: item.id.uuidString)
+                PortalPrivateDestination(id: item.id.uuidString, in: namespace)
 //                    .frame(width: 200, height: 200)
                     .background(Color.gray.opacity(0.1))
                     .clipShape(.rect(cornerRadius: 20))
