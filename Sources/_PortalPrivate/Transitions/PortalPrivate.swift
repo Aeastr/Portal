@@ -10,6 +10,7 @@
 
 import SwiftUI
 import PortalTransitions
+import UIPortalBridge
 
 
 // MARK: - Extended Portal Info
