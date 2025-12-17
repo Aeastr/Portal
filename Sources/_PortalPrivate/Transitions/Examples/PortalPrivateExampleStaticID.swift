@@ -15,6 +15,7 @@ import PortalTransitions
 /// PortalPrivate static ID example showing code block transitions with view mirroring
 public struct PortalPrivateExampleStaticID: View {
     @State private var showDetail = false
+    @Namespace private var portalNamespace
 
     public init() {}
 
@@ -77,7 +78,7 @@ public struct PortalPrivateExampleStaticID: View {
                                 RoundedRectangle(cornerRadius: 12)
                                     .fill(Color(.systemBackground))
                             )
-                            .portalPrivate(id: "codeBlock")
+                            .portalPrivate(id: "codeBlock", in: portalNamespace)
                         }
                         .frame(width: 280, height: 140)
                         .onTapGesture {
@@ -99,17 +100,19 @@ public struct PortalPrivateExampleStaticID: View {
                 .background(Color(.systemGroupedBackground).ignoresSafeArea())
             }
             .sheet(isPresented: $showDetail) {
-                PortalExampleStaticIDDetail()
+                PortalExampleStaticIDDetail(namespace: portalNamespace)
             }
             .portalPrivateTransition(
                 id: "codeBlock",
-                isActive: $showDetail
+                isActive: $showDetail,
+                in: portalNamespace
             )
         }
     }
 }
 
 private struct PortalExampleStaticIDDetail: View {
+    let namespace: Namespace.ID
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
@@ -117,7 +120,7 @@ private struct PortalExampleStaticIDDetail: View {
             ScrollView {
                 VStack(spacing: 12) {
                     // MARK: Destination Code Block
-                    PortalPrivateDestination(id: "codeBlock")
+                    PortalPrivateDestination(id: "codeBlock", in: namespace)
                         .padding(.top, 20)
                         .padding(.horizontal, 20)
 
@@ -151,7 +154,8 @@ private struct PortalExampleStaticIDDetail: View {
 }
 
 #Preview("Static ID Example Detail") {
-    PortalExampleStaticIDDetail()
+    @Previewable @Namespace var ns
+    PortalExampleStaticIDDetail(namespace: ns)
 }
 
 #endif

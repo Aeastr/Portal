@@ -19,6 +19,7 @@ public struct PortalPrivateExampleComparison: View {
     @State private var showNativeSheet = false
     @State private var showZoomSheet = false
     @Namespace private var namespace
+    @Namespace private var portalNamespace
 
     public init() {}
 
@@ -66,7 +67,7 @@ public struct PortalPrivateExampleComparison: View {
                                                     .fontWeight(.bold)
                                             }
                                         )
-                                    .portalPrivate(id: "portalDemo")
+                                    .portalPrivate(id: "portalDemo", in: portalNamespace)
                             }
                             .frame(width: 160, height: 120)
                             .onTapGesture {
@@ -160,7 +161,7 @@ public struct PortalPrivateExampleComparison: View {
                 .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())
             }
             .sheet(isPresented: $showPortalSheet) {
-                PortalExamplePortalComparisonSheet()
+                PortalExamplePortalComparisonSheet(portalNamespace: portalNamespace)
             }
             .sheet(isPresented: $showNativeSheet) {
                 PortalExampleNativeComparisonSheet()
@@ -173,13 +174,15 @@ public struct PortalPrivateExampleComparison: View {
             }
             .portalPrivateTransition(
                 id: "portalDemo",
-                isActive: $showPortalSheet
+                isActive: $showPortalSheet,
+                in: portalNamespace
             )
         }
     }
 }
 
 private struct PortalExamplePortalComparisonSheet: View {
+    let portalNamespace: Namespace.ID
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
@@ -187,7 +190,7 @@ private struct PortalExamplePortalComparisonSheet: View {
             ScrollView {
                 VStack(spacing: 32) {
                     // MARK: PortalPrivate Destination
-                    PortalPrivateDestination(id: "portalDemo")
+                    PortalPrivateDestination(id: "portalDemo", in: portalNamespace)
 
                     Text("This element seamlessly transitioned from the main view using PortalPrivate. PortalPrivate uses view mirroring via UIKit's portal view for true view instance sharing.")
                         .font(.body)
