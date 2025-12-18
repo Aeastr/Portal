@@ -201,8 +201,8 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
             lastKey = key
 
             // Ensure portal info exists in the model
-            if !portalModel.info.contains(where: { $0.infoID == key }) {
-                portalModel.info.append(PortalInfo(id: key))
+            if !portalModel.info.contains(where: { $0.infoID == key && $0.namespace == namespace }) {
+                portalModel.info.append(PortalInfo(id: key, namespace: namespace))
                 PortalLogs.logger.log(
                     "Registered new portal info",
                     level: .debug,
@@ -211,7 +211,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
                 )
             }
 
-            guard let idx = portalModel.info.firstIndex(where: { $0.infoID == key }) else {
+            guard let idx = portalModel.info.firstIndex(where: { $0.infoID == key && $0.namespace == namespace }) else {
                 PortalLogs.logger.log(
                     "Portal info lookup failed after registration",
                     level: .error,
@@ -277,7 +277,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
         } else {
             // Reverse transition: item became nil
             guard let key = lastKey,
-                  let idx = portalModel.info.firstIndex(where: { $0.infoID == key })
+                  let idx = portalModel.info.firstIndex(where: { $0.infoID == key && $0.namespace == namespace })
             else { return }
 
             // Prepare for reverse animation
@@ -334,7 +334,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
                 lastKey = newKey
 
                 // Update the layerView to show the new item's content
-                if let idx = portalModel.info.firstIndex(where: { $0.infoID == newKey }) {
+                if let idx = portalModel.info.firstIndex(where: { $0.infoID == newKey && $0.namespace == namespace }) {
                     portalModel.info[idx].layerView = AnyView(layerView(newItem))
                 }
 

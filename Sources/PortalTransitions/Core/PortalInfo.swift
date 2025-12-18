@@ -37,6 +37,16 @@ public struct PortalInfo: Identifiable {
     /// `String`, `UUID`, `Int`, or custom identifier types.
     public let infoID: AnyHashable
 
+    /// The namespace this portal belongs to.
+    ///
+    /// Portals are scoped by namespace to allow the same ID to be used in different
+    /// contexts without collision. Only portals within the same namespace can match.
+    ///
+    /// - Note: Future consideration: This could be combined with `infoID` into a single
+    ///   key type (similar to `PortalKey` but without `role`, since `PortalInfo` represents
+    ///   both source and destination of a matched pair).
+    public let namespace: Namespace.ID
+
     /// Flag indicating whether this portal has been properly initialized.
     ///
     /// Set to `true` when the portal system has completed setup for this animation,
@@ -153,15 +163,17 @@ public struct PortalInfo: Identifiable {
     /// and completion callbacks for the group.
     public var isGroupCoordinator = false
 
-    /// Initializes a new PortalInfo instance with the specified identifier.
+    /// Initializes a new PortalInfo instance with the specified identifier and namespace.
     ///
     /// Creates a new portal data record with default values for all properties
-    /// except the required user-defined identifier.
+    /// except the required user-defined identifier and namespace.
     ///
     /// - Parameter id: The unique identifier for this portal animation (any `Hashable` type)
+    /// - Parameter namespace: The namespace for scoping this portal
     /// - Parameter groupID: Optional group identifier for coordinated animations
-    public init<ID: Hashable>(id: ID, groupID: String? = nil) {
+    public init<ID: Hashable>(id: ID, namespace: Namespace.ID, groupID: String? = nil) {
         self.infoID = AnyHashable(id)
+        self.namespace = namespace
         self.groupID = groupID
     }
 
@@ -170,9 +182,11 @@ public struct PortalInfo: Identifiable {
     /// This overload avoids double-wrapping when the ID is already an AnyHashable.
     ///
     /// - Parameter id: The pre-wrapped identifier for this portal animation
+    /// - Parameter namespace: The namespace for scoping this portal
     /// - Parameter groupID: Optional group identifier for coordinated animations
-    public init(id: AnyHashable, groupID: String? = nil) {
+    public init(id: AnyHashable, namespace: Namespace.ID, groupID: String? = nil) {
         self.infoID = id
+        self.namespace = namespace
         self.groupID = groupID
     }
 }

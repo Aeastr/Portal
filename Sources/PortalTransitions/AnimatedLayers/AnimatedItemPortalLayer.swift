@@ -43,6 +43,12 @@ public protocol AnimatedItemPortalLayer: View {
     /// The portal ID is derived from the item's `id` property using string interpolation.
     var item: Item? { get }
 
+    /// The namespace for scoping portal lookup.
+    ///
+    /// This ensures the layer only responds to portal transitions in the matching namespace,
+    /// preventing interference when the same item ID exists in multiple namespaces.
+    var namespace: Namespace.ID { get }
+
     /// Implement this method to define your custom animation logic.
     ///
     /// - Parameters:
@@ -71,11 +77,12 @@ private struct AnimatedItemPortalLayerHost<Layer: AnimatedItemPortalLayer>: View
 
     var body: some View {
         let currentItem = layer.item
+        let namespace = layer.namespace
         let key: AnyHashable? = currentItem.map { AnyHashable($0.id) }
 
         // Check active state using lastKey if current key is nil (reverse transition)
         let lookupKey = key ?? lastKey
-        let idx = lookupKey.flatMap { k in portalModel.info.firstIndex { $0.infoID == k } }
+        let idx = lookupKey.flatMap { k in portalModel.info.firstIndex { $0.infoID == k && $0.namespace == namespace } }
         let isActive = idx.flatMap { portalModel.info[$0].animateView } ?? false
 
         // Use the current item if available, otherwise fall back to the last known item
@@ -119,31 +126,38 @@ private struct AnimatedItemPortalLayerHost<Layer: AnimatedItemPortalLayer>: View
 /// ```
 public struct AnimatedItemLayer<Item: Identifiable, Content: View>: AnimatedItemPortalLayer {
     public let item: Item?
+    public let namespace: Namespace.ID
     private let contentBuilder: (Item?, Bool) -> Content
 
-    /// Creates an animated item layer with the specified item and content builder.
+    /// Creates an animated item layer with the specified item, namespace, and content builder.
     ///
     /// - Parameters:
     ///   - item: Binding to the optional item that controls the layer.
+    ///   - namespace: The namespace for scoping portal lookup.
     ///   - content: A closure that receives the item and active state, returning the animated content.
     public init(
         item: Binding<Item?>,
+        in namespace: Namespace.ID,
         @ViewBuilder content: @escaping (Item?, Bool) -> Content
     ) {
         self.item = item.wrappedValue
+        self.namespace = namespace
         self.contentBuilder = content
     }
 
-    /// Creates an animated item layer with a direct item value and content builder.
+    /// Creates an animated item layer with a direct item value, namespace, and content builder.
     ///
     /// - Parameters:
     ///   - item: The optional item that controls the layer.
+    ///   - namespace: The namespace for scoping portal lookup.
     ///   - content: A closure that receives the item and active state, returning the animated content.
     public init(
         item: Item?,
+        in namespace: Namespace.ID,
         @ViewBuilder content: @escaping (Item?, Bool) -> Content
     ) {
         self.item = item
+        self.namespace = namespace
         self.contentBuilder = content
     }
 
@@ -191,6 +205,9 @@ public protocol AnimatedGroupPortalLayer: View {
     /// The group identifier for coordinated animations.
     var groupID: String { get }
 
+    /// The namespace for scoping portal lookup.
+    var namespace: Namespace.ID { get }
+
     /// Implement this method to define your custom animation logic.
     ///
     /// - Parameters:
@@ -219,9 +236,12 @@ private struct AnimatedGroupPortalLayerHost<Layer: AnimatedGroupPortalLayer>: Vi
 
     /// Builds active states dictionary for a set of items using O(n+m) lookup.
     private func buildActiveStates(for items: [Layer.Item]) -> [Layer.Item.ID: Bool] {
+        let namespace = layer.namespace
+
         // Build lookup dictionary from portal info first: O(m)
+        // Only include info entries that match the namespace
         var infoLookup: [AnyHashable: Bool] = [:]
-        for info in portalModel.info {
+        for info in portalModel.info where info.namespace == namespace {
             infoLookup[info.infoID] = info.animateView
         }
 
@@ -282,37 +302,44 @@ private struct AnimatedGroupPortalLayerHost<Layer: AnimatedGroupPortalLayer>: Vi
 public struct AnimatedGroupLayer<Item: Identifiable, Content: View>: AnimatedGroupPortalLayer {
     public let items: [Item]
     public let groupID: String
+    public let namespace: Namespace.ID
     private let contentBuilder: ([Item], [Item.ID: Bool]) -> Content
 
-    /// Creates an animated group layer with the specified items, group ID, and content builder.
+    /// Creates an animated group layer with the specified items, group ID, namespace, and content builder.
     ///
     /// - Parameters:
     ///   - items: Binding to the array of items that control the layers.
     ///   - groupID: The group identifier for coordinated animations.
+    ///   - namespace: The namespace for scoping portal lookup.
     ///   - content: A closure that receives the items and their active states, returning the animated content.
     public init(
         items: Binding<[Item]>,
         groupID: String,
+        in namespace: Namespace.ID,
         @ViewBuilder content: @escaping ([Item], [Item.ID: Bool]) -> Content
     ) {
         self.items = items.wrappedValue
         self.groupID = groupID
+        self.namespace = namespace
         self.contentBuilder = content
     }
 
-    /// Creates an animated group layer with direct item values, group ID, and content builder.
+    /// Creates an animated group layer with direct item values, group ID, namespace, and content builder.
     ///
     /// - Parameters:
     ///   - items: The array of items that control the layers.
     ///   - groupID: The group identifier for coordinated animations.
+    ///   - namespace: The namespace for scoping portal lookup.
     ///   - content: A closure that receives the items and their active states, returning the animated content.
     public init(
         items: [Item],
         groupID: String,
+        in namespace: Namespace.ID,
         @ViewBuilder content: @escaping ([Item], [Item.ID: Bool]) -> Content
     ) {
         self.items = items
         self.groupID = groupID
+        self.namespace = namespace
         self.contentBuilder = content
     }
 

@@ -180,8 +180,8 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
     /// This ensures that the portal system is ready to handle transitions even
     /// before the first state change occurs.
     private func onAppear() {
-        if !portalModel.info.contains(where: { $0.infoID == id }) {
-            portalModel.info.append(PortalInfo(id: id))
+        if !portalModel.info.contains(where: { $0.infoID == id && $0.namespace == namespace }) {
+            portalModel.info.append(PortalInfo(id: id, namespace: namespace))
         }
     }
 
@@ -205,7 +205,7 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
     ///   - oldValue: Previous value of the isActive state (unused but required by onChange)
     ///   - newValue: New value of the isActive state
     private func onChange(oldValue: Bool, newValue: Bool) {
-        guard let idx = portalModel.info.firstIndex(where: { $0.infoID == id }) else { return }
+        guard let idx = portalModel.info.firstIndex(where: { $0.infoID == id && $0.namespace == namespace }) else { return }
 
         @Bindable var portalModel = portalModel
 

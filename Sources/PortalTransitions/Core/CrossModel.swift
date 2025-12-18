@@ -58,23 +58,24 @@ public class CrossModel: Hashable {
     /// - Parameters:
     ///   - fromID: The ID of the currently active portal to deactivate
     ///   - toID: The ID of the new portal to activate
+    ///   - namespace: The namespace for scoping portal lookup
     ///
     /// Example usage:
     /// ```swift
     /// // For static string IDs:
-    /// portalModel.transferActivePortal(from: "panel1", to: "panel2")
+    /// portalModel.transferActivePortal(from: "panel1", to: "panel2", in: namespace)
     ///
     /// // For Identifiable items, prefer the type-safe overload:
-    /// portalModel.transferActivePortal(from: oldItem, to: newItem)
+    /// portalModel.transferActivePortal(fromItem: oldItem, toItem: newItem, in: namespace)
     /// ```
-    public func transferActivePortal<ID: Hashable>(from fromID: ID, to toID: ID) {
+    public func transferActivePortal<ID: Hashable>(from fromID: ID, to toID: ID, in namespace: Namespace.ID) {
         let fromKey = AnyHashable(fromID)
         let toKey = AnyHashable(toID)
 
         guard fromKey != toKey else { return }
 
         // Find the source portal and copy its configuration
-        guard let fromIndex = info.firstIndex(where: { $0.infoID == fromKey }) else {
+        guard let fromIndex = info.firstIndex(where: { $0.infoID == fromKey && $0.namespace == namespace }) else {
             PortalLogs.logger.log(
                 "Transfer failed: source portal not found",
                 level: .warning,
@@ -87,7 +88,7 @@ public class CrossModel: Hashable {
         let sourceInfo = info[fromIndex]
 
         // Create or update the destination portal
-        if let toIndex = info.firstIndex(where: { $0.infoID == toKey }) {
+        if let toIndex = info.firstIndex(where: { $0.infoID == toKey && $0.namespace == namespace }) {
             // Transfer state to existing portal
             info[toIndex].initialized = true
             info[toIndex].animateView = true
@@ -101,7 +102,7 @@ public class CrossModel: Hashable {
             info[toIndex].layerView = sourceInfo.layerView
         } else {
             // Create new portal info with transferred state
-            var newInfo = PortalInfo(id: toKey)
+            var newInfo = PortalInfo(id: toKey, namespace: namespace)
             newInfo.initialized = true
             newInfo.animateView = true
             newInfo.hideView = true
@@ -143,8 +144,9 @@ public class CrossModel: Hashable {
     /// - Parameters:
     ///   - fromItem: The item whose portal should be deactivated
     ///   - toItem: The item whose portal should be activated
-    public func transferActivePortal<Item: Identifiable>(fromItem: Item, toItem: Item) {
-        transferActivePortal(from: fromItem.id, to: toItem.id)
+    ///   - namespace: The namespace for scoping portal lookup
+    public func transferActivePortal<Item: Identifiable>(fromItem: Item, toItem: Item, in namespace: Namespace.ID) {
+        transferActivePortal(from: fromItem.id, to: toItem.id, in: namespace)
     }
 
     // MARK: - Disabled Overload (Swift Compiler Crash)

@@ -138,7 +138,7 @@ public struct Portal<Content: View>: View {
     }
 
     private var index: Int? {
-        portalModel.info.firstIndex { $0.infoID == id }
+        portalModel.info.firstIndex { $0.infoID == id && $0.namespace == namespace }
     }
 }
 

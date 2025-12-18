@@ -38,6 +38,9 @@ public protocol AnimatedPortalLayer: View {
     /// Can be any `Hashable` type wrapped in `AnyHashable`.
     var portalID: AnyHashable { get }
 
+    /// The namespace for scoping portal lookup.
+    var namespace: Namespace.ID { get }
+
     /// The content to be animated.
     @ViewBuilder var content: () -> Content { get }
 
@@ -59,7 +62,7 @@ private struct AnimatedPortalLayerHost<Layer: AnimatedPortalLayer>: View {
     let layer: Layer
 
     var body: some View {
-        let idx = portalModel.info.firstIndex { $0.infoID == layer.portalID }
+        let idx = portalModel.info.firstIndex { $0.infoID == layer.portalID && $0.namespace == layer.namespace }
         let isActive = idx.flatMap { portalModel.info[$0].animateView } ?? false
 
         layer.animatedContent(isActive: isActive)
