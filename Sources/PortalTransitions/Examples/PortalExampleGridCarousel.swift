@@ -206,7 +206,7 @@ private struct CarouselDetailView: View {
         .onChange(of: currentIndex) { oldIndex, newIndex in
             let oldItem = items[oldIndex]
             let newItem = items[newIndex]
-            portalModel.transferActivePortal(fromItem: oldItem, toItem: newItem)
+            portalModel.transferActivePortal(fromItem: oldItem, toItem: newItem, in: namespace)
             portalItem = newItem
         }
     }

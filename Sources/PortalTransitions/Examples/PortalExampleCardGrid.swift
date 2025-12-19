@@ -75,7 +75,7 @@ public struct PortalExampleCardGrid: View {
                         LazyVGrid(columns: columns, spacing: 12) {
                             ForEach(cards) { card in
                                 VStack(spacing: 12) {
-                                    AnimatedItemLayerExample(item: card) { card in
+                                    AnimatedItemLayerExample(item: card, in: portalNamespace) { card in
                                         PortalExampleCardContent(card: card)
                                     }
                                     .frame(height: 120)
@@ -113,7 +113,7 @@ public struct PortalExampleCardGrid: View {
                 in: portalNamespace,
                 transition: .fade
             ) { card in
-                AnimatedItemLayerExample(item: $selectedCard) { card in
+                AnimatedItemLayerExample(item: $selectedCard, in: portalNamespace) { card in
                     PortalExampleCardContent(card: card)
                 }
             }
@@ -170,21 +170,24 @@ private struct PortalExampleCardContent: View {
 /// - An optional item binding (for transition layers)
 private struct AnimatedItemLayerExample<Item: Identifiable, Content: View>: AnimatedItemPortalLayer {
     let item: Item?
+    let namespace: Namespace.ID
     var scale: CGFloat = 1.1
     @ViewBuilder let content: (Item) -> Content
 
     @State private var layerScale: CGFloat = 1
 
     /// Initialize with a non-optional item (for source/destination views)
-    init(item: Item, scale: CGFloat = 1.1, @ViewBuilder content: @escaping (Item) -> Content) {
+    init(item: Item, in namespace: Namespace.ID, scale: CGFloat = 1.1, @ViewBuilder content: @escaping (Item) -> Content) {
         self.item = item
+        self.namespace = namespace
         self.scale = scale
         self.content = content
     }
 
     /// Initialize with an optional item binding (for transition layers)
-    init(item: Binding<Item?>, scale: CGFloat = 1.1, @ViewBuilder content: @escaping (Item) -> Content) {
+    init(item: Binding<Item?>, in namespace: Namespace.ID, scale: CGFloat = 1.1, @ViewBuilder content: @escaping (Item) -> Content) {
         self.item = item.wrappedValue
+        self.namespace = namespace
         self.scale = scale
         self.content = content
     }
@@ -240,7 +243,7 @@ private struct PortalExampleCardDetail: View {
             ScrollView {
                 VStack(spacing: 32) {
                     // MARK: Destination Card
-                    AnimatedItemLayerExample(item: card) { card in
+                    AnimatedItemLayerExample(item: card, in: namespace) { card in
                         PortalExampleCardContent(card: card)
                     }
                     .frame(width: 240, height: 180)

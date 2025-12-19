@@ -34,7 +34,7 @@ public struct PortalPrivateExampleStaticID: View {
 
                     // MARK: Source Code Block
                     VStack(spacing: 32) {
-                        AnimatedLayer(portalID: "codeBlock") {
+                        AnimatedLayer(portalID: "codeBlock", in: portalNamespace) {
                             VStack(alignment: .leading, spacing: 8) {
                                 HStack {
                                     Circle()
@@ -104,8 +104,8 @@ public struct PortalPrivateExampleStaticID: View {
             }
             .portalPrivateTransition(
                 id: "codeBlock",
-                isActive: $showDetail,
-                in: portalNamespace
+                in: portalNamespace,
+                isActive: $showDetail
             )
         }
     }

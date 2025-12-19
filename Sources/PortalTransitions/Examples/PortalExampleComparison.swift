@@ -45,7 +45,7 @@ public struct PortalExampleComparison: View {
                                 .fontWeight(.semibold)
                                 .foregroundColor(.blue)
 
-                            AnimatedLayer(portalID: "portalDemo") {
+                            AnimatedLayer(portalID: "portalDemo", in: namespace) {
                                 RoundedRectangle(cornerRadius: 16)
                                     .fill(
                                         LinearGradient(
@@ -176,7 +176,7 @@ public struct PortalExampleComparison: View {
             isActive: $showPortalSheet,
             animation: portalAnimationExample
         ) {
-            AnimatedLayer(portalID: "portalDemo") {
+            AnimatedLayer(portalID: "portalDemo", in: namespace) {
                 RoundedRectangle(cornerRadius: 16)
                     .fill(
                         LinearGradient(
@@ -214,7 +214,7 @@ private struct PortalExamplePortalComparisonSheet: View {
             ScrollView {
                 VStack(spacing: 32) {
                     // MARK: Portal Destination
-                    AnimatedLayer(portalID: "portalDemo") {
+                    AnimatedLayer(portalID: "portalDemo", in: namespace) {
                         RoundedRectangle(cornerRadius: 16)
                             .fill(
                                 LinearGradient(

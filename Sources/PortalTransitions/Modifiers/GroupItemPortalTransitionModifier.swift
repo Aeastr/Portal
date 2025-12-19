@@ -41,6 +41,10 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
     /// Group identifier for coordinating the animations.
     public let groupID: String
 
+    /// Namespace for scoping this portal transition.
+    /// Transitions only match portals within the same namespace.
+    public let namespace: Namespace.ID
+
     /// Animation to use for the transition.
     public let animation: Animation
 
@@ -76,7 +80,8 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
     public init(
         items: Binding<[Item]>,
         groupID: String,
-        in corners: PortalCorners? = nil,
+        in namespace: Namespace.ID,
+        corners: PortalCorners? = nil,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
         completionCriteria: AnimationCompletionCriteria = .removed,
@@ -86,6 +91,7 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
     ) {
         self._items = items
         self.groupID = groupID
+        self.namespace = namespace
         self.corners = corners
         self.animation = animation
         self.transition = transition
@@ -151,8 +157,8 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
     private func ensurePortalInfo(for items: [Item]) {
         for item in items {
             let key = AnyHashable(item.id)
-            if !portalModel.info.contains(where: { $0.infoID == key }) {
-                portalModel.info.append(PortalInfo(id: key, groupID: groupID))
+            if !portalModel.info.contains(where: { $0.infoID == key && $0.namespace == namespace }) {
+                portalModel.info.append(PortalInfo(id: key, namespace: namespace, groupID: groupID))
             }
         }
     }
@@ -237,7 +243,7 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
     /// Performs reverse transition cleanup.
     private func performReverseTransition(for keys: Set<AnyHashable>) {
         let cleanupIndices = portalModel.info.enumerated().compactMap { index, info in
-            keys.contains(info.infoID) ? index : nil
+            keys.contains(info.infoID) && info.namespace == namespace ? index : nil
         }
 
         for idx in cleanupIndices {
@@ -278,7 +284,7 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
             ensurePortalInfo(for: items)
 
             let groupIndices = portalModel.info.enumerated().compactMap { index, info in
-                currentKeys.contains(info.infoID) ? index : nil
+                currentKeys.contains(info.infoID) && info.namespace == namespace ? index : nil
             }
 
             configureGroupPortals(at: groupIndices)
@@ -350,7 +356,8 @@ public extension View {
     /// - Parameters:
     ///   - items: Binding to an array of `Identifiable` items
     ///   - groupID: Group identifier for coordinating animations
-    ///   - in corners: Corner radius configuration for visual styling
+    ///   - namespace: The namespace for scoping this portal. Transitions only match portals within the same namespace.
+    ///   - corners: Corner radius configuration for visual styling
     ///   - animation: The animation curve to use
     ///   - transition: Fade-out behavior for layer removal (defaults to .fade)
     ///   - completionCriteria: How to detect animation completion
@@ -362,7 +369,8 @@ public extension View {
     func portalTransition<Item: Identifiable, LayerView: View>(
         items: Binding<[Item]>,
         groupID: String,
-        in corners: PortalCorners? = nil,
+        in namespace: Namespace.ID,
+        corners: PortalCorners? = nil,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
         completionCriteria: AnimationCompletionCriteria = .removed,
@@ -374,7 +382,8 @@ public extension View {
             GroupItemPortalTransitionModifier(
                 items: items,
                 groupID: groupID,
-                in: corners,
+                in: namespace,
+                corners: corners,
                 animation: animation,
                 transition: transition,
                 completionCriteria: completionCriteria,

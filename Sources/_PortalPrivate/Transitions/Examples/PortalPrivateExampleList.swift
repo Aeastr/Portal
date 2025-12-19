@@ -44,7 +44,7 @@ public struct PortalPrivateExampleList: View {
                         ForEach(listItems) { item in
                             HStack(spacing: 16) {
                                 // Photo - PortalPrivate Source
-                                AnimatedItemLayer(item: item) { item, _ in
+                                AnimatedItemLayer(item: item, in: portalNamespace) { item, _ in
                                     if let item {
                                         RoundedRectangle(cornerRadius: 12)
                                             .fill(item.color.gradient)

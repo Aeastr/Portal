@@ -49,7 +49,7 @@ public struct PortalPrivateExampleView: View {
                             .init()
                         ], spacing: 16) {
                             ForEach(items) { item in
-                                AnimatedLayer(portalID: item.id.uuidString) {
+                                AnimatedLayer(portalID: item.id.uuidString, in: portalNamespace) {
                                     CardView(item: item)
                                         .portalSourcePrivate(id: item.id.uuidString, in: portalNamespace)
                                         .onTapGesture {

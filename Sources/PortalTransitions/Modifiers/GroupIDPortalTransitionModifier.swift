@@ -30,6 +30,10 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
     /// Group identifier for coordinating the animations.
     public let groupID: String
 
+    /// Namespace for scoping this portal transition.
+    /// Transitions only match portals within the same namespace.
+    public let namespace: Namespace.ID
+
     /// Animation to use for the transition.
     public let animation: Animation
 
@@ -59,8 +63,9 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
     public init<ID: Hashable>(
         ids: [ID],
         groupID: String,
+        in namespace: Namespace.ID,
         isActive: Binding<Bool>,
-        in corners: PortalCorners? = nil,
+        corners: PortalCorners? = nil,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
         completionCriteria: AnimationCompletionCriteria = .removed,
@@ -69,6 +74,7 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
     ) {
         self.ids = ids.map { AnyHashable($0) }
         self.groupID = groupID
+        self.namespace = namespace
         self._isActive = isActive
         self.corners = corners
         self.animation = animation
@@ -80,15 +86,15 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
 
     /// Ensures portal info exists for all IDs when the view appears.
     private func onAppear() {
-        for id in ids where !portalModel.info.contains(where: { $0.infoID == id }) {
-            portalModel.info.append(PortalInfo(id: id, groupID: groupID))
+        for id in ids where !portalModel.info.contains(where: { $0.infoID == id && $0.namespace == namespace }) {
+            portalModel.info.append(PortalInfo(id: id, namespace: namespace, groupID: groupID))
         }
     }
 
     /// Handles changes to the active state, triggering appropriate portal transitions.
     private func onChange(oldValue: Bool, newValue: Bool) {
         let groupIndices = portalModel.info.enumerated().compactMap { index, info in
-            ids.contains(info.infoID) ? index : nil
+            ids.contains(info.infoID) && info.namespace == namespace ? index : nil
         }
 
         if newValue {
@@ -187,8 +193,9 @@ public extension View {
     /// - Parameters:
     ///   - ids: Array of IDs for the portals to transition (any `Hashable` type)
     ///   - groupID: Common group ID for organizing the IDs
+    ///   - namespace: The namespace for scoping this portal. Transitions only match portals within the same namespace.
     ///   - isActive: Controls whether the transition is active
-    ///   - in corners: Corner radius configuration for visual styling
+    ///   - corners: Corner radius configuration for visual styling
     ///   - animation: The animation curve to use
     ///   - transition: Fade-out behavior for layer removal (defaults to .fade)
     ///   - completionCriteria: How to detect animation completion
@@ -199,8 +206,9 @@ public extension View {
     func portalTransition<ID: Hashable, LayerView: View>(
         ids: [ID],
         groupID: String,
+        in namespace: Namespace.ID,
         isActive: Binding<Bool>,
-        in corners: PortalCorners? = nil,
+        corners: PortalCorners? = nil,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
         completionCriteria: AnimationCompletionCriteria = .removed,
@@ -211,8 +219,9 @@ public extension View {
             GroupIDPortalTransitionModifier(
                 ids: ids,
                 groupID: groupID,
+                in: namespace,
                 isActive: isActive,
-                in: corners,
+                corners: corners,
                 animation: animation,
                 transition: transition,
                 completionCriteria: completionCriteria,

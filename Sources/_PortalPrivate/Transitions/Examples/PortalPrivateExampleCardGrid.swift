@@ -72,7 +72,7 @@ public struct PortalPrivateExampleCardGrid: View {
                         LazyVGrid(columns: columns, spacing: 12) {
                             ForEach(cards) { card in
                                 VStack(spacing: 12) {
-                                    AnimatedItemLayer(item: card) { card, _ in
+                                    AnimatedItemLayer(item: card, in: portalNamespace) { card, _ in
                                         if let card {
                                             RoundedRectangle(cornerRadius: 16)
                                                 .fill(card.color.gradient)

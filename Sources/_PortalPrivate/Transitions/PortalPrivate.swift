@@ -124,9 +124,9 @@ public struct PortalPrivateSource<Content: View>: View {
                         PortalPrivateStorage.shared.setInfo(info, for: id)
 
                         // Ensure portal info exists in model
-                        if !portalModel.info.contains(where: { $0.infoID == id }) {
-                            portalModel.info.append(PortalInfo(id: id, groupID: groupID))
-                        } else if let idx = portalModel.info.firstIndex(where: { $0.infoID == id }), let groupID = groupID {
+                        if !portalModel.info.contains(where: { $0.infoID == id && $0.namespace == namespace }) {
+                            portalModel.info.append(PortalInfo(id: id, namespace: namespace, groupID: groupID))
+                        } else if let idx = portalModel.info.firstIndex(where: { $0.infoID == id && $0.namespace == namespace }), let groupID = groupID {
                             // Update groupID if provided
                             portalModel.info[idx].groupID = groupID
                         }
@@ -503,11 +503,11 @@ struct PortalPrivateItemTransitionModifier<Item: Identifiable>: ViewModifier {
                     lastKey = key
 
                     // Ensure portal info exists
-                    if !portalModel.info.contains(where: { $0.infoID == key }) {
-                        portalModel.info.append(PortalInfo(id: item.id))
+                    if !portalModel.info.contains(where: { $0.infoID == key && $0.namespace == namespace }) {
+                        portalModel.info.append(PortalInfo(id: item.id, namespace: namespace))
                     }
 
-                    guard let idx = portalModel.info.firstIndex(where: { $0.infoID == key }) else {
+                    guard let idx = portalModel.info.firstIndex(where: { $0.infoID == key && $0.namespace == namespace }) else {
                         return
                     }
 
@@ -626,8 +626,8 @@ struct MultiIDPortalPrivateTransitionModifier: ViewModifier {
                         let portalID = portalModel.info[idx].infoID
 
                         // Ensure portal info exists
-                        if !portalModel.info.contains(where: { $0.infoID == portalID }) {
-                            portalModel.info.append(PortalInfo(id: portalID))
+                        if !portalModel.info.contains(where: { $0.infoID == portalID && $0.namespace == namespace }) {
+                            portalModel.info.append(PortalInfo(id: portalID, namespace: namespace))
                         }
 
                         portalModel.info[idx].initialized = true
@@ -758,8 +758,8 @@ struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifie
     private func ensurePortalInfo(for items: [Item]) {
         for item in items {
             let key = AnyHashable(item.id)
-            if !portalModel.info.contains(where: { $0.infoID == key }) {
-                portalModel.info.append(PortalInfo(id: item.id, groupID: groupID))
+            if !portalModel.info.contains(where: { $0.infoID == key && $0.namespace == namespace }) {
+                portalModel.info.append(PortalInfo(id: item.id, namespace: namespace, groupID: groupID))
             }
         }
     }

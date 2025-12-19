@@ -35,7 +35,7 @@ public struct PortalExampleMultiItem: View {
                     // Photo grid - Sources
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3), spacing: 8) {
                         ForEach(allPhotos) { photo in
-                            AnimatedLayer(portalID: photo.id.uuidString, scale: 1.15) {
+                            AnimatedLayer(portalID: photo.id.uuidString, in: portalNamespace, scale: 1.15) {
                                 PhotoThumbnailView(photo: photo)
                                     .portalSourcePrivate(item: photo, groupID: "photoStack", in: portalNamespace)
                             }

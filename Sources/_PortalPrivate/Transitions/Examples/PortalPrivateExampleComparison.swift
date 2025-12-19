@@ -47,7 +47,7 @@ public struct PortalPrivateExampleComparison: View {
                                 .fontWeight(.semibold)
                                 .foregroundColor(.blue)
 
-                            AnimatedLayer(portalID: "portalDemo") {
+                            AnimatedLayer(portalID: "portalDemo", in: namespace) {
                                     RoundedRectangle(cornerRadius: 16)
                                         .fill(
                                             LinearGradient(
@@ -174,8 +174,8 @@ public struct PortalPrivateExampleComparison: View {
             }
             .portalPrivateTransition(
                 id: "portalDemo",
-                isActive: $showPortalSheet,
-                in: portalNamespace
+                in: portalNamespace,
+                isActive: $showPortalSheet
             )
         }
     }
