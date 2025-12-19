@@ -135,7 +135,7 @@ final class OverlayWindowManager {
     /// Adds the overlay window to the active scene.
     /// - Parameters:
     ///   - portalModel: The shared portal model.
-    ///   - hideStatusBar: Whether the overlay should hide the status bar.
+    ///   - hideStatusBar: Whether the overlay should hide the status bar initially.
     ///   - debugSettings: Debug overlay settings.
     func addOverlayWindow(
         with portalModel: CrossModel,
@@ -170,16 +170,12 @@ final class OverlayWindowManager {
                 window.isUserInteractionEnabled = false
                 window.isHidden = false
 
-                let root: UIViewController
-                if hideStatusBar {
-                    root = HiddenStatusHostingController(
-                        rootView: PortalContainerRootView(portalModel: portalModel, debugSettings: debugSettings)
-                    )
-                } else {
-                    root = UIHostingController(
-                        rootView: PortalContainerRootView(portalModel: portalModel, debugSettings: debugSettings)
-                    )
-                }
+                portalModel.isStatusBarHidden = hideStatusBar
+
+                let root = UIHostingController(
+                    rootView: PortalContainerRootView(portalModel: portalModel, debugSettings: debugSettings)
+                )
+
                 root.view.backgroundColor = .clear
                 root.view.frame = windowScene.screen.bounds
 
@@ -319,6 +315,8 @@ private struct PortalContainerRootView: View {
             PortalLayerView()
                 .environment(portalModel)
                 .portalTransitionDebugOverlays(debugSettings.style(for: .layer), for: .layer)
+                .statusBarHidden(portalModel.isStatusBarHidden)
+
             #if DEBUG
             let layerStyle = debugSettings.style(for: .layer)
             if !layerStyle.isEmpty {
