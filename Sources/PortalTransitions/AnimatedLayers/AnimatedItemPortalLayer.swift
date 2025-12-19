@@ -118,7 +118,7 @@ private struct AnimatedItemPortalLayerHost<Layer: AnimatedItemPortalLayer>: View
 ///
 /// Example:
 /// ```swift
-/// AnimatedItemLayer(item: $selectedPhoto) { photo, isActive in
+/// AnimatedItemLayer(item: $selectedPhoto, in: namespace) { photo, isActive in
 ///     AsyncImage(url: photo?.imageURL)
 ///         .scaleEffect(isActive ? 1.1 : 1.0)
 ///         .animation(.spring, value: isActive)
@@ -289,7 +289,7 @@ private struct AnimatedGroupPortalLayerHost<Layer: AnimatedGroupPortalLayer>: Vi
 ///
 /// Example:
 /// ```swift
-/// AnimatedGroupLayer(items: selectedPhotos, groupID: "photoStack") { items, activeStates in
+/// AnimatedGroupLayer(items: selectedPhotos, groupID: "photoStack", in: namespace) { items, activeStates in
 ///     ZStack {
 ///         ForEach(items) { photo in
 ///             let isActive = activeStates[photo.id] ?? false
