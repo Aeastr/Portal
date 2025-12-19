@@ -24,6 +24,10 @@ public class CrossModel {
     /// Each `PortalInfo` object tracks the state of a specific portal transition.
     public var info: [PortalInfo] = []
 
+    /// Controls whether the status bar is hidden for the portal overlay window.
+    /// Modify this property to dynamically show or hide the status bar.
+    public var isStatusBarHidden: Bool = false
+
     /// Array containing root-level portal information.
     /// Used for managing portal hierarchies and nested portal scenarios.
     public var rootInfo: [PortalInfo] = []
