@@ -110,19 +110,26 @@ private struct PortalLayerContentView: View {
             let animate = info.animateView
 
             // Interpolate size between source and destination based on animation state
-            let width = animate ? dRect.size.width : sRect.size.width
-            let height = animate ? dRect.size.height : sRect.size.height
+            let size = CGSize(
+                width: animate ? dRect.size.width : sRect.size.width,
+                height: animate ? dRect.size.height : sRect.size.height
+            )
 
             // Interpolate position between source and destination based on animation state
-            let x = animate ? dRect.minX : sRect.minX
-            let y = animate ? dRect.minY : sRect.minY
+            let position = CGPoint(
+                x: animate ? dRect.minX : sRect.minX,
+                y: animate ? dRect.minY : sRect.minY
+            )
 
-            // Apply configuration closure if provided, otherwise use layer as-is
+            // When configuration is provided, it has full control (must apply frame/offset itself)
+            // When no configuration, we apply frame/offset automatically
             Group {
                 if let configuration = info.configuration {
-                    configuration(layer, animate, sRect, dRect)
+                    configuration(layer, animate, size, position)
                 } else {
                     layer
+                        .frame(width: size.width, height: size.height)
+                        .offset(x: position.x, y: position.y)
                 }
             }
             .compositingGroup()
@@ -130,7 +137,6 @@ private struct PortalLayerContentView: View {
                 insertion: .identity,
                 removal: info.fade == .fade ? .opacity.animation(.easeOut(duration: 0.1)) : .identity
             ))
-            
             .overlay(
                 Group {
                     #if DEBUG
@@ -141,8 +147,6 @@ private struct PortalLayerContentView: View {
                     #endif
                 }
             )
-            .frame(width: width, height: height)
-            .offset(x: x, y: y)
             .transition(.identity)  // Prevents additional SwiftUI transitions
             .onAppear {
                 PortalLogs.logger.log(

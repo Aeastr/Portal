@@ -108,27 +108,27 @@ public struct PortalInfo: Identifiable {
 
     /// Configuration closure for customizing the layer view during animation.
     ///
-    /// This closure receives the layer view, animation state, and geometry information,
-    /// and returns a modified view. Use this to apply custom styling that should change
-    /// during the transition, such as corner radius, shadows, or effects.
+    /// When provided, this closure has **full control** over the layer view's layout.
+    /// You must apply frame and offset yourself using the interpolated `size` and `position`.
     ///
     /// **Parameters:**
-    /// - `body`: The layer view to customize
+    /// - `content`: The layer view to customize
     /// - `isActive`: `true` when animating toward destination, `false` when at/toward source
-    /// - `sourceRect`: The source view's rectangle in global coordinates
-    /// - `destinationRect`: The destination view's rectangle in global coordinates
+    /// - `size`: Interpolated size (destination size when active, source size otherwise)
+    /// - `position`: Interpolated position (destination origin when active, source origin otherwise)
     ///
     /// **Example:**
     /// ```swift
-    /// configuration: { body, isActive, sourceRect, destinationRect in
-    ///     body
+    /// configuration: { content, isActive, size, position in
+    ///     content
+    ///         .frame(width: size.width, height: size.height)
     ///         .clipShape(.rect(cornerRadius: isActive ? 20 : 10))
-    ///         .shadow(radius: isActive ? 20 : 5)
+    ///         .offset(x: position.x, y: position.y)
     /// }
     /// ```
     ///
-    /// When `nil`, the layer view is used as-is without modification.
-    public var configuration: (@Sendable (AnyView, Bool, CGRect, CGRect) -> AnyView)?
+    /// When `nil`, frame and offset are applied automatically with no additional styling.
+    public var configuration: (@Sendable (AnyView, Bool, CGSize, CGPoint) -> AnyView)?
 
     /// Controls fade-out behavior when the portal layer is removed.
     ///

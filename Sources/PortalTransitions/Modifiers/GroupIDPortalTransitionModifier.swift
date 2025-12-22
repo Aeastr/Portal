@@ -38,7 +38,7 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
     public let animation: Animation
 
     /// Configuration closure for customizing the layer view during animation.
-    public let configuration: (@Sendable (AnyView, Bool, CGRect, CGRect) -> AnyView)?
+    public let configuration: (@Sendable (AnyView, Bool, CGSize, CGPoint) -> AnyView)?
 
     /// Controls fade-out behavior when the portal layer is removed.
     public let transition: PortalRemoveTransition
@@ -68,7 +68,7 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
         completionCriteria: AnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void,
         @ViewBuilder layerView: @escaping (AnyHashable) -> LayerView,
-        configuration: (@Sendable (AnyView, Bool, CGRect, CGRect) -> AnyView)? = nil
+        configuration: (@Sendable (AnyView, Bool, CGSize, CGPoint) -> AnyView)? = nil
     ) {
         self.ids = ids.map { AnyHashable($0) }
         self.groupID = groupID
@@ -211,7 +211,7 @@ public extension View {
         completionCriteria: AnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void = { _ in },
         @ViewBuilder layerView: @escaping (AnyHashable) -> LayerView,
-        @ViewBuilder configuration: @escaping (AnyView, Bool, CGRect, CGRect) -> ConfiguredView
+        @ViewBuilder configuration: @escaping (AnyView, Bool, CGSize, CGPoint) -> ConfiguredView
     ) -> some View {
         return self.modifier(
             GroupIDPortalTransitionModifier(
@@ -224,7 +224,7 @@ public extension View {
                 completionCriteria: completionCriteria,
                 completion: completion,
                 layerView: layerView,
-                configuration: { view, isActive, sourceRect, destinationRect in AnyView(configuration(view, isActive, sourceRect, destinationRect)) }
+                configuration: { view, isActive, size, position in AnyView(configuration(view, isActive, size, position)) }
             )
         )
     }

@@ -67,7 +67,7 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
     public let animation: Animation
 
     /// Configuration closure for customizing the layer view during animation.
-    public let configuration: (@Sendable (AnyView, Bool, CGRect, CGRect) -> AnyView)?
+    public let configuration: (@Sendable (AnyView, Bool, CGSize, CGPoint) -> AnyView)?
 
     /// Controls fade-out behavior when the portal layer is removed.
     public let transition: PortalRemoveTransition
@@ -115,7 +115,7 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
         completionCriteria: AnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void,
         @ViewBuilder layerView: @escaping () -> LayerView,
-        configuration: (@Sendable (AnyView, Bool, CGRect, CGRect) -> AnyView)? = nil
+        configuration: (@Sendable (AnyView, Bool, CGSize, CGPoint) -> AnyView)? = nil
     ) {
         self.id = AnyHashable(id)
         self.namespace = namespace
@@ -285,10 +285,11 @@ public extension View {
     /// ContentView()
     ///     .portalTransition(id: "detail", in: namespace, isActive: $showDetail) {
     ///         DetailLayerView()
-    ///     } configuration: { body, isActive, sourceRect, destinationRect in
-    ///         body
+    ///     } configuration: { content, isActive, size, position in
+    ///         content
+    ///             .frame(width: size.width, height: size.height)
     ///             .clipShape(.rect(cornerRadius: isActive ? 20 : 10))
-    ///             .shadow(radius: isActive ? 20 : 5)
+    ///             .offset(x: position.x, y: position.y)
     ///     }
     /// ```
     ///
@@ -312,7 +313,7 @@ public extension View {
         completionCriteria: AnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void = { _ in },
         @ViewBuilder layerView: @escaping () -> LayerView,
-        @ViewBuilder configuration: @escaping (AnyView, Bool, CGRect, CGRect) -> ConfiguredView
+        @ViewBuilder configuration: @escaping (AnyView, Bool, CGSize, CGPoint) -> ConfiguredView
     ) -> some View {
         return self.modifier(
             ConditionalPortalTransitionModifier(
@@ -324,7 +325,7 @@ public extension View {
                 completionCriteria: completionCriteria,
                 completion: completion,
                 layerView: layerView,
-                configuration: { view, isActive, sourceRect, destinationRect in AnyView(configuration(view, isActive, sourceRect, destinationRect)) }
+                configuration: { view, isActive, size, position in AnyView(configuration(view, isActive, size, position)) }
             )
         )
     }

@@ -53,7 +53,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
     public let animation: Animation
 
     /// Configuration closure for customizing the layer view during animation.
-    public let configuration: (@Sendable (AnyView, Bool, CGRect, CGRect) -> AnyView)?
+    public let configuration: (@Sendable (AnyView, Bool, CGSize, CGPoint) -> AnyView)?
 
     /// Controls fade-out behavior when the portal layer is removed.
     public let transition: PortalRemoveTransition
@@ -103,7 +103,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
         completionCriteria: AnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void,
         @ViewBuilder layerView: @escaping (Item) -> LayerView,
-        configuration: (@Sendable (AnyView, Bool, CGRect, CGRect) -> AnyView)? = nil
+        configuration: (@Sendable (AnyView, Bool, CGSize, CGPoint) -> AnyView)? = nil
     ) {
         self._item = item
         self.namespace = namespace
@@ -363,10 +363,11 @@ public extension View {
     /// ContentView()
     ///     .portalTransition(item: $selectedItem, in: namespace) { item in
     ///         DetailView(item: item)
-    ///     } configuration: { body, isActive, sourceRect, destinationRect in
-    ///         body
+    ///     } configuration: { content, isActive, size, position in
+    ///         content
+    ///             .frame(width: size.width, height: size.height)
     ///             .clipShape(.rect(cornerRadius: isActive ? 20 : 10))
-    ///             .shadow(radius: isActive ? 20 : 5)
+    ///             .offset(x: position.x, y: position.y)
     ///     }
     /// ```
     ///
@@ -378,7 +379,7 @@ public extension View {
     ///   - completionCriteria: How to detect animation completion (defaults to .removed)
     ///   - completion: Optional completion handler (defaults to no-op)
     ///   - layerView: Closure that receives the item and returns the view to animate
-    ///   - configuration: Closure to customize the layer view during animation (body, isActive, sourceRect, destinationRect)
+    ///   - configuration: Closure with full control over layout (content, isActive, size, position). Must apply frame and offset.
     /// - Returns: A view with the portal transition modifier applied
     func portalTransition<Item: Identifiable, LayerView: View, ConfiguredView: View>(
         item: Binding<Item?>,
@@ -388,7 +389,7 @@ public extension View {
         completionCriteria: AnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void = { _ in },
         @ViewBuilder layerView: @escaping (Item) -> LayerView,
-        @ViewBuilder configuration: @escaping (AnyView, Bool, CGRect, CGRect) -> ConfiguredView
+        @ViewBuilder configuration: @escaping (AnyView, Bool, CGSize, CGPoint) -> ConfiguredView
     ) -> some View {
         return self.modifier(
             OptionalPortalTransitionModifier(
@@ -399,7 +400,7 @@ public extension View {
                 completionCriteria: completionCriteria,
                 completion: completion,
                 layerView: layerView,
-                configuration: { view, isActive, sourceRect, destinationRect in AnyView(configuration(view, isActive, sourceRect, destinationRect)) }
+                configuration: { view, isActive, size, position in AnyView(configuration(view, isActive, size, position)) }
             )
         )
     }
