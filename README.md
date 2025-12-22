@@ -67,6 +67,34 @@ Image("cover")
 
 The view animates smoothly from source to destination when the cover presents, and back when it dismisses.
 
+#### Layer Configuration
+
+Optionally customize the animating layer:
+
+```swift
+// No config — frame/offset handled automatically
+.portalTransition(item: $selectedBook) { book in
+    Image("cover")
+}
+
+// Styling only — add clips, shadows, etc. (frame/offset still automatic)
+.portalTransition(item: $selectedBook) { book in
+    Image("cover")
+} configuration: { content, isActive in
+    content.clipShape(.rect(cornerRadius: isActive ? 0 : 12))
+}
+
+// Full control — you handle frame/offset (for custom modifier ordering)
+.portalTransition(item: $selectedBook) { book in
+    Image("cover")
+} configuration: { content, isActive, size, position in
+    content
+        .frame(width: size.width, height: size.height)
+        .clipShape(.rect(cornerRadius: isActive ? 0 : 12))
+        .offset(x: position.x, y: position.y)
+}
+```
+
 **iOS 17+** · Uses standard SwiftUI APIs
 
 ---
