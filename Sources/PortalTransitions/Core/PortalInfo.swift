@@ -10,6 +10,86 @@
 
 import SwiftUI
 
+// MARK: - Portal Configuration
+
+/// Configuration levels for customizing portal layer views during animation.
+///
+/// This enum provides three levels of control over how the layer view is styled
+/// and positioned during portal transitions:
+///
+/// - **Styling**: Modify appearance only; frame/offset applied automatically after
+/// - **Full**: Complete control with interpolated size/position; must apply frame/offset yourself
+/// - **Raw**: Access to both source and destination values for custom logic
+public enum PortalConfiguration: Sendable {
+    /// Level 1: Styling only configuration.
+    ///
+    /// Modify the layer view's appearance (clips, shadows, etc.) without affecting positioning.
+    /// Frame and offset are applied automatically AFTER your configuration.
+    ///
+    /// **Parameters:**
+    /// - `content`: The layer view to style
+    /// - `isActive`: `true` when animating toward destination, `false` when at/toward source
+    ///
+    /// **Example:**
+    /// ```swift
+    /// .styling { content, isActive in
+    ///     content
+    ///         .clipShape(.rect(cornerRadius: isActive ? 20 : 10))
+    ///         .shadow(radius: isActive ? 10 : 2)
+    /// }
+    /// ```
+    case styling(@Sendable (AnyView, Bool) -> AnyView)
+
+    /// Level 2: Full control with interpolated values.
+    ///
+    /// You have complete control over the layer view including positioning.
+    /// You MUST apply frame and offset yourself using the provided values.
+    ///
+    /// **Parameters:**
+    /// - `content`: The layer view to configure
+    /// - `isActive`: `true` when animating toward destination, `false` when at/toward source
+    /// - `size`: Interpolated size (destination when active, source otherwise)
+    /// - `position`: Interpolated position (destination origin when active, source origin otherwise)
+    ///
+    /// **Example:**
+    /// ```swift
+    /// .full { content, isActive, size, position in
+    ///     content
+    ///         .frame(width: size.width, height: size.height)
+    ///         .clipShape(.rect(cornerRadius: isActive ? 20 : 10))
+    ///         .offset(x: position.x, y: position.y)
+    /// }
+    /// ```
+    case full(@Sendable (AnyView, Bool, CGSize, CGPoint) -> AnyView)
+
+    /// Level 3: Raw source and destination values.
+    ///
+    /// Access both source AND destination sizes and positions for custom interpolation
+    /// or complex animation logic. You MUST apply frame and offset yourself.
+    ///
+    /// **Parameters:**
+    /// - `content`: The layer view to configure
+    /// - `isActive`: `true` when animating toward destination, `false` when at/toward source
+    /// - `sourceSize`: Size of the source view
+    /// - `destinationSize`: Size of the destination view
+    /// - `sourcePosition`: Position (origin) of the source view
+    /// - `destinationPosition`: Position (origin) of the destination view
+    ///
+    /// **Example:**
+    /// ```swift
+    /// .raw { content, isActive, sourceSize, destinationSize, sourcePosition, destinationPosition in
+    ///     let size = isActive ? destinationSize : sourceSize
+    ///     let position = isActive ? destinationPosition : sourcePosition
+    ///     return content
+    ///         .frame(width: size.width, height: size.height)
+    ///         .offset(x: position.x, y: position.y)
+    /// }
+    /// ```
+    case raw(@Sendable (AnyView, Bool, CGSize, CGSize, CGPoint, CGPoint) -> AnyView)
+}
+
+// MARK: - Portal Info
+
 /// A data record that encapsulates all information needed for a single portal animation.
 ///
 /// This struct serves as the central data model for tracking the complete state of a portal
@@ -106,29 +186,17 @@ public struct PortalInfo: Identifiable {
     /// the view is removed or logically complete.
     public var completionCriteria: AnimationCompletionCriteria = .removed
 
-    /// Configuration closure for customizing the layer view during animation.
+    /// Configuration for customizing the layer view during animation.
     ///
-    /// When provided, this closure has **full control** over the layer view's layout.
-    /// You must apply frame and offset yourself using the interpolated `size` and `position`.
-    ///
-    /// **Parameters:**
-    /// - `content`: The layer view to customize
-    /// - `isActive`: `true` when animating toward destination, `false` when at/toward source
-    /// - `size`: Interpolated size (destination size when active, source size otherwise)
-    /// - `position`: Interpolated position (destination origin when active, source origin otherwise)
-    ///
-    /// **Example:**
-    /// ```swift
-    /// configuration: { content, isActive, size, position in
-    ///     content
-    ///         .frame(width: size.width, height: size.height)
-    ///         .clipShape(.rect(cornerRadius: isActive ? 20 : 10))
-    ///         .offset(x: position.x, y: position.y)
-    /// }
-    /// ```
+    /// Choose from three levels of control:
+    /// - `.styling`: Modify appearance only; frame/offset applied automatically
+    /// - `.full`: Complete control with interpolated values; must apply frame/offset
+    /// - `.raw`: Access to source AND destination values for custom logic
     ///
     /// When `nil`, frame and offset are applied automatically with no additional styling.
-    public var configuration: (@Sendable (AnyView, Bool, CGSize, CGPoint) -> AnyView)?
+    ///
+    /// See ``PortalConfiguration`` for detailed documentation and examples.
+    public var configuration: PortalConfiguration?
 
     /// Controls fade-out behavior when the portal layer is removed.
     ///

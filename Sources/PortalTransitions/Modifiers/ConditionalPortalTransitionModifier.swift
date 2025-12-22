@@ -66,8 +66,9 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
     /// Animation for the portal transition.
     public let animation: Animation
 
-    /// Configuration closure for customizing the layer view during animation.
-    public let configuration: (@Sendable (AnyView, Bool, CGSize, CGPoint) -> AnyView)?
+    /// Configuration for customizing the layer view during animation.
+    /// See ``PortalConfiguration`` for the three levels of control available.
+    public let configuration: PortalConfiguration?
 
     /// Controls fade-out behavior when the portal layer is removed.
     public let transition: PortalRemoveTransition
@@ -115,7 +116,7 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
         completionCriteria: AnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void,
         @ViewBuilder layerView: @escaping () -> LayerView,
-        configuration: (@Sendable (AnyView, Bool, CGSize, CGPoint) -> AnyView)? = nil
+        configuration: PortalConfiguration? = nil
     ) {
         self.id = AnyHashable(id)
         self.namespace = namespace
@@ -272,38 +273,76 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
 }
 
 public extension View {
+    // MARK: - No Configuration (Default)
+
     /// Applies a portal transition controlled by a boolean binding.
     ///
-    /// This modifier enables portal transitions based on boolean state changes,
-    /// providing direct control over when transitions occur. It's ideal for
-    /// toggle-based animations or explicit programmatic control.
+    /// This is the simplest form - frame and offset are applied automatically.
+    func portalTransition<ID: Hashable, LayerView: View>(
+        id: ID,
+        in namespace: Namespace.ID,
+        isActive: Binding<Bool>,
+        animation: Animation = PortalConstants.defaultAnimation,
+        transition: PortalRemoveTransition = .none,
+        completionCriteria: AnimationCompletionCriteria = .removed,
+        completion: @escaping (Bool) -> Void = { _ in },
+        @ViewBuilder layerView: @escaping () -> LayerView
+    ) -> some View {
+        self.modifier(
+            ConditionalPortalTransitionModifier(
+                id: id,
+                in: namespace,
+                isActive: isActive,
+                animation: animation,
+                transition: transition,
+                completionCriteria: completionCriteria,
+                completion: completion,
+                layerView: layerView,
+                configuration: nil
+            )
+        )
+    }
+
+    // MARK: - Level 1: Styling Only
+
+    /// Applies a portal transition with styling-only configuration.
     ///
-    /// **Usage Pattern:**
-    /// ```swift
-    /// @State private var showDetail = false
+    /// Modify appearance (clips, shadows, etc.) without affecting positioning.
+    /// Frame and offset are applied automatically AFTER your configuration.
+    func portalTransition<ID: Hashable, LayerView: View, ConfiguredView: View>(
+        id: ID,
+        in namespace: Namespace.ID,
+        isActive: Binding<Bool>,
+        animation: Animation = PortalConstants.defaultAnimation,
+        transition: PortalRemoveTransition = .none,
+        completionCriteria: AnimationCompletionCriteria = .removed,
+        completion: @escaping (Bool) -> Void = { _ in },
+        @ViewBuilder layerView: @escaping () -> LayerView,
+        @ViewBuilder configuration: @escaping (AnyView, Bool) -> ConfiguredView
+    ) -> some View {
+        self.modifier(
+            ConditionalPortalTransitionModifier(
+                id: id,
+                in: namespace,
+                isActive: isActive,
+                animation: animation,
+                transition: transition,
+                completionCriteria: completionCriteria,
+                completion: completion,
+                layerView: layerView,
+                configuration: .styling { content, isActive in
+                    AnyView(configuration(content, isActive))
+                }
+            )
+        )
+    }
+
+    // MARK: - Level 2: Full Control (Interpolated Values)
+
+    /// Applies a portal transition with full control over layout.
     ///
-    /// ContentView()
-    ///     .portalTransition(id: "detail", in: namespace, isActive: $showDetail) {
-    ///         DetailLayerView()
-    ///     } configuration: { content, isActive, size, position in
-    ///         content
-    ///             .frame(width: size.width, height: size.height)
-    ///             .clipShape(.rect(cornerRadius: isActive ? 20 : 10))
-    ///             .offset(x: position.x, y: position.y)
-    ///     }
-    /// ```
-    ///
-    /// - Parameters:
-    ///   - id: Unique identifier for the portal transition
-    ///   - namespace: The namespace for scoping this portal
-    ///   - isActive: Boolean binding that controls the transition state
-    ///   - animation: Animation to use for the transition (defaults to smooth animation)
-    ///   - transition: Fade-out behavior for layer removal (defaults to .none)
-    ///   - completionCriteria: How to detect animation completion (defaults to .removed)
-    ///   - completion: Optional completion handler (defaults to no-op)
-    ///   - layerView: Closure that returns the view to animate during transition
-    ///   - configuration: Optional closure to customize the layer view during animation
-    /// - Returns: A view with the portal transition modifier applied
+    /// You have complete control and MUST apply frame and offset yourself.
+    /// Receives interpolated size/position based on animation state.
     func portalTransition<ID: Hashable, LayerView: View, ConfiguredView: View>(
         id: ID,
         in namespace: Namespace.ID,
@@ -315,7 +354,7 @@ public extension View {
         @ViewBuilder layerView: @escaping () -> LayerView,
         @ViewBuilder configuration: @escaping (AnyView, Bool, CGSize, CGPoint) -> ConfiguredView
     ) -> some View {
-        return self.modifier(
+        self.modifier(
             ConditionalPortalTransitionModifier(
                 id: id,
                 in: namespace,
@@ -325,27 +364,20 @@ public extension View {
                 completionCriteria: completionCriteria,
                 completion: completion,
                 layerView: layerView,
-                configuration: { view, isActive, size, position in AnyView(configuration(view, isActive, size, position)) }
+                configuration: .full { content, isActive, size, position in
+                    AnyView(configuration(content, isActive, size, position))
+                }
             )
         )
     }
 
-    /// Applies a portal transition controlled by a boolean binding without configuration.
+    // MARK: - Level 3: Raw Source/Destination Values
+
+    /// Applies a portal transition with raw source and destination values.
     ///
-    /// This is a convenience overload that doesn't require a configuration closure.
-    /// The layer view is used as-is without modification.
-    ///
-    /// - Parameters:
-    ///   - id: Unique identifier for the portal transition
-    ///   - namespace: The namespace for scoping this portal
-    ///   - isActive: Boolean binding that controls the transition state
-    ///   - animation: Animation to use for the transition (defaults to smooth animation)
-    ///   - transition: Fade-out behavior for layer removal (defaults to .none)
-    ///   - completionCriteria: How to detect animation completion (defaults to .removed)
-    ///   - completion: Optional completion handler (defaults to no-op)
-    ///   - layerView: Closure that returns the view to animate during transition
-    /// - Returns: A view with the portal transition modifier applied
-    func portalTransition<ID: Hashable, LayerView: View>(
+    /// Access both source AND destination sizes/positions for custom interpolation.
+    /// You MUST apply frame and offset yourself.
+    func portalTransition<ID: Hashable, LayerView: View, ConfiguredView: View>(
         id: ID,
         in namespace: Namespace.ID,
         isActive: Binding<Bool>,
@@ -353,9 +385,10 @@ public extension View {
         transition: PortalRemoveTransition = .none,
         completionCriteria: AnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void = { _ in },
-        @ViewBuilder layerView: @escaping () -> LayerView
+        @ViewBuilder layerView: @escaping () -> LayerView,
+        @ViewBuilder configuration: @escaping (AnyView, Bool, CGSize, CGSize, CGPoint, CGPoint) -> ConfiguredView
     ) -> some View {
-        return self.modifier(
+        self.modifier(
             ConditionalPortalTransitionModifier(
                 id: id,
                 in: namespace,
@@ -365,7 +398,9 @@ public extension View {
                 completionCriteria: completionCriteria,
                 completion: completion,
                 layerView: layerView,
-                configuration: nil
+                configuration: .raw { content, isActive, sourceSize, destinationSize, sourcePosition, destinationPosition in
+                    AnyView(configuration(content, isActive, sourceSize, destinationSize, sourcePosition, destinationPosition))
+                }
             )
         )
     }

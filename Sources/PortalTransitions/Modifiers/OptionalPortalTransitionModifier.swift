@@ -52,8 +52,9 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
     /// Animation to use for the transition.
     public let animation: Animation
 
-    /// Configuration closure for customizing the layer view during animation.
-    public let configuration: (@Sendable (AnyView, Bool, CGSize, CGPoint) -> AnyView)?
+    /// Configuration for customizing the layer view during animation.
+    /// See ``PortalConfiguration`` for the three levels of control available.
+    public let configuration: PortalConfiguration?
 
     /// Controls fade-out behavior when the portal layer is removed.
     public let transition: PortalRemoveTransition
@@ -103,7 +104,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
         completionCriteria: AnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void,
         @ViewBuilder layerView: @escaping (Item) -> LayerView,
-        configuration: (@Sendable (AnyView, Bool, CGSize, CGPoint) -> AnyView)? = nil
+        configuration: PortalConfiguration? = nil
     ) {
         self._item = item
         self.namespace = namespace
@@ -350,73 +351,19 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
 }
 
 public extension View {
+    // MARK: - No Configuration (Default)
+
     /// Applies a portal transition controlled by an optional `Identifiable` item.
     ///
-    /// This modifier automatically manages portal transitions based on the presence
-    /// of an optional item. When the item becomes non-nil, a forward transition is
-    /// triggered. When it becomes nil, a reverse transition is triggered.
-    ///
-    /// **Usage Pattern:**
-    /// ```swift
-    /// @State private var selectedItem: MyItem? = nil
-    ///
-    /// ContentView()
-    ///     .portalTransition(item: $selectedItem, in: namespace) { item in
-    ///         DetailView(item: item)
-    ///     } configuration: { content, isActive, size, position in
-    ///         content
-    ///             .frame(width: size.width, height: size.height)
-    ///             .clipShape(.rect(cornerRadius: isActive ? 20 : 10))
-    ///             .offset(x: position.x, y: position.y)
-    ///     }
-    /// ```
-    ///
-    /// - Parameters:
-    ///   - item: Binding to an optional `Identifiable` item that controls the transition
-    ///   - namespace: The namespace for scoping this portal. Transitions only match portals within the same namespace.
-    ///   - animation: Animation to use for the transition (defaults to smooth animation)
-    ///   - transition: Fade-out behavior for layer removal (defaults to .none)
-    ///   - completionCriteria: How to detect animation completion (defaults to .removed)
-    ///   - completion: Optional completion handler (defaults to no-op)
-    ///   - layerView: Closure that receives the item and returns the view to animate
-    ///   - configuration: Closure with full control over layout (content, isActive, size, position). Must apply frame and offset.
-    /// - Returns: A view with the portal transition modifier applied
-    func portalTransition<Item: Identifiable, LayerView: View, ConfiguredView: View>(
-        item: Binding<Item?>,
-        in namespace: Namespace.ID,
-        animation: Animation = PortalConstants.defaultAnimation,
-        transition: PortalRemoveTransition = .none,
-        completionCriteria: AnimationCompletionCriteria = .removed,
-        completion: @escaping (Bool) -> Void = { _ in },
-        @ViewBuilder layerView: @escaping (Item) -> LayerView,
-        @ViewBuilder configuration: @escaping (AnyView, Bool, CGSize, CGPoint) -> ConfiguredView
-    ) -> some View {
-        return self.modifier(
-            OptionalPortalTransitionModifier(
-                item: item,
-                in: namespace,
-                animation: animation,
-                transition: transition,
-                completionCriteria: completionCriteria,
-                completion: completion,
-                layerView: layerView,
-                configuration: { view, isActive, size, position in AnyView(configuration(view, isActive, size, position)) }
-            )
-        )
-    }
-
-    /// Applies a portal transition controlled by an optional `Identifiable` item without configuration.
-    ///
-    /// This is a convenience overload that doesn't require a configuration closure.
-    /// The layer view is used as-is without modification.
+    /// This is the simplest form - frame and offset are applied automatically.
     ///
     /// - Parameters:
     ///   - item: Binding to an optional `Identifiable` item that controls the transition
     ///   - namespace: The namespace for scoping this portal
-    ///   - animation: Animation to use for the transition (defaults to smooth animation)
-    ///   - transition: Fade-out behavior for layer removal (defaults to .none)
-    ///   - completionCriteria: How to detect animation completion (defaults to .removed)
-    ///   - completion: Optional completion handler (defaults to no-op)
+    ///   - animation: Animation to use for the transition
+    ///   - transition: Fade-out behavior for layer removal
+    ///   - completionCriteria: How to detect animation completion
+    ///   - completion: Completion handler
     ///   - layerView: Closure that receives the item and returns the view to animate
     /// - Returns: A view with the portal transition modifier applied
     func portalTransition<Item: Identifiable, LayerView: View>(
@@ -428,7 +375,7 @@ public extension View {
         completion: @escaping (Bool) -> Void = { _ in },
         @ViewBuilder layerView: @escaping (Item) -> LayerView
     ) -> some View {
-        return self.modifier(
+        self.modifier(
             OptionalPortalTransitionModifier(
                 item: item,
                 in: namespace,
@@ -438,6 +385,135 @@ public extension View {
                 completion: completion,
                 layerView: layerView,
                 configuration: nil
+            )
+        )
+    }
+
+    // MARK: - Level 1: Styling Only
+
+    /// Applies a portal transition with styling-only configuration.
+    ///
+    /// Modify appearance (clips, shadows, etc.) without affecting positioning.
+    /// Frame and offset are applied automatically AFTER your configuration.
+    ///
+    /// ```swift
+    /// .portalTransition(item: $item, in: namespace) { item in
+    ///     ItemView(item: item)
+    /// } configuration: { content, isActive in
+    ///     content
+    ///         .clipShape(.rect(cornerRadius: isActive ? 20 : 10))
+    ///         .shadow(radius: isActive ? 10 : 2)
+    /// }
+    /// ```
+    func portalTransition<Item: Identifiable, LayerView: View, ConfiguredView: View>(
+        item: Binding<Item?>,
+        in namespace: Namespace.ID,
+        animation: Animation = PortalConstants.defaultAnimation,
+        transition: PortalRemoveTransition = .none,
+        completionCriteria: AnimationCompletionCriteria = .removed,
+        completion: @escaping (Bool) -> Void = { _ in },
+        @ViewBuilder layerView: @escaping (Item) -> LayerView,
+        @ViewBuilder configuration: @escaping (AnyView, Bool) -> ConfiguredView
+    ) -> some View {
+        self.modifier(
+            OptionalPortalTransitionModifier(
+                item: item,
+                in: namespace,
+                animation: animation,
+                transition: transition,
+                completionCriteria: completionCriteria,
+                completion: completion,
+                layerView: layerView,
+                configuration: .styling { content, isActive in
+                    AnyView(configuration(content, isActive))
+                }
+            )
+        )
+    }
+
+    // MARK: - Level 2: Full Control (Interpolated Values)
+
+    /// Applies a portal transition with full control over layout.
+    ///
+    /// You have complete control and MUST apply frame and offset yourself.
+    /// Receives interpolated size/position based on animation state.
+    ///
+    /// ```swift
+    /// .portalTransition(item: $item, in: namespace) { item in
+    ///     ItemView(item: item)
+    /// } configuration: { content, isActive, size, position in
+    ///     content
+    ///         .frame(width: size.width, height: size.height)
+    ///         .clipShape(.rect(cornerRadius: isActive ? 20 : 10))
+    ///         .offset(x: position.x, y: position.y)
+    /// }
+    /// ```
+    func portalTransition<Item: Identifiable, LayerView: View, ConfiguredView: View>(
+        item: Binding<Item?>,
+        in namespace: Namespace.ID,
+        animation: Animation = PortalConstants.defaultAnimation,
+        transition: PortalRemoveTransition = .none,
+        completionCriteria: AnimationCompletionCriteria = .removed,
+        completion: @escaping (Bool) -> Void = { _ in },
+        @ViewBuilder layerView: @escaping (Item) -> LayerView,
+        @ViewBuilder configuration: @escaping (AnyView, Bool, CGSize, CGPoint) -> ConfiguredView
+    ) -> some View {
+        self.modifier(
+            OptionalPortalTransitionModifier(
+                item: item,
+                in: namespace,
+                animation: animation,
+                transition: transition,
+                completionCriteria: completionCriteria,
+                completion: completion,
+                layerView: layerView,
+                configuration: .full { content, isActive, size, position in
+                    AnyView(configuration(content, isActive, size, position))
+                }
+            )
+        )
+    }
+
+    // MARK: - Level 3: Raw Source/Destination Values
+
+    /// Applies a portal transition with raw source and destination values.
+    ///
+    /// Access both source AND destination sizes/positions for custom interpolation.
+    /// You MUST apply frame and offset yourself.
+    ///
+    /// ```swift
+    /// .portalTransition(item: $item, in: namespace) { item in
+    ///     ItemView(item: item)
+    /// } configuration: { content, isActive, sourceSize, destinationSize, sourcePosition, destinationPosition in
+    ///     let size = isActive ? destinationSize : sourceSize
+    ///     let position = isActive ? destinationPosition : sourcePosition
+    ///     return content
+    ///         .frame(width: size.width, height: size.height)
+    ///         .offset(x: position.x, y: position.y)
+    /// }
+    /// ```
+    func portalTransition<Item: Identifiable, LayerView: View, ConfiguredView: View>(
+        item: Binding<Item?>,
+        in namespace: Namespace.ID,
+        animation: Animation = PortalConstants.defaultAnimation,
+        transition: PortalRemoveTransition = .none,
+        completionCriteria: AnimationCompletionCriteria = .removed,
+        completion: @escaping (Bool) -> Void = { _ in },
+        @ViewBuilder layerView: @escaping (Item) -> LayerView,
+        @ViewBuilder configuration: @escaping (AnyView, Bool, CGSize, CGSize, CGPoint, CGPoint) -> ConfiguredView
+    ) -> some View {
+        self.modifier(
+            OptionalPortalTransitionModifier(
+                item: item,
+                in: namespace,
+                animation: animation,
+                transition: transition,
+                completionCriteria: completionCriteria,
+                completion: completion,
+                layerView: layerView,
+                configuration: .raw { content, isActive, sourceSize, destinationSize, sourcePosition, destinationPosition in
+                    AnyView(configuration(content, isActive, sourceSize, destinationSize, sourcePosition, destinationPosition))
+                }
             )
         )
     }

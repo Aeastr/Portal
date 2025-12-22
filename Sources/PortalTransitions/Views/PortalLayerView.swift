@@ -121,12 +121,32 @@ private struct PortalLayerContentView: View {
                 y: animate ? dRect.minY : sRect.minY
             )
 
-            // When configuration is provided, it has full control (must apply frame/offset itself)
-            // When no configuration, we apply frame/offset automatically
+            // Handle configuration based on the level of control requested
             Group {
-                if let configuration = info.configuration {
-                    configuration(layer, animate, size, position)
-                } else {
+                switch info.configuration {
+                case .styling(let config):
+                    // Level 1: Apply styling, then frame/offset automatically
+                    config(layer, animate)
+                        .frame(width: size.width, height: size.height)
+                        .offset(x: position.x, y: position.y)
+
+                case .full(let config):
+                    // Level 2: User has full control with interpolated values
+                    config(layer, animate, size, position)
+
+                case .raw(let config):
+                    // Level 3: User gets all source/destination values
+                    config(
+                        layer,
+                        animate,
+                        sRect.size,
+                        dRect.size,
+                        CGPoint(x: sRect.minX, y: sRect.minY),
+                        CGPoint(x: dRect.minX, y: dRect.minY)
+                    )
+
+                case nil:
+                    // Default: frame/offset applied automatically
                     layer
                         .frame(width: size.width, height: size.height)
                         .offset(x: position.x, y: position.y)
