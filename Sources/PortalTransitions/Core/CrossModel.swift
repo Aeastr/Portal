@@ -96,7 +96,7 @@ public class CrossModel: Hashable {
             info[toIndex].showLayer = false
             info[toIndex].animation = sourceInfo.animation
             info[toIndex].completionCriteria = sourceInfo.completionCriteria
-            info[toIndex].corners = sourceInfo.corners
+            info[toIndex].configuration = sourceInfo.configuration
             info[toIndex].fade = sourceInfo.fade
             info[toIndex].completion = sourceInfo.completion
             info[toIndex].layerView = sourceInfo.layerView
@@ -109,7 +109,7 @@ public class CrossModel: Hashable {
             newInfo.showLayer = false
             newInfo.animation = sourceInfo.animation
             newInfo.completionCriteria = sourceInfo.completionCriteria
-            newInfo.corners = sourceInfo.corners
+            newInfo.configuration = sourceInfo.configuration
             newInfo.fade = sourceInfo.fade
             newInfo.completion = sourceInfo.completion
             newInfo.layerView = sourceInfo.layerView
