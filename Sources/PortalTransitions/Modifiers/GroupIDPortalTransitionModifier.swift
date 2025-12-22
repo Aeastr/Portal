@@ -37,8 +37,8 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
     /// Animation to use for the transition.
     public let animation: Animation
 
-    /// Corner styling configuration for visual appearance.
-    public let corners: PortalCorners?
+    /// Configuration closure for customizing the layer view during animation.
+    public let configuration: (@Sendable (AnyView, Bool, CGRect, CGRect) -> AnyView)?
 
     /// Controls fade-out behavior when the portal layer is removed.
     public let transition: PortalRemoveTransition
@@ -58,30 +58,28 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
     /// The shared portal model that manages all portal animations.
     @Environment(CrossModel.self) private var portalModel
 
-    /// Environment corners configuration.
-
     public init<ID: Hashable>(
         ids: [ID],
         groupID: String,
         in namespace: Namespace.ID,
         isActive: Binding<Bool>,
-        corners: PortalCorners? = nil,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
         completionCriteria: AnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void,
-        @ViewBuilder layerView: @escaping (AnyHashable) -> LayerView
+        @ViewBuilder layerView: @escaping (AnyHashable) -> LayerView,
+        configuration: (@Sendable (AnyView, Bool, CGRect, CGRect) -> AnyView)? = nil
     ) {
         self.ids = ids.map { AnyHashable($0) }
         self.groupID = groupID
         self.namespace = namespace
         self._isActive = isActive
-        self.corners = corners
         self.animation = animation
         self.transition = transition
         self.completionCriteria = completionCriteria
         self.completion = completion
         self.layerView = layerView
+        self.configuration = configuration
     }
 
     /// Ensures portal info exists for all IDs when the view appears.
@@ -104,7 +102,7 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
                 portalModel.info[idx].initialized = true
                 portalModel.info[idx].animation = animation
                 portalModel.info[idx].completionCriteria = completionCriteria
-                portalModel.info[idx].corners = corners
+                portalModel.info[idx].configuration = configuration
                 portalModel.info[idx].fade = transition
                 portalModel.info[idx].groupID = groupID
                 portalModel.info[idx].isGroupCoordinator = (i == 0)
@@ -184,7 +182,7 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
 }
 
 public extension View {
-    /// Applies a portal transition for multiple IDs with direct parameter configuration.
+    /// Applies a portal transition for multiple IDs with configuration.
     ///
     /// Creates portal transitions for multiple elements identified by their IDs, with
     /// shared animation parameters. All IDs in the group transition together when
@@ -193,27 +191,27 @@ public extension View {
     /// - Parameters:
     ///   - ids: Array of IDs for the portals to transition (any `Hashable` type)
     ///   - groupID: Common group ID for organizing the IDs
-    ///   - namespace: The namespace for scoping this portal. Transitions only match portals within the same namespace.
+    ///   - namespace: The namespace for scoping this portal
     ///   - isActive: Controls whether the transition is active
-    ///   - corners: Corner radius configuration for visual styling
     ///   - animation: The animation curve to use
-    ///   - transition: Fade-out behavior for layer removal (defaults to .fade)
+    ///   - transition: Fade-out behavior for layer removal (defaults to .none)
     ///   - completionCriteria: How to detect animation completion
-    ///   - layerView: Closure that generates the view for each ID
     ///   - completion: Called when the transition completes
+    ///   - layerView: Closure that generates the view for each ID
+    ///   - configuration: Optional closure to customize the layer view during animation
     ///
     /// - Returns: A modified view with the portal transitions applied
-    func portalTransition<ID: Hashable, LayerView: View>(
+    func portalTransition<ID: Hashable, LayerView: View, ConfiguredView: View>(
         ids: [ID],
         groupID: String,
         in namespace: Namespace.ID,
         isActive: Binding<Bool>,
-        corners: PortalCorners? = nil,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
         completionCriteria: AnimationCompletionCriteria = .removed,
+        completion: @escaping (Bool) -> Void = { _ in },
         @ViewBuilder layerView: @escaping (AnyHashable) -> LayerView,
-        completion: @escaping (Bool) -> Void = { _ in }
+        @ViewBuilder configuration: @escaping (AnyView, Bool, CGRect, CGRect) -> ConfiguredView
     ) -> some View {
         return self.modifier(
             GroupIDPortalTransitionModifier(
@@ -221,11 +219,57 @@ public extension View {
                 groupID: groupID,
                 in: namespace,
                 isActive: isActive,
-                corners: corners,
                 animation: animation,
                 transition: transition,
                 completionCriteria: completionCriteria,
                 completion: completion,
-                layerView: layerView))
+                layerView: layerView,
+                configuration: { view, isActive, sourceRect, destinationRect in AnyView(configuration(view, isActive, sourceRect, destinationRect)) }
+            )
+        )
+    }
+
+    /// Applies a portal transition for multiple IDs without configuration.
+    ///
+    /// This is a convenience overload that doesn't require a configuration closure.
+    /// The layer view is used as-is without modification.
+    ///
+    /// - Parameters:
+    ///   - ids: Array of IDs for the portals to transition (any `Hashable` type)
+    ///   - groupID: Common group ID for organizing the IDs
+    ///   - namespace: The namespace for scoping this portal
+    ///   - isActive: Controls whether the transition is active
+    ///   - animation: The animation curve to use
+    ///   - transition: Fade-out behavior for layer removal (defaults to .none)
+    ///   - completionCriteria: How to detect animation completion
+    ///   - completion: Called when the transition completes
+    ///   - layerView: Closure that generates the view for each ID
+    ///
+    /// - Returns: A modified view with the portal transitions applied
+    func portalTransition<ID: Hashable, LayerView: View>(
+        ids: [ID],
+        groupID: String,
+        in namespace: Namespace.ID,
+        isActive: Binding<Bool>,
+        animation: Animation = PortalConstants.defaultAnimation,
+        transition: PortalRemoveTransition = .none,
+        completionCriteria: AnimationCompletionCriteria = .removed,
+        completion: @escaping (Bool) -> Void = { _ in },
+        @ViewBuilder layerView: @escaping (AnyHashable) -> LayerView
+    ) -> some View {
+        return self.modifier(
+            GroupIDPortalTransitionModifier(
+                ids: ids,
+                groupID: groupID,
+                in: namespace,
+                isActive: isActive,
+                animation: animation,
+                transition: transition,
+                completionCriteria: completionCriteria,
+                completion: completion,
+                layerView: layerView,
+                configuration: nil
+            )
+        )
     }
 }

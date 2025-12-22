@@ -117,12 +117,10 @@ private struct PortalLayerContentView: View {
             let x = animate ? dRect.minX : sRect.minX
             let y = animate ? dRect.minY : sRect.minY
 
-            // Only apply clipShape if corners are configured
+            // Apply configuration closure if provided, otherwise use layer as-is
             Group {
-                if let corners = info.corners {
-                    let cornerRadius = animate ? corners.destination : corners.source
-                    layer
-                        .clipShape(.rect(cornerRadius: cornerRadius, style: corners.style))
+                if let configuration = info.configuration {
+                    configuration(layer, animate, sRect, dRect)
                 } else {
                     layer
                 }
@@ -132,6 +130,7 @@ private struct PortalLayerContentView: View {
                 insertion: .identity,
                 removal: info.fade == .fade ? .opacity.animation(.easeOut(duration: 0.1)) : .identity
             ))
+            
             .overlay(
                 Group {
                     #if DEBUG

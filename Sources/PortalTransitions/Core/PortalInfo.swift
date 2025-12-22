@@ -106,20 +106,29 @@ public struct PortalInfo: Identifiable {
     /// the view is removed or logically complete.
     public var completionCriteria: AnimationCompletionCriteria = .removed
 
-    /// Corner styling configuration for the portal transition elements.
+    /// Configuration closure for customizing the layer view during animation.
     ///
-    /// Defines the corner radius and styling properties applied to the portal
-    /// elements during the transition animation. This allows for consistent
-    /// visual treatment of rounded corners, ensuring smooth interpolation
-    /// between source and destination corner styles.
+    /// This closure receives the layer view, animation state, and geometry information,
+    /// and returns a modified view. Use this to apply custom styling that should change
+    /// during the transition, such as corner radius, shadows, or effects.
     ///
-    /// The corner configuration affects how the intermediate layer view appears
-    /// during the transition, providing visual continuity when transitioning
-    /// between views with different corner radius values.
+    /// **Parameters:**
+    /// - `body`: The layer view to customize
+    /// - `isActive`: `true` when animating toward destination, `false` when at/toward source
+    /// - `sourceRect`: The source view's rectangle in global coordinates
+    /// - `destinationRect`: The destination view's rectangle in global coordinates
     ///
-    /// When `nil`, no corner clipping is applied, allowing content to extend
-    /// beyond frame boundaries during scaling transitions.
-    public var corners: PortalCorners?
+    /// **Example:**
+    /// ```swift
+    /// configuration: { body, isActive, sourceRect, destinationRect in
+    ///     body
+    ///         .clipShape(.rect(cornerRadius: isActive ? 20 : 10))
+    ///         .shadow(radius: isActive ? 20 : 5)
+    /// }
+    /// ```
+    ///
+    /// When `nil`, the layer view is used as-is without modification.
+    public var configuration: (@Sendable (AnyView, Bool, CGRect, CGRect) -> AnyView)?
 
     /// Controls fade-out behavior when the portal layer is removed.
     ///

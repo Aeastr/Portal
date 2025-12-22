@@ -25,25 +25,6 @@ final class PortalCoreTests: XCTestCase {
         XCTAssertEqual(criteria, .logicallyComplete)
     }
 
-    // MARK: - PortalCorners Tests
-
-    func testPortalCornersInitialization() {
-        let corners = PortalCorners(source: 10, destination: 20, style: .continuous)
-
-        XCTAssertEqual(corners.source, 10)
-        XCTAssertEqual(corners.destination, 20)
-        XCTAssertEqual(corners.style, .continuous)
-    }
-
-    func testPortalCornersDefaults() {
-        let corners = PortalCorners()
-
-        XCTAssertEqual(corners.source, 0)
-        XCTAssertEqual(corners.destination, 0)
-        XCTAssertEqual(corners.style, .circular)
-    }
-
-
     // MARK: - PortalInfo Tests
 
     @MainActor
@@ -109,14 +90,6 @@ final class PortalCoreTests: XCTestCase {
     // MARK: - Performance Tests
     // Note: These tests have no baseline set. Run with Xcode's performance
     // test UI to establish baselines if needed.
-
-    func testPerformancePortalCornersCreation() {
-        measure {
-            for _ in 0..<1000 {
-                _ = PortalCorners(source: 8, destination: 16, style: .continuous)
-            }
-        }
-    }
 
     @MainActor
     func testPerformancePortalInfoCreation() {

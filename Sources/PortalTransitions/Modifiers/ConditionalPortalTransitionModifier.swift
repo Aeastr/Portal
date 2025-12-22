@@ -66,8 +66,8 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
     /// Animation for the portal transition.
     public let animation: Animation
 
-    /// Corner styling configuration for visual appearance.
-    public let corners: PortalCorners?
+    /// Configuration closure for customizing the layer view during animation.
+    public let configuration: (@Sendable (AnyView, Bool, CGRect, CGRect) -> AnyView)?
 
     /// Controls fade-out behavior when the portal layer is removed.
     public let transition: PortalRemoveTransition
@@ -98,33 +98,34 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
     ///
     /// - Parameters:
     ///   - id: Unique identifier for the portal transition
+    ///   - namespace: Namespace for scoping this portal transition
     ///   - isActive: Binding that controls the transition state
-    ///   - corners: Corner styling configuration (optional)
     ///   - animation: Animation for the transition
     ///   - transition: Fade-out behavior for layer removal
     ///   - completionCriteria: Criteria for detecting animation completion
-    ///   - layerView: Closure that generates the transition layer view
     ///   - completion: Handler called when the transition completes
+    ///   - layerView: Closure that generates the transition layer view
+    ///   - configuration: Optional closure to customize the layer view during animation
     public init<ID: Hashable>(
         id: ID,
         in namespace: Namespace.ID,
         isActive: Binding<Bool>,
-        corners: PortalCorners? = nil,
-        animation: Animation,
+        animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
-        completionCriteria: AnimationCompletionCriteria,
+        completionCriteria: AnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void,
-        @ViewBuilder layerView: @escaping () -> LayerView
+        @ViewBuilder layerView: @escaping () -> LayerView,
+        configuration: (@Sendable (AnyView, Bool, CGRect, CGRect) -> AnyView)? = nil
     ) {
         self.id = AnyHashable(id)
         self.namespace = namespace
         self._isActive = isActive
-        self.corners = corners
         self.animation = animation
         self.transition = transition
         self.completionCriteria = completionCriteria
         self.completion = completion
         self.layerView = layerView
+        self.configuration = configuration
 
         // Validate animation duration
         Self.validateAnimationDuration(animation, id: "\(id)")
@@ -213,7 +214,7 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
         portalModel.info[idx].initialized = true
         portalModel.info[idx].animation = animation
         portalModel.info[idx].completionCriteria = completionCriteria
-        portalModel.info[idx].corners = corners
+        portalModel.info[idx].configuration = configuration
         portalModel.info[idx].fade = transition
         portalModel.info[idx].completion = completion
         portalModel.info[idx].layerView = AnyView(layerView())
@@ -282,38 +283,71 @@ public extension View {
     /// @State private var showDetail = false
     ///
     /// ContentView()
-    ///     .portalTransition(
-    ///         id: "detail",
-    ///         isActive: $showDetail
-    ///     ) {
+    ///     .portalTransition(id: "detail", in: namespace, isActive: $showDetail) {
     ///         DetailLayerView()
+    ///     } configuration: { body, isActive, sourceRect, destinationRect in
+    ///         body
+    ///             .clipShape(.rect(cornerRadius: isActive ? 20 : 10))
+    ///             .shadow(radius: isActive ? 20 : 5)
     ///     }
     /// ```
     ///
     /// - Parameters:
     ///   - id: Unique identifier for the portal transition
-    ///   - config: Configuration for animation and styling (optional, defaults to standard config)
+    ///   - namespace: The namespace for scoping this portal
     ///   - isActive: Boolean binding that controls the transition state
-    ///   - layerView: Closure that returns the view to animate during transition
+    ///   - animation: Animation to use for the transition (defaults to smooth animation)
+    ///   - transition: Fade-out behavior for layer removal (defaults to .none)
+    ///   - completionCriteria: How to detect animation completion (defaults to .removed)
     ///   - completion: Optional completion handler (defaults to no-op)
+    ///   - layerView: Closure that returns the view to animate during transition
+    ///   - configuration: Optional closure to customize the layer view during animation
     /// - Returns: A view with the portal transition modifier applied
-    /// Applies a portal transition with direct parameter configuration.
+    func portalTransition<ID: Hashable, LayerView: View, ConfiguredView: View>(
+        id: ID,
+        in namespace: Namespace.ID,
+        isActive: Binding<Bool>,
+        animation: Animation = PortalConstants.defaultAnimation,
+        transition: PortalRemoveTransition = .none,
+        completionCriteria: AnimationCompletionCriteria = .removed,
+        completion: @escaping (Bool) -> Void = { _ in },
+        @ViewBuilder layerView: @escaping () -> LayerView,
+        @ViewBuilder configuration: @escaping (AnyView, Bool, CGRect, CGRect) -> ConfiguredView
+    ) -> some View {
+        return self.modifier(
+            ConditionalPortalTransitionModifier(
+                id: id,
+                in: namespace,
+                isActive: isActive,
+                animation: animation,
+                transition: transition,
+                completionCriteria: completionCriteria,
+                completion: completion,
+                layerView: layerView,
+                configuration: { view, isActive, sourceRect, destinationRect in AnyView(configuration(view, isActive, sourceRect, destinationRect)) }
+            )
+        )
+    }
+
+    /// Applies a portal transition controlled by a boolean binding without configuration.
+    ///
+    /// This is a convenience overload that doesn't require a configuration closure.
+    /// The layer view is used as-is without modification.
     ///
     /// - Parameters:
     ///   - id: Unique identifier for the portal transition
+    ///   - namespace: The namespace for scoping this portal
     ///   - isActive: Boolean binding that controls the transition state
-    ///   - in corners: Corner radius configuration for visual styling
     ///   - animation: Animation to use for the transition (defaults to smooth animation)
-    ///   - transition: Fade-out behavior for layer removal (defaults to .fade)
+    ///   - transition: Fade-out behavior for layer removal (defaults to .none)
     ///   - completionCriteria: How to detect animation completion (defaults to .removed)
-    ///   - layerView: Closure that returns the view to animate during transition
     ///   - completion: Optional completion handler (defaults to no-op)
+    ///   - layerView: Closure that returns the view to animate during transition
     /// - Returns: A view with the portal transition modifier applied
     func portalTransition<ID: Hashable, LayerView: View>(
         id: ID,
         in namespace: Namespace.ID,
         isActive: Binding<Bool>,
-        corners: PortalCorners? = nil,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
         completionCriteria: AnimationCompletionCriteria = .removed,
@@ -325,11 +359,13 @@ public extension View {
                 id: id,
                 in: namespace,
                 isActive: isActive,
-                corners: corners,
                 animation: animation,
                 transition: transition,
                 completionCriteria: completionCriteria,
                 completion: completion,
-                layerView: layerView))
+                layerView: layerView,
+                configuration: nil
+            )
+        )
     }
 }
