@@ -104,7 +104,7 @@ NavigationStack {
 
 Same API as PortalTransitions, but uses Apple's private `_UIPortalView` for true view mirroring instead of layer snapshots. The view instance is shared rather than recreated.
 
-Class names are obfuscated at compile-time. See the [wiki](wiki/_PortalPrivate.md) for details.
+Class names are obfuscated at compile-time. See the [docs](docs/PortalPrivate.md) for details.
 
 
 ## Customization
@@ -160,9 +160,7 @@ Each module includes working examples in `Sources/*/Examples/`:
 
 ## Documentation
 
-The **[Portal Wiki](https://github.com/Aeastr/Portal/wiki)** has full guides and API reference for each module.
-
-The wiki is included at `/wiki` when you clone, so it's available offline.
+Full guides and API reference are available in the [docs](docs/) folder.
 
 
 ## Contributing
