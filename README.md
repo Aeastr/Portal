@@ -1,5 +1,5 @@
 <div align="center">
-  <img width="128" height="128" src="/Resources/icon/icon.png" alt="Portal Icon">
+  <img width="128" height="128" src="/resources/icon/icon.png" alt="Portal Icon">
   <h1><b>Portal</b></h1>
   <p>
     Element transitions across navigation contexts, scroll-based flowing headers, and view mirroring for SwiftUI.
@@ -14,7 +14,7 @@
 </p>
 
 <div align="center">
-  <img width="600" src="/Resources/examples/example1.gif" alt="Preview">
+  <img width="600" src="/resources/examples/example1.gif" alt="Preview">
 </div>
 
 
