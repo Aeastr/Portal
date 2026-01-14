@@ -38,7 +38,7 @@ public enum PortalConfiguration: Sendable {
     ///         .shadow(radius: isActive ? 10 : 2)
     /// }
     /// ```
-    case styling(@Sendable (AnyView, Bool) -> AnyView)
+    case styling(@MainActor (AnyView, Bool) -> AnyView)
 
     /// Level 2: Full control with interpolated values.
     ///
@@ -60,7 +60,7 @@ public enum PortalConfiguration: Sendable {
     ///         .offset(x: position.x, y: position.y)
     /// }
     /// ```
-    case full(@Sendable (AnyView, Bool, CGSize, CGPoint) -> AnyView)
+    case full(@MainActor (AnyView, Bool, CGSize, CGPoint) -> AnyView)
 
     /// Level 3: Raw source and destination values.
     ///
@@ -85,7 +85,7 @@ public enum PortalConfiguration: Sendable {
     ///         .offset(x: position.x, y: position.y)
     /// }
     /// ```
-    case raw(@Sendable (AnyView, Bool, CGSize, CGSize, CGPoint, CGPoint) -> AnyView)
+    case raw(@MainActor (AnyView, Bool, CGSize, CGSize, CGPoint, CGPoint) -> AnyView)
 }
 
 // MARK: - Portal Info
