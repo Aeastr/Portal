@@ -18,12 +18,13 @@
 </div>
 
 
-## Features
+## Overview
 
-- Animate views between navigation contexts (sheets, navigation stacks, tabs) using a floating overlay layer
-- Scroll-based header transitions that flow into the navigation bar
-- True view mirroring using Apple's private `_UIPortalView` API
-- Configurable layer styling with clips, shadows, and custom modifiers
+Portal provides three modules for different use cases:
+
+- **PortalTransitions** — Animate views between navigation contexts (sheets, navigation stacks, tabs) using a floating overlay layer. Uses standard SwiftUI APIs.
+- **PortalHeaders** — Scroll-based header transitions that flow into the navigation bar, like Music or Photos. Uses iOS 18's advanced scroll tracking APIs.
+- **_PortalPrivate** — True view mirroring using Apple's private `_UIPortalView` API. The view instance is shared rather than recreated.
 
 
 ## Requirements
@@ -52,7 +53,7 @@ dependencies: [
 
 ## Usage
 
-### Basic
+### Element Transitions
 
 ```swift
 // 1. Wrap your app in PortalContainer
@@ -137,18 +138,9 @@ Customize the animating layer with optional configuration closures:
 ```
 
 
-## Overview
-
-Portal provides three modules for different use cases:
-
-- **PortalTransitions** uses standard SwiftUI APIs to create smooth element transitions between navigation contexts. Views are captured and animated in a floating overlay layer.
-- **PortalHeaders** leverages iOS 18's advanced scroll tracking APIs to create flowing header transitions that integrate with the navigation bar.
-- **_PortalPrivate** uses Apple's undocumented `_UIPortalView` to share the actual view instance rather than recreating it, enabling true view mirroring.
-
-
 ## How It Works
 
-PortalTransitions captures source and destination view frames using `PreferenceKey` and `GeometryReader`. When a transition triggers, the view is rendered in a floating `ZStack` overlay above your content and animated between the two positions.
+PortalTransitions creates a transparent `PassThroughWindow` that sits above your entire app UI. Source and destination views register their bounds via `PreferenceKey`. When a transition triggers, the view is rendered in this overlay window and animated between the two positions. The window uses a custom `hitTest` implementation that only captures touches on the animated layer itself—all other touches pass through to your app below, so interaction remains seamless during animations.
 
 PortalHeaders tracks scroll position using iOS 18's `ScrollGeometry` and interpolates between inline and navigation bar states based on content offset thresholds.
 
