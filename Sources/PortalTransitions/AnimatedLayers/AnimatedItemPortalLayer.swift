@@ -19,6 +19,12 @@ import SwiftUI
 /// This is the item-based counterpart to `AnimatedPortalLayer`, designed for use with
 /// `.portal(item:, .source)` and `.portalTransition(item:)` patterns.
 ///
+/// > Tip: For styling the transition layer (clips, shadows, corner radii), consider using
+/// > the `configuration` closure on `.portalTransition()` instead — it's simpler and doesn't require
+/// > creating a separate type. Use this protocol when you need:
+/// > - Custom timing logic with `onChange(of: isActive)`
+/// > - Reusable animated components across multiple portals
+///
 /// Example:
 /// ```swift
 /// struct MyItemAnimation<Item: Identifiable, Content: View>: AnimatedItemPortalLayer {
@@ -116,6 +122,9 @@ private struct AnimatedItemPortalLayerHost<Layer: AnimatedItemPortalLayer>: View
 ///
 /// Use this when you need a quick item-based animated layer without creating a custom type.
 ///
+/// > Tip: For styling the transition layer (clips, shadows, corner radii), consider using
+/// > the `configuration` closure on `.portalTransition()` instead — it's simpler.
+///
 /// Example:
 /// ```swift
 /// AnimatedItemLayer(item: $selectedPhoto, in: namespace) { photo, isActive in
@@ -176,6 +185,12 @@ public struct AnimatedItemLayer<Item: Identifiable, Content: View>: AnimatedItem
 ///
 /// This is designed for use with `.portal(item:, .source, groupID:)` and
 /// `.portalTransition(items:, groupID:)` patterns.
+///
+/// > Tip: For styling the transition layer (clips, shadows, corner radii), consider using
+/// > the `configuration` closure on `.portalTransition()` instead — it's simpler and doesn't require
+/// > creating a separate type. Use this protocol when you need:
+/// > - Custom timing logic with `onChange(of: isActive)`
+/// > - Reusable animated components across multiple portals
 ///
 /// Example:
 /// ```swift
@@ -286,6 +301,9 @@ private struct AnimatedGroupPortalLayerHost<Layer: AnimatedGroupPortalLayer>: Vi
 /// A concrete implementation of `AnimatedGroupPortalLayer` for simple use cases.
 ///
 /// Use this when you need a quick group-based animated layer without creating a custom type.
+///
+/// > Tip: For styling the transition layer (clips, shadows, corner radii), consider using
+/// > the `configuration` closure on `.portalTransition()` instead — it's simpler.
 ///
 /// Example:
 /// ```swift

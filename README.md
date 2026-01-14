@@ -1,5 +1,5 @@
 <div align="center">
-  <img width="200" height="200" src="/Resources/icon/icon.png" alt="Portal Logo">
+  <img width="128" height="128" src="/Resources/icon/icon.png" alt="Portal Icon">
   <h1><b>Portal</b></h1>
   <p>
     Element transitions across navigation contexts, scroll-based flowing headers, and view mirroring for SwiftUI.
@@ -7,42 +7,52 @@
 </div>
 
 <p align="center">
-  <a href="https://developer.apple.com/ios/"><img src="https://img.shields.io/badge/iOS-17%2B-purple.svg" alt="iOS 17+"></a>
-  <a href="https://swift.org/"><img src="https://img.shields.io/badge/Swift-6.2-orange.svg" alt="Swift 6.2"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT"></a>
+  <a href="https://swift.org"><img src="https://img.shields.io/badge/Swift-6.2+-F05138?logo=swift&logoColor=white" alt="Swift 6.2+"></a>
+  <a href="https://developer.apple.com"><img src="https://img.shields.io/badge/iOS-17+-000000?logo=apple" alt="iOS 17+"></a>
   <a href="https://github.com/Aeastr/Portal/actions/workflows/build.yml"><img src="https://github.com/Aeastr/Portal/actions/workflows/build.yml/badge.svg" alt="Build"></a>
   <a href="https://github.com/Aeastr/Portal/actions/workflows/tests.yml"><img src="https://github.com/Aeastr/Portal/actions/workflows/tests.yml/badge.svg" alt="Tests"></a>
 </p>
 
 <div align="center">
-  <img width="600" src="/Resources/examples/example1.gif" alt="Portal Demo">
+  <img width="600" src="/Resources/examples/example1.gif" alt="Preview">
 </div>
+
+
+## Features
+
+- Animate views between navigation contexts (sheets, navigation stacks, tabs) using a floating overlay layer
+- Scroll-based header transitions that flow into the navigation bar
+- True view mirroring using Apple's private `_UIPortalView` API
+- Configurable layer styling with clips, shadows, and custom modifiers
+
+
+## Requirements
+
+- Swift 6.2+
+- iOS 17+ (PortalTransitions)
+- iOS 18+ (PortalHeaders)
+
+> Targeting iOS 15/16? Pin to `v2.1.0` or the `legacy/ios15` branch.
 
 
 ## Installation
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/Aeastr/Portal", from: "4.0.0")
+    .package(url: "https://github.com/Aeastr/Portal.git", from: "4.0.0")
 ]
 ```
 
-Then import the module you need:
-
-```swift
-import PortalTransitions  // Element transitions (iOS 17+)
-import PortalHeaders      // Flowing headers (iOS 18+)
-import _PortalPrivate     // View mirroring with private API
-```
-
-> Targeting iOS 15/16? Pin to `v2.1.0` or the `legacy/ios15` branch.
+| Target | Description |
+|--------|-------------|
+| `PortalTransitions` | Element transitions (iOS 17+) |
+| `PortalHeaders` | Flowing headers (iOS 18+) |
+| `_PortalPrivate` | View mirroring with private API |
 
 
-## Modules
+## Usage
 
-### PortalTransitions
-
-Animate views between navigation contexts — sheets, navigation stacks, tabs — using a floating overlay layer.
+### Basic
 
 ```swift
 // 1. Wrap your app in PortalContainer
@@ -67,9 +77,40 @@ Image("cover")
 
 The view animates smoothly from source to destination when the cover presents, and back when it dismisses.
 
-#### Layer Configuration
+### Flowing Headers
 
-Optionally customize the animating layer:
+Scroll-based header transitions that flow into the navigation bar, like Music or Photos.
+
+```swift
+NavigationStack {
+    ScrollView {
+        PortalHeaderView()
+
+        ForEach(items) { item in
+            ItemRow(item: item)
+        }
+    }
+    .portalHeaderDestination()
+}
+.portalHeader(title: "Favorites", subtitle: "Your starred items")
+```
+
+### Private API Mirroring
+
+> **WARNING: Private API Usage**
+>
+> This module uses Apple's private `_UIPortalView` API. Apps using private APIs **may be rejected by App Store Review**. Use at your own discretion. Portal, Aether, and any maintainers assume no responsibility for App Store rejections, app crashes, or any other issues arising from the use of this module.
+
+Same API as PortalTransitions, but uses Apple's private `_UIPortalView` for true view mirroring instead of layer snapshots. The view instance is shared rather than recreated.
+
+Class names are obfuscated at compile-time. See the [wiki](wiki/_PortalPrivate.md) for details.
+
+
+## Customization
+
+### Layer Configuration
+
+Customize the animating layer with optional configuration closures:
 
 ```swift
 // No config — frame/offset handled automatically
@@ -95,51 +136,23 @@ Optionally customize the animating layer:
 }
 ```
 
-**iOS 17+** · Uses standard SwiftUI APIs
 
----
+## Overview
 
-### PortalHeaders
+Portal provides three modules for different use cases:
 
-Scroll-based header transitions that flow into the navigation bar, like Music or Photos.
-
-```swift
-NavigationStack {
-    ScrollView {
-        PortalHeaderView()
-
-        // Your content
-        ForEach(items) { item in
-            ItemRow(item: item)
-        }
-    }
-    .portalHeaderDestination()
-}
-.portalHeader(title: "Favorites", subtitle: "Your starred items")
-```
-
-As the user scrolls, the title transitions from inline to the navigation bar with configurable snapping behavior.
-
-**iOS 18+** · Uses advanced scroll tracking APIs
-
----
-
-### _PortalPrivate
-
-> **WARNING: Private API Usage**
->
-> This module uses Apple's private `_UIPortalView` API. Apps using private APIs **may be rejected by App Store Review**. Use at your own discretion. Portal, Aether, and any maintainers assume no responsibility for App Store rejections, app crashes, or any other issues arising from the use of this module. By importing `_PortalPrivate`, you accept full responsibility for any consequences.
-
-Same API as PortalTransitions, but uses Apple's private `_UIPortalView` for true view mirroring instead of layer snapshots. The view instance is shared rather than recreated.
-
-Class names are obfuscated at compile-time. See the [wiki](wiki/_PortalPrivate.md) for details.
+- **PortalTransitions** uses standard SwiftUI APIs to create smooth element transitions between navigation contexts. Views are captured and animated in a floating overlay layer.
+- **PortalHeaders** leverages iOS 18's advanced scroll tracking APIs to create flowing header transitions that integrate with the navigation bar.
+- **_PortalPrivate** uses Apple's undocumented `_UIPortalView` to share the actual view instance rather than recreating it, enabling true view mirroring.
 
 
-## Documentation
+## How It Works
 
-The **[Portal Wiki](https://github.com/Aeastr/Portal/wiki)** has full guides and API reference for each module.
+PortalTransitions captures source and destination view frames using `PreferenceKey` and `GeometryReader`. When a transition triggers, the view is rendered in a floating `ZStack` overlay above your content and animated between the two positions.
 
-The wiki is included at `/wiki` when you clone, so it's available offline.
+PortalHeaders tracks scroll position using iOS 18's `ScrollGeometry` and interpolates between inline and navigation bar states based on content offset thresholds.
+
+_PortalPrivate wraps Apple's private `_UIPortalView` class, which creates a portal to another view's layer. Class names are obfuscated at compile-time to avoid detection. See [UIPortalBridge](https://github.com/Aeastr/UIPortalBridge) for a standalone wrapper.
 
 
 ## Examples
@@ -153,11 +166,21 @@ Each module includes working examples in `Sources/*/Examples/`:
 | [Grid Carousel](Sources/PortalTransitions/Examples/PortalExampleGridCarousel.swift) | [No Accessory](Sources/PortalHeaders/Examples/PortalHeaderExampleNoAccessory.swift) | [Comparison](Sources/_PortalPrivate/Transitions/Examples/PortalPrivateExampleComparison.swift) |
 
 
+## Documentation
+
+The **[Portal Wiki](https://github.com/Aeastr/Portal/wiki)** has full guides and API reference for each module.
+
+The wiki is included at `/wiki` when you clone, so it's available offline.
+
+
 ## Contributing
 
 Contributions welcome. See the [Contributing Guide](CONTRIBUTING.md) for details.
 
-Released under the [MIT License](LICENSE.md).
+
+## License
+
+MIT. See [LICENSE](LICENSE.md) for details.
 
 
 ## Related
@@ -172,5 +195,3 @@ Released under the [MIT License](LICENSE.md).
 - [Threads](https://www.threads.net/@aetheraurelia)
 - [Bluesky](https://bsky.app/profile/aethers.world)
 - [LinkedIn](https://www.linkedin.com/in/willjones24)
-
-<p align="center">Built with 🍏🌀🚪 by Aether</p>

@@ -15,6 +15,12 @@ import SwiftUI
 /// Conform to this protocol to create reusable animated components that respond to portal transitions.
 /// The protocol automatically handles CrossModel observation and provides the `isActive` state.
 ///
+/// > Tip: For styling the transition layer (clips, shadows, corner radii), consider using
+/// > the `configuration` closure on `.portalTransition()` instead — it's simpler and doesn't require
+/// > creating a separate type. Use this protocol when you need:
+/// > - Custom timing logic with `onChange(of: isActive)`
+/// > - Reusable animated components across multiple portals
+///
 /// Example:
 /// ```swift
 /// struct MyCustomAnimation<Content: View>: AnimatedPortalLayer {
