@@ -28,11 +28,13 @@ let portalAnimationExampleExtraBounce = Animation.smooth(duration: portalAnimati
 /// these values are meant to be tuned for your specific animation design.
 struct AnimatedLayer<Content: View>: AnimatedPortalLayer {
     let portalID: AnyHashable
+    let namespace: Namespace.ID
     var scale: CGFloat = 1.1
     @ViewBuilder let content: () -> Content
 
-    init<ID: Hashable>(portalID: ID, scale: CGFloat = 1.1, @ViewBuilder content: @escaping () -> Content) {
+    init<ID: Hashable>(portalID: ID, in namespace: Namespace.ID, scale: CGFloat = 1.1, @ViewBuilder content: @escaping () -> Content) {
         self.portalID = AnyHashable(portalID)
+        self.namespace = namespace
         self.scale = scale
         self.content = content
     }

@@ -10,6 +10,86 @@
 
 import SwiftUI
 
+// MARK: - Portal Configuration
+
+/// Configuration levels for customizing portal layer views during animation.
+///
+/// This enum provides three levels of control over how the layer view is styled
+/// and positioned during portal transitions:
+///
+/// - **Styling**: Modify appearance only; frame/offset applied automatically after
+/// - **Full**: Complete control with interpolated size/position; must apply frame/offset yourself
+/// - **Raw**: Access to both source and destination values for custom logic
+public enum PortalConfiguration: Sendable {
+    /// Level 1: Styling only configuration.
+    ///
+    /// Modify the layer view's appearance (clips, shadows, etc.) without affecting positioning.
+    /// Frame and offset are applied automatically AFTER your configuration.
+    ///
+    /// **Parameters:**
+    /// - `content`: The layer view to style
+    /// - `isActive`: `true` when animating toward destination, `false` when at/toward source
+    ///
+    /// **Example:**
+    /// ```swift
+    /// .styling { content, isActive in
+    ///     content
+    ///         .clipShape(.rect(cornerRadius: isActive ? 20 : 10))
+    ///         .shadow(radius: isActive ? 10 : 2)
+    /// }
+    /// ```
+    case styling(@Sendable (AnyView, Bool) -> AnyView)
+
+    /// Level 2: Full control with interpolated values.
+    ///
+    /// You have complete control over the layer view including positioning.
+    /// You MUST apply frame and offset yourself using the provided values.
+    ///
+    /// **Parameters:**
+    /// - `content`: The layer view to configure
+    /// - `isActive`: `true` when animating toward destination, `false` when at/toward source
+    /// - `size`: Interpolated size (destination when active, source otherwise)
+    /// - `position`: Interpolated position (destination origin when active, source origin otherwise)
+    ///
+    /// **Example:**
+    /// ```swift
+    /// .full { content, isActive, size, position in
+    ///     content
+    ///         .frame(width: size.width, height: size.height)
+    ///         .clipShape(.rect(cornerRadius: isActive ? 20 : 10))
+    ///         .offset(x: position.x, y: position.y)
+    /// }
+    /// ```
+    case full(@Sendable (AnyView, Bool, CGSize, CGPoint) -> AnyView)
+
+    /// Level 3: Raw source and destination values.
+    ///
+    /// Access both source AND destination sizes and positions for custom interpolation
+    /// or complex animation logic. You MUST apply frame and offset yourself.
+    ///
+    /// **Parameters:**
+    /// - `content`: The layer view to configure
+    /// - `isActive`: `true` when animating toward destination, `false` when at/toward source
+    /// - `sourceSize`: Size of the source view
+    /// - `destinationSize`: Size of the destination view
+    /// - `sourcePosition`: Position (origin) of the source view
+    /// - `destinationPosition`: Position (origin) of the destination view
+    ///
+    /// **Example:**
+    /// ```swift
+    /// .raw { content, isActive, sourceSize, destinationSize, sourcePosition, destinationPosition in
+    ///     let size = isActive ? destinationSize : sourceSize
+    ///     let position = isActive ? destinationPosition : sourcePosition
+    ///     return content
+    ///         .frame(width: size.width, height: size.height)
+    ///         .offset(x: position.x, y: position.y)
+    /// }
+    /// ```
+    case raw(@Sendable (AnyView, Bool, CGSize, CGSize, CGPoint, CGPoint) -> AnyView)
+}
+
+// MARK: - Portal Info
+
 /// A data record that encapsulates all information needed for a single portal animation.
 ///
 /// This struct serves as the central data model for tracking the complete state of a portal
@@ -36,6 +116,16 @@ public struct PortalInfo: Identifiable {
     /// The ID is stored as `AnyHashable` to support any `Hashable` type, including
     /// `String`, `UUID`, `Int`, or custom identifier types.
     public let infoID: AnyHashable
+
+    /// The namespace this portal belongs to.
+    ///
+    /// Portals are scoped by namespace to allow the same ID to be used in different
+    /// contexts without collision. Only portals within the same namespace can match.
+    ///
+    /// - Note: Future consideration: This could be combined with `infoID` into a single
+    ///   key type (similar to `PortalKey` but without `role`, since `PortalInfo` represents
+    ///   both source and destination of a matched pair).
+    public let namespace: Namespace.ID
 
     /// Flag indicating whether this portal has been properly initialized.
     ///
@@ -96,20 +186,17 @@ public struct PortalInfo: Identifiable {
     /// the view is removed or logically complete.
     public var completionCriteria: AnimationCompletionCriteria = .removed
 
-    /// Corner styling configuration for the portal transition elements.
+    /// Configuration for customizing the layer view during animation.
     ///
-    /// Defines the corner radius and styling properties applied to the portal
-    /// elements during the transition animation. This allows for consistent
-    /// visual treatment of rounded corners, ensuring smooth interpolation
-    /// between source and destination corner styles.
+    /// Choose from three levels of control:
+    /// - `.styling`: Modify appearance only; frame/offset applied automatically
+    /// - `.full`: Complete control with interpolated values; must apply frame/offset
+    /// - `.raw`: Access to source AND destination values for custom logic
     ///
-    /// The corner configuration affects how the intermediate layer view appears
-    /// during the transition, providing visual continuity when transitioning
-    /// between views with different corner radius values.
+    /// When `nil`, frame and offset are applied automatically with no additional styling.
     ///
-    /// When `nil`, no corner clipping is applied, allowing content to extend
-    /// beyond frame boundaries during scaling transitions.
-    public var corners: PortalCorners?
+    /// See ``PortalConfiguration`` for detailed documentation and examples.
+    public var configuration: PortalConfiguration?
 
     /// Controls fade-out behavior when the portal layer is removed.
     ///
@@ -153,15 +240,17 @@ public struct PortalInfo: Identifiable {
     /// and completion callbacks for the group.
     public var isGroupCoordinator = false
 
-    /// Initializes a new PortalInfo instance with the specified identifier.
+    /// Initializes a new PortalInfo instance with the specified identifier and namespace.
     ///
     /// Creates a new portal data record with default values for all properties
-    /// except the required user-defined identifier.
+    /// except the required user-defined identifier and namespace.
     ///
     /// - Parameter id: The unique identifier for this portal animation (any `Hashable` type)
+    /// - Parameter namespace: The namespace for scoping this portal
     /// - Parameter groupID: Optional group identifier for coordinated animations
-    public init<ID: Hashable>(id: ID, groupID: String? = nil) {
+    public init<ID: Hashable>(id: ID, namespace: Namespace.ID, groupID: String? = nil) {
         self.infoID = AnyHashable(id)
+        self.namespace = namespace
         self.groupID = groupID
     }
 
@@ -170,9 +259,11 @@ public struct PortalInfo: Identifiable {
     /// This overload avoids double-wrapping when the ID is already an AnyHashable.
     ///
     /// - Parameter id: The pre-wrapped identifier for this portal animation
+    /// - Parameter namespace: The namespace for scoping this portal
     /// - Parameter groupID: Optional group identifier for coordinated animations
-    public init(id: AnyHashable, groupID: String? = nil) {
+    public init(id: AnyHashable, namespace: Namespace.ID, groupID: String? = nil) {
         self.infoID = id
+        self.namespace = namespace
         self.groupID = groupID
     }
 }

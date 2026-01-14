@@ -110,21 +110,46 @@ private struct PortalLayerContentView: View {
             let animate = info.animateView
 
             // Interpolate size between source and destination based on animation state
-            let width = animate ? dRect.size.width : sRect.size.width
-            let height = animate ? dRect.size.height : sRect.size.height
+            let size = CGSize(
+                width: animate ? dRect.size.width : sRect.size.width,
+                height: animate ? dRect.size.height : sRect.size.height
+            )
 
             // Interpolate position between source and destination based on animation state
-            let x = animate ? dRect.minX : sRect.minX
-            let y = animate ? dRect.minY : sRect.minY
+            let position = CGPoint(
+                x: animate ? dRect.minX : sRect.minX,
+                y: animate ? dRect.minY : sRect.minY
+            )
 
-            // Only apply clipShape if corners are configured
+            // Handle configuration based on the level of control requested
             Group {
-                if let corners = info.corners {
-                    let cornerRadius = animate ? corners.destination : corners.source
+                switch info.configuration {
+                case .styling(let config):
+                    // Level 1: Apply styling, then frame/offset automatically
+                    config(layer, animate)
+                        .frame(width: size.width, height: size.height)
+                        .offset(x: position.x, y: position.y)
+
+                case .full(let config):
+                    // Level 2: User has full control with interpolated values
+                    config(layer, animate, size, position)
+
+                case .raw(let config):
+                    // Level 3: User gets all source/destination values
+                    config(
+                        layer,
+                        animate,
+                        sRect.size,
+                        dRect.size,
+                        CGPoint(x: sRect.minX, y: sRect.minY),
+                        CGPoint(x: dRect.minX, y: dRect.minY)
+                    )
+
+                case nil:
+                    // Default: frame/offset applied automatically
                     layer
-                        .clipShape(.rect(cornerRadius: cornerRadius, style: corners.style))
-                } else {
-                    layer
+                        .frame(width: size.width, height: size.height)
+                        .offset(x: position.x, y: position.y)
                 }
             }
             .compositingGroup()
@@ -142,8 +167,6 @@ private struct PortalLayerContentView: View {
                     #endif
                 }
             )
-            .frame(width: width, height: height)
-            .offset(x: x, y: y)
             .transition(.identity)  // Prevents additional SwiftUI transitions
             .onAppear {
                 PortalLogs.logger.log(

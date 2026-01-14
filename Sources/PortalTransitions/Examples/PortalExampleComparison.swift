@@ -45,7 +45,7 @@ public struct PortalExampleComparison: View {
                                 .fontWeight(.semibold)
                                 .foregroundColor(.blue)
 
-                            AnimatedLayer(portalID: "portalDemo") {
+                            AnimatedLayer(portalID: "portalDemo", in: namespace) {
                                 RoundedRectangle(cornerRadius: 16)
                                     .fill(
                                         LinearGradient(
@@ -67,7 +67,7 @@ public struct PortalExampleComparison: View {
                                     )
                             }
                             .frame(width: 160, height: 120)
-                            .portal(id: "portalDemo", .source)
+                            .portal(id: "portalDemo", as: .source, in: namespace)
                             .onTapGesture {
                                     showPortalSheet.toggle()
                             }
@@ -159,7 +159,7 @@ public struct PortalExampleComparison: View {
                 .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())
             }
             .sheet(isPresented: $showPortalSheet) {
-                PortalExamplePortalComparisonSheet()
+                PortalExamplePortalComparisonSheet(namespace: namespace)
             }
             .sheet(isPresented: $showNativeSheet) {
                 PortalExampleNativeComparisonSheet()
@@ -172,10 +172,11 @@ public struct PortalExampleComparison: View {
             }
             .portalTransition(
             id: "portalDemo",
+            in: namespace,
             isActive: $showPortalSheet,
             animation: portalAnimationExample
         ) {
-            AnimatedLayer(portalID: "portalDemo") {
+            AnimatedLayer(portalID: "portalDemo", in: namespace) {
                 RoundedRectangle(cornerRadius: 16)
                     .fill(
                         LinearGradient(
@@ -205,6 +206,7 @@ public struct PortalExampleComparison: View {
 }
 
 private struct PortalExamplePortalComparisonSheet: View {
+    let namespace: Namespace.ID
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
@@ -212,7 +214,7 @@ private struct PortalExamplePortalComparisonSheet: View {
             ScrollView {
                 VStack(spacing: 32) {
                     // MARK: Portal Destination
-                    AnimatedLayer(portalID: "portalDemo") {
+                    AnimatedLayer(portalID: "portalDemo", in: namespace) {
                         RoundedRectangle(cornerRadius: 16)
                             .fill(
                                 LinearGradient(
@@ -235,7 +237,7 @@ private struct PortalExamplePortalComparisonSheet: View {
                             .hueRotation(.degrees(100))
                     }
                     .frame(width: 280, height: 200)
-                    .portal(id: "portalDemo", .destination)
+                    .portal(id: "portalDemo", as: .destination, in: namespace)
 
                     Text("This element seamlessly transitioned from the main view using Portal. Portal enables cross-boundary transitions that aren't possible with standard SwiftUI.")
                         .font(.body)

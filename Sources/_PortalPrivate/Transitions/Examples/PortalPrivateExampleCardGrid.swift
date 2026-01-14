@@ -15,6 +15,7 @@ import PortalTransitions
 /// PortalPrivate card grid example showing dynamic item parameter usage with view mirroring
 public struct PortalPrivateExampleCardGrid: View {
     @State private var selectedCard: PortalExampleCard?
+    @Namespace private var portalNamespace
     @State private var cards: [PortalExampleCard] = [
         PortalExampleCard(title: "SwiftUI", subtitle: "Declarative UI", color: .blue, icon: "swift"),
         PortalExampleCard(title: "Portal", subtitle: "Seamless Transitions", color: .purple, icon: "arrow.triangle.2.circlepath"),
@@ -71,7 +72,7 @@ public struct PortalPrivateExampleCardGrid: View {
                         LazyVGrid(columns: columns, spacing: 12) {
                             ForEach(cards) { card in
                                 VStack(spacing: 12) {
-                                    AnimatedItemLayer(item: card) { card, _ in
+                                    AnimatedItemLayer(item: card, in: portalNamespace) { card, _ in
                                         if let card {
                                             RoundedRectangle(cornerRadius: 16)
                                                 .fill(card.color.gradient)
@@ -89,7 +90,7 @@ public struct PortalPrivateExampleCardGrid: View {
                                                 )
                                         }
                                     }
-                                    .portalPrivate(item: card)
+                                    .portalSourcePrivate(item: card, in: portalNamespace)
                                     .frame(height: 120)
                                 }
                                 .onTapGesture {
@@ -112,10 +113,11 @@ public struct PortalPrivateExampleCardGrid: View {
                 .background(Color(.systemGroupedBackground).ignoresSafeArea())
             }
             .sheet(item: $selectedCard) { card in
-                PortalExampleCardDetail(card: card)
+                PortalExampleCardDetail(card: card, namespace: portalNamespace)
             }
             .portalPrivateTransition(
-                item: $selectedCard
+                item: $selectedCard,
+                in: portalNamespace
             )
         }
     }
@@ -139,6 +141,7 @@ public struct PortalExampleCard: Identifiable {
 
 private struct PortalExampleCardDetail: View {
     let card: PortalExampleCard
+    let namespace: Namespace.ID
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
@@ -146,7 +149,7 @@ private struct PortalExampleCardDetail: View {
             ScrollView {
                 VStack(spacing: 32) {
                     // MARK: Destination Card
-                    PortalPrivateDestination(item: card)
+                    PortalPrivateDestination(item: card, in: namespace)
                     .padding(.top, 20)
                     Spacer()
                 }
@@ -172,8 +175,10 @@ private struct PortalExampleCardDetail: View {
 }
 
 #Preview("Detail View") {
+    @Previewable @Namespace var ns
     PortalExampleCardDetail(
-        card: PortalExampleCard(title: "Portal", subtitle: "Seamless Transitions", color: .purple, icon: "arrow.triangle.2.circlepath")
+        card: PortalExampleCard(title: "Portal", subtitle: "Seamless Transitions", color: .purple, icon: "arrow.triangle.2.circlepath"),
+        namespace: ns
     )
 }
 

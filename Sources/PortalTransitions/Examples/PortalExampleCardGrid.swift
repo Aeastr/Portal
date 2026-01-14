@@ -14,6 +14,7 @@ import SwiftUI
 /// Portal card grid example showing dynamic item parameter usage
 public struct PortalExampleCardGrid: View {
     @State private var selectedCard: PortalExampleCard?
+    @Namespace private var portalNamespace
     @State private var cards: [PortalExampleCard] = [
         PortalExampleCard(title: "SwiftUI", subtitle: "Declarative UI", color: .blue, icon: "swift"),
         PortalExampleCard(title: "Portal", subtitle: "Seamless Transitions", color: .purple, icon: "arrow.triangle.2.circlepath"),
@@ -74,11 +75,11 @@ public struct PortalExampleCardGrid: View {
                         LazyVGrid(columns: columns, spacing: 12) {
                             ForEach(cards) { card in
                                 VStack(spacing: 12) {
-                                    AnimatedItemLayerExample(item: card) { card in
+                                    AnimatedItemLayerExample(item: card, in: portalNamespace) { card in
                                         PortalExampleCardContent(card: card)
                                     }
                                     .frame(height: 120)
-                                    .portal(item: card, .source)
+                                    .portal(item: card, as: .source, in: portalNamespace)
                                 }
                                 .background(
                                     RoundedRectangle(cornerRadius: 16)
@@ -104,14 +105,15 @@ public struct PortalExampleCardGrid: View {
                 .background(Color(.systemGroupedBackground).ignoresSafeArea())
             }
             .sheet(item: $selectedCard) { card in
-                PortalExampleCardDetail(card: card)
+                PortalExampleCardDetail(card: card, namespace: portalNamespace)
             }
 
             .portalTransition(
                 item: $selectedCard,
+                in: portalNamespace,
                 transition: .fade
             ) { card in
-                AnimatedItemLayerExample(item: $selectedCard) { card in
+                AnimatedItemLayerExample(item: $selectedCard, in: portalNamespace) { card in
                     PortalExampleCardContent(card: card)
                 }
             }
@@ -168,21 +170,24 @@ private struct PortalExampleCardContent: View {
 /// - An optional item binding (for transition layers)
 private struct AnimatedItemLayerExample<Item: Identifiable, Content: View>: AnimatedItemPortalLayer {
     let item: Item?
+    let namespace: Namespace.ID
     var scale: CGFloat = 1.1
     @ViewBuilder let content: (Item) -> Content
 
     @State private var layerScale: CGFloat = 1
 
     /// Initialize with a non-optional item (for source/destination views)
-    init(item: Item, scale: CGFloat = 1.1, @ViewBuilder content: @escaping (Item) -> Content) {
+    init(item: Item, in namespace: Namespace.ID, scale: CGFloat = 1.1, @ViewBuilder content: @escaping (Item) -> Content) {
         self.item = item
+        self.namespace = namespace
         self.scale = scale
         self.content = content
     }
 
     /// Initialize with an optional item binding (for transition layers)
-    init(item: Binding<Item?>, scale: CGFloat = 1.1, @ViewBuilder content: @escaping (Item) -> Content) {
+    init(item: Binding<Item?>, in namespace: Namespace.ID, scale: CGFloat = 1.1, @ViewBuilder content: @escaping (Item) -> Content) {
         self.item = item.wrappedValue
+        self.namespace = namespace
         self.scale = scale
         self.content = content
     }
@@ -230,6 +235,7 @@ private struct AnimatedItemLayerExample<Item: Identifiable, Content: View>: Anim
 
 private struct PortalExampleCardDetail: View {
     let card: PortalExampleCard
+    let namespace: Namespace.ID
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
@@ -237,11 +243,11 @@ private struct PortalExampleCardDetail: View {
             ScrollView {
                 VStack(spacing: 32) {
                     // MARK: Destination Card
-                    AnimatedItemLayerExample(item: card) { card in
+                    AnimatedItemLayerExample(item: card, in: namespace) { card in
                         PortalExampleCardContent(card: card)
                     }
                     .frame(width: 240, height: 180)
-                    .portal(item: card, .destination)
+                    .portal(item: card, as: .destination, in: namespace)
                         .padding(.top, 20)
                     Spacer()
                 }
@@ -267,8 +273,10 @@ private struct PortalExampleCardDetail: View {
 }
 
 #Preview("Detail View") {
+    @Previewable @Namespace var ns
     PortalExampleCardDetail(
-        card: PortalExampleCard(title: "Portal", subtitle: "Seamless Transitions", color: .purple, icon: "arrow.triangle.2.circlepath")
+        card: PortalExampleCard(title: "Portal", subtitle: "Seamless Transitions", color: .purple, icon: "arrow.triangle.2.circlepath"),
+        namespace: ns
     )
 }
 

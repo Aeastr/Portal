@@ -41,11 +41,16 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
     /// Group identifier for coordinating the animations.
     public let groupID: String
 
+    /// Namespace for scoping this portal transition.
+    /// Transitions only match portals within the same namespace.
+    public let namespace: Namespace.ID
+
     /// Animation to use for the transition.
     public let animation: Animation
 
-    /// Corner styling configuration for visual appearance.
-    public let corners: PortalCorners?
+    /// Configuration for customizing the layer view during animation.
+    /// See ``PortalConfiguration`` for the three levels of control available.
+    public let configuration: PortalConfiguration?
 
     /// Controls fade-out behavior when the portal layer is removed.
     public let transition: PortalRemoveTransition
@@ -68,31 +73,31 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
     /// The shared portal model that manages all portal animations.
     @Environment(CrossModel.self) private var portalModel
 
-    /// Environment corners configuration.
-
     /// Tracks the last set of keys for cleanup during reverse transitions.
     @State private var lastKeys: Set<AnyHashable> = []
 
     public init(
         items: Binding<[Item]>,
         groupID: String,
-        in corners: PortalCorners? = nil,
+        in namespace: Namespace.ID,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
         completionCriteria: AnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void,
         staggerDelay: TimeInterval = 0.0,
-        @ViewBuilder layerView: @escaping (Item) -> LayerView
+        @ViewBuilder layerView: @escaping (Item) -> LayerView,
+        configuration: PortalConfiguration? = nil
     ) {
         self._items = items
         self.groupID = groupID
-        self.corners = corners
+        self.namespace = namespace
         self.animation = animation
         self.transition = transition
         self.completionCriteria = completionCriteria
         self.completion = completion
         self.staggerDelay = staggerDelay
         self.layerView = layerView
+        self.configuration = configuration
 
         // Validate animation duration
         Self.validateAnimationDuration(animation, groupID: groupID)
@@ -151,8 +156,8 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
     private func ensurePortalInfo(for items: [Item]) {
         for item in items {
             let key = AnyHashable(item.id)
-            if !portalModel.info.contains(where: { $0.infoID == key }) {
-                portalModel.info.append(PortalInfo(id: key, groupID: groupID))
+            if !portalModel.info.contains(where: { $0.infoID == key && $0.namespace == namespace }) {
+                portalModel.info.append(PortalInfo(id: key, namespace: namespace, groupID: groupID))
             }
         }
     }
@@ -163,7 +168,7 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
             portalModel.info[idx].initialized = true
             portalModel.info[idx].animation = animation
             portalModel.info[idx].completionCriteria = completionCriteria
-            portalModel.info[idx].corners = corners
+            portalModel.info[idx].configuration = configuration
             portalModel.info[idx].fade = transition
             portalModel.info[idx].groupID = groupID
             portalModel.info[idx].isGroupCoordinator = (i == 0)
@@ -237,7 +242,7 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
     /// Performs reverse transition cleanup.
     private func performReverseTransition(for keys: Set<AnyHashable>) {
         let cleanupIndices = portalModel.info.enumerated().compactMap { index, info in
-            keys.contains(info.infoID) ? index : nil
+            keys.contains(info.infoID) && info.namespace == namespace ? index : nil
         }
 
         for idx in cleanupIndices {
@@ -251,6 +256,11 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
             }
         } completion: {
             Task { @MainActor in
+                // Call completion for coordinator before resetting state
+                if let coordinatorIdx = cleanupIndices.first(where: { portalModel.info[$0].isGroupCoordinator }) {
+                    portalModel.info[coordinatorIdx].completion(false)
+                }
+
                 for idx in cleanupIndices {
                     portalModel.info[idx].showLayer = false
                     portalModel.info[idx].initialized = false
@@ -259,9 +269,6 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
                     portalModel.info[idx].destinationAnchor = nil
                     portalModel.info[idx].groupID = nil
                     portalModel.info[idx].isGroupCoordinator = false
-                    if portalModel.info[idx].isGroupCoordinator {
-                        portalModel.info[idx].completion(false)
-                    }
                 }
             }
         }
@@ -276,7 +283,7 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
             ensurePortalInfo(for: items)
 
             let groupIndices = portalModel.info.enumerated().compactMap { index, info in
-                currentKeys.contains(info.infoID) ? index : nil
+                currentKeys.contains(info.infoID) && info.namespace == namespace ? index : nil
             }
 
             configureGroupPortals(at: groupIndices)
@@ -300,85 +307,140 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
 }
 
 public extension View {
+    // MARK: - No Configuration (Default)
+
     /// Applies coordinated portal transitions for multiple `Identifiable` items.
     ///
-    /// This modifier enables multiple portal animations to run simultaneously as a coordinated group.
-    /// All items in the array are animated together with synchronized timing, perfect for scenarios
-    /// like multiple photos transitioning to a detail view simultaneously.
-    ///
-    /// **Usage Pattern:**
-    /// ```swift
-    /// @State private var selectedPhotos: [Photo] = []
-    ///
-    /// PhotoGridView()
-    ///     .portalTransition(items: $selectedPhotos, groupID: "photoStack") { photo in
-    ///         PhotoView(photo: photo)
-    ///     }
-    /// ```
-    ///
-    /// **Group Coordination:**
-    /// - All portals with the same `groupID` animate together
-    /// - Source views should use `.portal(item:, .source, groupID:)`
-    /// - Destination views should use `.portal(item:, .destination, groupID:)`
-    /// **Group Coordination:**
-    /// - All portals with the same `groupID` animate together
-    /// - Source views should use `.portal(item:, .source, groupID:)`
-    /// - Destination views should use `.portal(item:, .destination, groupID:)`
-    /// - Animation timing can be synchronized or staggered based on `staggerDelay`
-    ///
-    /// **Staggered Animation:**
-    /// When `staggerDelay` > 0, each item starts animating with an increasing delay:
-    /// - First item: starts at base delay
-    /// - Second item: starts at base delay + staggerDelay
-    /// - Third item: starts at base delay + (2 * staggerDelay), etc.
-    ///
-    /// - Parameters:
-    ///   - items: Binding to an array of `Identifiable` items that controls the transitions
-    ///   - groupID: Group identifier for coordinating animations. Must match portal source/destination groupIDs.
-    ///   - config: Configuration for animation and styling (optional, defaults to standard config)
-    ///   - staggerDelay: Delay between each item's animation start in seconds (optional, defaults to 0 for synchronized)
-    ///   - layerView: Closure that receives each item and returns the view to animate for that item
-    ///   - completion: Optional completion handler called when all animations finish (defaults to no-op)
-    /// - Returns: A view with the multi-item portal transition modifier applied
-    /// Applies coordinated portal transitions for multiple items with direct parameters.
-    ///
-    /// Creates portal transitions for multiple items, with shared animation parameters
-    /// and optional stagger effects. All items in the array animate as a coordinated group.
-    ///
-    /// - Parameters:
-    ///   - items: Binding to an array of `Identifiable` items
-    ///   - groupID: Group identifier for coordinating animations
-    ///   - in corners: Corner radius configuration for visual styling
-    ///   - animation: The animation curve to use
-    ///   - transition: Fade-out behavior for layer removal (defaults to .fade)
-    ///   - completionCriteria: How to detect animation completion
-    ///   - staggerDelay: Delay between each item's animation start
-    ///   - layerView: Closure that generates the view for each item
-    ///   - completion: Called when all animations finish
-    ///
-    /// - Returns: A view with the multi-item portal transition modifier applied
+    /// This is the simplest form - frame and offset are applied automatically.
     func portalTransition<Item: Identifiable, LayerView: View>(
         items: Binding<[Item]>,
         groupID: String,
-        in corners: PortalCorners? = nil,
+        in namespace: Namespace.ID,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
         completionCriteria: AnimationCompletionCriteria = .removed,
         staggerDelay: TimeInterval = 0.0,
-        @ViewBuilder layerView: @escaping (Item) -> LayerView,
-        completion: @escaping (Bool) -> Void = { _ in }
+        completion: @escaping (Bool) -> Void = { _ in },
+        @ViewBuilder layerView: @escaping (Item) -> LayerView
     ) -> some View {
-        return self.modifier(
+        self.modifier(
             GroupItemPortalTransitionModifier(
                 items: items,
                 groupID: groupID,
-                in: corners,
+                in: namespace,
                 animation: animation,
                 transition: transition,
                 completionCriteria: completionCriteria,
                 completion: completion,
                 staggerDelay: staggerDelay,
-                layerView: layerView
+                layerView: layerView,
+                configuration: nil
+            )
+        )
+    }
+
+    // MARK: - Level 1: Styling Only
+
+    /// Applies coordinated portal transitions with styling-only configuration.
+    ///
+    /// Modify appearance without affecting positioning.
+    /// Frame and offset are applied automatically AFTER your configuration.
+    func portalTransition<Item: Identifiable, LayerView: View, ConfiguredView: View>(
+        items: Binding<[Item]>,
+        groupID: String,
+        in namespace: Namespace.ID,
+        animation: Animation = PortalConstants.defaultAnimation,
+        transition: PortalRemoveTransition = .none,
+        completionCriteria: AnimationCompletionCriteria = .removed,
+        staggerDelay: TimeInterval = 0.0,
+        completion: @escaping (Bool) -> Void = { _ in },
+        @ViewBuilder layerView: @escaping (Item) -> LayerView,
+        @ViewBuilder configuration: @escaping (AnyView, Bool) -> ConfiguredView
+    ) -> some View {
+        self.modifier(
+            GroupItemPortalTransitionModifier(
+                items: items,
+                groupID: groupID,
+                in: namespace,
+                animation: animation,
+                transition: transition,
+                completionCriteria: completionCriteria,
+                completion: completion,
+                staggerDelay: staggerDelay,
+                layerView: layerView,
+                configuration: .styling { content, isActive in
+                    AnyView(configuration(content, isActive))
+                }
+            )
+        )
+    }
+
+    // MARK: - Level 2: Full Control (Interpolated Values)
+
+    /// Applies coordinated portal transitions with full control over layout.
+    ///
+    /// You have complete control and MUST apply frame and offset yourself.
+    func portalTransition<Item: Identifiable, LayerView: View, ConfiguredView: View>(
+        items: Binding<[Item]>,
+        groupID: String,
+        in namespace: Namespace.ID,
+        animation: Animation = PortalConstants.defaultAnimation,
+        transition: PortalRemoveTransition = .none,
+        completionCriteria: AnimationCompletionCriteria = .removed,
+        staggerDelay: TimeInterval = 0.0,
+        completion: @escaping (Bool) -> Void = { _ in },
+        @ViewBuilder layerView: @escaping (Item) -> LayerView,
+        @ViewBuilder configuration: @escaping (AnyView, Bool, CGSize, CGPoint) -> ConfiguredView
+    ) -> some View {
+        self.modifier(
+            GroupItemPortalTransitionModifier(
+                items: items,
+                groupID: groupID,
+                in: namespace,
+                animation: animation,
+                transition: transition,
+                completionCriteria: completionCriteria,
+                completion: completion,
+                staggerDelay: staggerDelay,
+                layerView: layerView,
+                configuration: .full { content, isActive, size, position in
+                    AnyView(configuration(content, isActive, size, position))
+                }
+            )
+        )
+    }
+
+    // MARK: - Level 3: Raw Source/Destination Values
+
+    /// Applies coordinated portal transitions with raw source and destination values.
+    ///
+    /// Access both source AND destination sizes/positions for custom interpolation.
+    func portalTransition<Item: Identifiable, LayerView: View, ConfiguredView: View>(
+        items: Binding<[Item]>,
+        groupID: String,
+        in namespace: Namespace.ID,
+        animation: Animation = PortalConstants.defaultAnimation,
+        transition: PortalRemoveTransition = .none,
+        completionCriteria: AnimationCompletionCriteria = .removed,
+        staggerDelay: TimeInterval = 0.0,
+        completion: @escaping (Bool) -> Void = { _ in },
+        @ViewBuilder layerView: @escaping (Item) -> LayerView,
+        @ViewBuilder configuration: @escaping (AnyView, Bool, CGSize, CGSize, CGPoint, CGPoint) -> ConfiguredView
+    ) -> some View {
+        self.modifier(
+            GroupItemPortalTransitionModifier(
+                items: items,
+                groupID: groupID,
+                in: namespace,
+                animation: animation,
+                transition: transition,
+                completionCriteria: completionCriteria,
+                completion: completion,
+                staggerDelay: staggerDelay,
+                layerView: layerView,
+                configuration: .raw { content, isActive, sourceSize, destinationSize, sourcePosition, destinationPosition in
+                    AnyView(configuration(content, isActive, sourceSize, destinationSize, sourcePosition, destinationPosition))
+                }
             )
         )
     }

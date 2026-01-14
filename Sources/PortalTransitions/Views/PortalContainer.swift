@@ -55,9 +55,15 @@ public struct PortalContainerModern<Content: View>: View {
     public var body: some View {
         content
             .onAppear { setupWindow(scene) }
-            .onDisappear(perform: OverlayWindowManager.shared.removeOverlayWindow)
+            .onDisappear { teardownWindow() }
             .onChange(of: scene) { _, new in setupWindow(new) }
             .environment(portalModel)
+    }
+
+    private func teardownWindow() {
+#if canImport(UIKit)
+        OverlayWindowManager.shared.removeOverlayWindow(for: portalModel)
+#endif
     }
 
     private func setupWindow(_ scenePhase: ScenePhase) {
@@ -72,12 +78,12 @@ public struct PortalContainerModern<Content: View>: View {
             OverlayWindowManager.shared.addOverlayWindow(with: portalModel, hideStatusBar: hideStatusBar, debugSettings: debugSettings)
         } else {
             PortalLogs.logger.log(
-                "Scene no longer active; removing portal overlay window",
+                "Scene no longer active; unregistering portal model",
                 level: .notice,
                 tags: [PortalLogs.Tags.container],
                 metadata: ["scenePhase": String(reflecting: scenePhase)]
             )
-            OverlayWindowManager.shared.removeOverlayWindow()
+            OverlayWindowManager.shared.removeOverlayWindow(for: portalModel)
         }
 #endif
     }
@@ -126,15 +132,62 @@ public extension PortalContainer {
 #if canImport(UIKit)
 import UIKit
 
+// MARK: - Portal Model Registry
+
+/// Observable registry that tracks all active CrossModels from multiple PortalContainers.
+///
+/// This allows multiple PortalContainers to coexist (e.g., in a carousel where each page
+/// has its own container). Each container registers its model, and the overlay window
+/// renders portals from all registered models.
+@MainActor @Observable
+final class PortalModelRegistry {
+    /// All currently registered portal models, keyed by their object identity.
+    var models: [ObjectIdentifier: CrossModel] = [:]
+
+    /// Registers a portal model with the registry.
+    /// - Parameter model: The CrossModel to register.
+    func register(_ model: CrossModel) {
+        let id = ObjectIdentifier(model)
+        guard models[id] == nil else { return }
+        models[id] = model
+        PortalLogs.logger.log(
+            "Registered portal model",
+            level: .debug,
+            tags: [PortalLogs.Tags.container],
+            metadata: ["modelCount": models.count]
+        )
+    }
+
+    /// Unregisters a portal model from the registry.
+    /// - Parameter model: The CrossModel to unregister.
+    func unregister(_ model: CrossModel) {
+        let id = ObjectIdentifier(model)
+        guard models[id] != nil else { return }
+        models.removeValue(forKey: id)
+        PortalLogs.logger.log(
+            "Unregistered portal model",
+            level: .debug,
+            tags: [PortalLogs.Tags.container],
+            metadata: ["modelCount": models.count]
+        )
+    }
+
+    /// Whether any models are currently registered.
+    var isEmpty: Bool { models.isEmpty }
+}
+
 /// Manages the overlay window for the portal layer.
 @MainActor
 final class OverlayWindowManager {
     static let shared = OverlayWindowManager()
     private var overlayWindow: PassThroughWindow?
 
-    /// Adds the overlay window to the active scene.
+    /// Registry of all active portal models from all containers.
+    let registry = PortalModelRegistry()
+
+    /// Registers a portal model and ensures the overlay window exists.
     /// - Parameters:
-    ///   - portalModel: The shared portal model.
+    ///   - portalModel: The portal model to register.
     ///   - hideStatusBar: Whether the overlay should hide the status bar.
     ///   - debugSettings: Debug overlay settings.
     func addOverlayWindow(
@@ -142,11 +195,16 @@ final class OverlayWindowManager {
         hideStatusBar: Bool,
         debugSettings: PortalTransitionDebugSettings
     ) {
+        // Always register the model
+        registry.register(portalModel)
+
+        // Only create window if it doesn't exist
         guard overlayWindow == nil else {
             PortalLogs.logger.log(
-                "Overlay window already installed; skipping duplicate add",
+                "Overlay window already installed; registered model to existing window",
                 level: .notice,
-                tags: [PortalLogs.Tags.overlay]
+                tags: [PortalLogs.Tags.overlay],
+                metadata: ["modelCount": registry.models.count]
             )
             return
         }
@@ -173,11 +231,11 @@ final class OverlayWindowManager {
                 let root: UIViewController
                 if hideStatusBar {
                     root = HiddenStatusHostingController(
-                        rootView: PortalContainerRootView(portalModel: portalModel, debugSettings: debugSettings)
+                        rootView: PortalContainerRootView(registry: self.registry, debugSettings: debugSettings)
                     )
                 } else {
                     root = UIHostingController(
-                        rootView: PortalContainerRootView(portalModel: portalModel, debugSettings: debugSettings)
+                        rootView: PortalContainerRootView(registry: self.registry, debugSettings: debugSettings)
                     )
                 }
                 root.view.backgroundColor = .clear
@@ -210,7 +268,45 @@ final class OverlayWindowManager {
         }
     }
 
-    /// Removes the overlay window from the scene.
+    /// Unregisters a portal model and removes the overlay window if no models remain.
+    /// - Parameter portalModel: The portal model to unregister.
+    func removeOverlayWindow(for portalModel: CrossModel) {
+        registry.unregister(portalModel)
+
+        // Only remove window if no models remain
+        guard registry.isEmpty else {
+            PortalLogs.logger.log(
+                "Unregistered model; other models still active",
+                level: .debug,
+                tags: [PortalLogs.Tags.overlay],
+                metadata: ["modelCount": registry.models.count]
+            )
+            return
+        }
+
+        DispatchQueue.main.async {
+            guard let overlayWindow = self.overlayWindow else {
+                PortalLogs.logger.log(
+                    "Requested overlay removal but no window was active",
+                    level: .debug,
+                    tags: [PortalLogs.Tags.overlay]
+                )
+                return
+            }
+
+            PortalLogs.logger.log(
+                "Removing overlay window (no models remaining)",
+                level: .info,
+                tags: [PortalLogs.Tags.overlay]
+            )
+
+            overlayWindow.isHidden = true
+            self.overlayWindow = nil
+        }
+    }
+
+    /// Removes the overlay window from the scene (legacy method for compatibility).
+    @available(*, deprecated, message: "Use removeOverlayWindow(for:) instead")
     func removeOverlayWindow() {
         DispatchQueue.main.async {
             guard let overlayWindow = self.overlayWindow else {
@@ -223,7 +319,7 @@ final class OverlayWindowManager {
             }
 
             PortalLogs.logger.log(
-                "Removing overlay window",
+                "Removing overlay window (legacy call)",
                 level: .info,
                 tags: [PortalLogs.Tags.overlay]
             )
@@ -311,18 +407,21 @@ internal struct PortalDebugOverlay: View {
 // MARK: - Root Views
 
 private struct PortalContainerRootView: View {
-    let portalModel: CrossModel
+    let registry: PortalModelRegistry
     let debugSettings: PortalTransitionDebugSettings
 
     var body: some View {
         ZStack {
-            PortalLayerView()
-                .environment(portalModel)
-                .portalTransitionDebugOverlays(debugSettings.style(for: .layer), for: .layer)
+            // Render portal layers for all registered models
+            ForEach(Array(registry.models.values), id: \.id) { model in
+                PortalLayerView()
+                    .environment(model)
+            }
+            .portalTransitionDebugOverlays(debugSettings.style(for: .layer), for: .layer)
             #if DEBUG
             let layerStyle = debugSettings.style(for: .layer)
             if !layerStyle.isEmpty {
-                DebugOverlayIndicator("PortalContainerOverlay")
+                DebugOverlayIndicator("PortalContainerOverlay (\(registry.models.count))")
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
                     .padding(20)
                     .ignoresSafeArea()

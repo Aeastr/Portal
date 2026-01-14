@@ -9,6 +9,7 @@
 //
 #if DEBUG
 import SwiftUI
+import UIPortalBridge
 
 struct UIPortalViewExample: View {
     @State private var rotation: Double = 0

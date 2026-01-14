@@ -17,6 +17,7 @@ public struct PortalExampleList: View {
     @State private var selectedItem: PortalExampleListItem?
     @State private var listItems: [PortalExampleListItem] = PortalExampleList.generateLargeDataSet()
     @State private var showConsole = false
+    @Namespace private var portalNamespace
 
     public init() {}
 
@@ -54,7 +55,7 @@ public struct PortalExampleList: View {
                                 )
 
                                 .frame(width: 60, height: 60)
-                                .portal(item: item, .source)
+                                .portal(item: item, as: .source, in: portalNamespace)
 
                                 // Content
                                 VStack(alignment: .leading, spacing: 4) {
@@ -100,10 +101,11 @@ public struct PortalExampleList: View {
                 }
             }
             .sheet(item: $selectedItem) { item in
-                PortalExampleListDetail(item: item)
+                PortalExampleListDetail(item: item, namespace: portalNamespace)
             }
             .portalTransition(
                 item: $selectedItem,
+                in: portalNamespace,
                 animation: portalAnimationExample
             ) { item in
                 Group {
@@ -205,6 +207,7 @@ public struct PortalExampleListItem: Identifiable {
 
 private struct PortalExampleListDetail: View {
     let item: PortalExampleListItem
+    let namespace: Namespace.ID
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
@@ -224,7 +227,7 @@ private struct PortalExampleListDetail: View {
                     )
 
                     .frame(width: 280, height: 200)
-                    .portal(item: item, .destination)
+                    .portal(item: item, as: .destination, in: namespace)
                     .padding(.top, 20)
 
                     // Content
@@ -272,13 +275,15 @@ private struct PortalExampleListDetail: View {
 }
 
 #Preview("Detail View") {
+    @Previewable @Namespace var ns
     PortalExampleListDetail(
         item: PortalExampleListItem(
             title: "Mountain Peak",
             description: "Breathtaking views from the summit",
             color: .blue,
             icon: "mountain.2.fill"
-        )
+        ),
+        namespace: ns
     )
 }
 

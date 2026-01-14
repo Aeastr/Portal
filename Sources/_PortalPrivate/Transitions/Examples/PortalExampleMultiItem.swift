@@ -15,6 +15,7 @@ import PortalTransitions
 public struct PortalExampleMultiItem: View {
     @State private var selectedPhotos: [MultiItemPhoto] = []
     @State private var allPhotos: [MultiItemPhoto] = MultiItemPhoto.samplePhotos
+    @Namespace private var portalNamespace
 
     public init() {}
 
@@ -34,9 +35,9 @@ public struct PortalExampleMultiItem: View {
                     // Photo grid - Sources
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3), spacing: 8) {
                         ForEach(allPhotos) { photo in
-                            AnimatedLayer(portalID: photo.id.uuidString, scale: 1.15) {
+                            AnimatedLayer(portalID: photo.id.uuidString, in: portalNamespace, scale: 1.15) {
                                 PhotoThumbnailView(photo: photo)
-                                    .portalPrivate(item: photo, groupID: "photoStack")
+                                    .portalSourcePrivate(item: photo, groupID: "photoStack", in: portalNamespace)
                             }
                             .frame(height: 160)
                         }
@@ -60,13 +61,14 @@ public struct PortalExampleMultiItem: View {
                 }
             }
             .sheet(isPresented: .constant(!selectedPhotos.isEmpty)) {
-                MultiItemDetailView(photos: selectedPhotos) {
+                MultiItemDetailView(photos: selectedPhotos, namespace: portalNamespace) {
                     selectedPhotos.removeAll()
                 }
             }
             .portalPrivateTransition(
                 items: $selectedPhotos,
-                groupID: "photoStack"
+                groupID: "photoStack",
+                in: portalNamespace
             )
         }
     }
@@ -75,6 +77,7 @@ public struct PortalExampleMultiItem: View {
 /// Detail view showing the coordinated destination views
 struct MultiItemDetailView: View {
     let photos: [MultiItemPhoto]
+    let namespace: Namespace.ID
     let onDismiss: () -> Void
 
     var body: some View {
@@ -82,7 +85,7 @@ struct MultiItemDetailView: View {
             ScrollView {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 2), spacing: 12) {
                     ForEach(photos) { photo in
-                        PortalPrivateDestination(id: photo.id.uuidString)
+                        PortalPrivateDestination(id: photo.id.uuidString, in: namespace)
                     }
                 }
                 .padding()

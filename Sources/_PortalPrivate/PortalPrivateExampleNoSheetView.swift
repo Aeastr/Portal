@@ -15,6 +15,7 @@ import PortalTransitions
 public struct PortalPrivateExampleNoSheetView: View {
     @State private var selectedItem: Item?
     @State private var items = Item.sampleItems
+    @Namespace private var portalNamespace
 
     public init() {}
 
@@ -36,7 +37,7 @@ public struct PortalPrivateExampleNoSheetView: View {
                             ], spacing: 16) {
                                 ForEach(items) { item in
                                     CardView(item: item)
-                                        .portalPrivate(id: item.id.uuidString)
+                                        .portalSourcePrivate(id: item.id.uuidString, in: portalNamespace)
                                         .onTapGesture {
                                             withAnimation(.smooth(duration: 0.45)) {
                                                 selectedItem = item
@@ -49,11 +50,11 @@ public struct PortalPrivateExampleNoSheetView: View {
                     }
                     .navigationTitle("No Sheet Test")
                 }
-                .portalPrivateTransition(item: $selectedItem)
+                .portalPrivateTransition(item: $selectedItem, in: portalNamespace)
 
                 // Overlay instead of sheet
                 if let item = selectedItem {
-                    DetailOverlayView(item: item, selectedItem: $selectedItem)
+                    DetailOverlayView(item: item, selectedItem: $selectedItem, namespace: portalNamespace)
                         .transition(.opacity.combined(with: .scale(scale: 0.95)))
                         .zIndex(100)
                 }
@@ -66,11 +67,12 @@ public struct PortalPrivateExampleNoSheetView: View {
 struct DetailOverlayView: View {
     let item: Item
     @Binding var selectedItem: Item?
+    let namespace: Namespace.ID
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
-                PortalPrivateDestination(id: item.id.uuidString)
+                PortalPrivateDestination(id: item.id.uuidString, in: namespace)
                     .background(Color.gray.opacity(0.1))
                     .clipShape(.rect(cornerRadius: 20))
                     .padding()

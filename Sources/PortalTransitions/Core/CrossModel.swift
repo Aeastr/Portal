@@ -19,7 +19,7 @@ import SwiftUI
 /// The model uses the `@Observable` macro for SwiftUI integration and is marked with
 /// `@MainActor` to ensure all UI-related operations happen on the main thread.
 @MainActor @Observable
-public class CrossModel {
+public class CrossModel: Hashable {
     /// Array containing information about all active portal animations.
     /// Each `PortalInfo` object tracks the state of a specific portal transition.
     public var info: [PortalInfo] = []
@@ -28,9 +28,22 @@ public class CrossModel {
     /// Used for managing portal hierarchies and nested portal scenarios.
     public var rootInfo: [PortalInfo] = []
 
+    /// Stable identifier for this model instance, used for SwiftUI identity and Hashable conformance.
+    nonisolated let id = UUID()
+
     /// Initializes a new CrossModel instance.
     /// Creates empty arrays for managing portal information.
     public init() {}
+
+    // MARK: - Hashable Conformance (nonisolated to avoid actor isolation issues)
+
+    nonisolated public static func == (lhs: CrossModel, rhs: CrossModel) -> Bool {
+        lhs.id == rhs.id
+    }
+
+    nonisolated public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
 
     /// Transfers the active portal state from one ID to another without animation.
     ///
@@ -45,23 +58,24 @@ public class CrossModel {
     /// - Parameters:
     ///   - fromID: The ID of the currently active portal to deactivate
     ///   - toID: The ID of the new portal to activate
+    ///   - namespace: The namespace for scoping portal lookup
     ///
     /// Example usage:
     /// ```swift
     /// // For static string IDs:
-    /// portalModel.transferActivePortal(from: "panel1", to: "panel2")
+    /// portalModel.transferActivePortal(from: "panel1", to: "panel2", in: namespace)
     ///
     /// // For Identifiable items, prefer the type-safe overload:
-    /// portalModel.transferActivePortal(from: oldItem, to: newItem)
+    /// portalModel.transferActivePortal(fromItem: oldItem, toItem: newItem, in: namespace)
     /// ```
-    public func transferActivePortal<ID: Hashable>(from fromID: ID, to toID: ID) {
+    public func transferActivePortal<ID: Hashable>(from fromID: ID, to toID: ID, in namespace: Namespace.ID) {
         let fromKey = AnyHashable(fromID)
         let toKey = AnyHashable(toID)
 
         guard fromKey != toKey else { return }
 
         // Find the source portal and copy its configuration
-        guard let fromIndex = info.firstIndex(where: { $0.infoID == fromKey }) else {
+        guard let fromIndex = info.firstIndex(where: { $0.infoID == fromKey && $0.namespace == namespace }) else {
             PortalLogs.logger.log(
                 "Transfer failed: source portal not found",
                 level: .warning,
@@ -74,7 +88,7 @@ public class CrossModel {
         let sourceInfo = info[fromIndex]
 
         // Create or update the destination portal
-        if let toIndex = info.firstIndex(where: { $0.infoID == toKey }) {
+        if let toIndex = info.firstIndex(where: { $0.infoID == toKey && $0.namespace == namespace }) {
             // Transfer state to existing portal
             info[toIndex].initialized = true
             info[toIndex].animateView = true
@@ -82,20 +96,20 @@ public class CrossModel {
             info[toIndex].showLayer = false
             info[toIndex].animation = sourceInfo.animation
             info[toIndex].completionCriteria = sourceInfo.completionCriteria
-            info[toIndex].corners = sourceInfo.corners
+            info[toIndex].configuration = sourceInfo.configuration
             info[toIndex].fade = sourceInfo.fade
             info[toIndex].completion = sourceInfo.completion
             info[toIndex].layerView = sourceInfo.layerView
         } else {
             // Create new portal info with transferred state
-            var newInfo = PortalInfo(id: toKey)
+            var newInfo = PortalInfo(id: toKey, namespace: namespace)
             newInfo.initialized = true
             newInfo.animateView = true
             newInfo.hideView = true
             newInfo.showLayer = false
             newInfo.animation = sourceInfo.animation
             newInfo.completionCriteria = sourceInfo.completionCriteria
-            newInfo.corners = sourceInfo.corners
+            newInfo.configuration = sourceInfo.configuration
             newInfo.fade = sourceInfo.fade
             newInfo.completion = sourceInfo.completion
             newInfo.layerView = sourceInfo.layerView
@@ -130,8 +144,9 @@ public class CrossModel {
     /// - Parameters:
     ///   - fromItem: The item whose portal should be deactivated
     ///   - toItem: The item whose portal should be activated
-    public func transferActivePortal<Item: Identifiable>(fromItem: Item, toItem: Item) {
-        transferActivePortal(from: fromItem.id, to: toItem.id)
+    ///   - namespace: The namespace for scoping portal lookup
+    public func transferActivePortal<Item: Identifiable>(fromItem: Item, toItem: Item, in namespace: Namespace.ID) {
+        transferActivePortal(from: fromItem.id, to: toItem.id, in: namespace)
     }
 
     // MARK: - Disabled Overload (Swift Compiler Crash)

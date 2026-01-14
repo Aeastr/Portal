@@ -19,6 +19,12 @@ import SwiftUI
 /// This is the item-based counterpart to `AnimatedPortalLayer`, designed for use with
 /// `.portal(item:, .source)` and `.portalTransition(item:)` patterns.
 ///
+/// > Tip: For styling the transition layer (clips, shadows, corner radii), consider using
+/// > the `configuration` closure on `.portalTransition()` instead — it's simpler and doesn't require
+/// > creating a separate type. Use this protocol when you need:
+/// > - Custom timing logic with `onChange(of: isActive)`
+/// > - Reusable animated components across multiple portals
+///
 /// Example:
 /// ```swift
 /// struct MyItemAnimation<Item: Identifiable, Content: View>: AnimatedItemPortalLayer {
@@ -42,6 +48,12 @@ public protocol AnimatedItemPortalLayer: View {
     ///
     /// The portal ID is derived from the item's `id` property using string interpolation.
     var item: Item? { get }
+
+    /// The namespace for scoping portal lookup.
+    ///
+    /// This ensures the layer only responds to portal transitions in the matching namespace,
+    /// preventing interference when the same item ID exists in multiple namespaces.
+    var namespace: Namespace.ID { get }
 
     /// Implement this method to define your custom animation logic.
     ///
@@ -71,11 +83,12 @@ private struct AnimatedItemPortalLayerHost<Layer: AnimatedItemPortalLayer>: View
 
     var body: some View {
         let currentItem = layer.item
+        let namespace = layer.namespace
         let key: AnyHashable? = currentItem.map { AnyHashable($0.id) }
 
         // Check active state using lastKey if current key is nil (reverse transition)
         let lookupKey = key ?? lastKey
-        let idx = lookupKey.flatMap { k in portalModel.info.firstIndex { $0.infoID == k } }
+        let idx = lookupKey.flatMap { k in portalModel.info.firstIndex { $0.infoID == k && $0.namespace == namespace } }
         let isActive = idx.flatMap { portalModel.info[$0].animateView } ?? false
 
         // Use the current item if available, otherwise fall back to the last known item
@@ -109,9 +122,12 @@ private struct AnimatedItemPortalLayerHost<Layer: AnimatedItemPortalLayer>: View
 ///
 /// Use this when you need a quick item-based animated layer without creating a custom type.
 ///
+/// > Tip: For styling the transition layer (clips, shadows, corner radii), consider using
+/// > the `configuration` closure on `.portalTransition()` instead — it's simpler.
+///
 /// Example:
 /// ```swift
-/// AnimatedItemLayer(item: $selectedPhoto) { photo, isActive in
+/// AnimatedItemLayer(item: $selectedPhoto, in: namespace) { photo, isActive in
 ///     AsyncImage(url: photo?.imageURL)
 ///         .scaleEffect(isActive ? 1.1 : 1.0)
 ///         .animation(.spring, value: isActive)
@@ -119,31 +135,38 @@ private struct AnimatedItemPortalLayerHost<Layer: AnimatedItemPortalLayer>: View
 /// ```
 public struct AnimatedItemLayer<Item: Identifiable, Content: View>: AnimatedItemPortalLayer {
     public let item: Item?
+    public let namespace: Namespace.ID
     private let contentBuilder: (Item?, Bool) -> Content
 
-    /// Creates an animated item layer with the specified item and content builder.
+    /// Creates an animated item layer with the specified item, namespace, and content builder.
     ///
     /// - Parameters:
     ///   - item: Binding to the optional item that controls the layer.
+    ///   - namespace: The namespace for scoping portal lookup.
     ///   - content: A closure that receives the item and active state, returning the animated content.
     public init(
         item: Binding<Item?>,
+        in namespace: Namespace.ID,
         @ViewBuilder content: @escaping (Item?, Bool) -> Content
     ) {
         self.item = item.wrappedValue
+        self.namespace = namespace
         self.contentBuilder = content
     }
 
-    /// Creates an animated item layer with a direct item value and content builder.
+    /// Creates an animated item layer with a direct item value, namespace, and content builder.
     ///
     /// - Parameters:
     ///   - item: The optional item that controls the layer.
+    ///   - namespace: The namespace for scoping portal lookup.
     ///   - content: A closure that receives the item and active state, returning the animated content.
     public init(
         item: Item?,
+        in namespace: Namespace.ID,
         @ViewBuilder content: @escaping (Item?, Bool) -> Content
     ) {
         self.item = item
+        self.namespace = namespace
         self.contentBuilder = content
     }
 
@@ -162,6 +185,12 @@ public struct AnimatedItemLayer<Item: Identifiable, Content: View>: AnimatedItem
 ///
 /// This is designed for use with `.portal(item:, .source, groupID:)` and
 /// `.portalTransition(items:, groupID:)` patterns.
+///
+/// > Tip: For styling the transition layer (clips, shadows, corner radii), consider using
+/// > the `configuration` closure on `.portalTransition()` instead — it's simpler and doesn't require
+/// > creating a separate type. Use this protocol when you need:
+/// > - Custom timing logic with `onChange(of: isActive)`
+/// > - Reusable animated components across multiple portals
 ///
 /// Example:
 /// ```swift
@@ -191,6 +220,9 @@ public protocol AnimatedGroupPortalLayer: View {
     /// The group identifier for coordinated animations.
     var groupID: String { get }
 
+    /// The namespace for scoping portal lookup.
+    var namespace: Namespace.ID { get }
+
     /// Implement this method to define your custom animation logic.
     ///
     /// - Parameters:
@@ -219,9 +251,12 @@ private struct AnimatedGroupPortalLayerHost<Layer: AnimatedGroupPortalLayer>: Vi
 
     /// Builds active states dictionary for a set of items using O(n+m) lookup.
     private func buildActiveStates(for items: [Layer.Item]) -> [Layer.Item.ID: Bool] {
+        let namespace = layer.namespace
+
         // Build lookup dictionary from portal info first: O(m)
+        // Only include info entries that match the namespace
         var infoLookup: [AnyHashable: Bool] = [:]
-        for info in portalModel.info {
+        for info in portalModel.info where info.namespace == namespace {
             infoLookup[info.infoID] = info.animateView
         }
 
@@ -267,9 +302,12 @@ private struct AnimatedGroupPortalLayerHost<Layer: AnimatedGroupPortalLayer>: Vi
 ///
 /// Use this when you need a quick group-based animated layer without creating a custom type.
 ///
+/// > Tip: For styling the transition layer (clips, shadows, corner radii), consider using
+/// > the `configuration` closure on `.portalTransition()` instead — it's simpler.
+///
 /// Example:
 /// ```swift
-/// AnimatedGroupLayer(items: selectedPhotos, groupID: "photoStack") { items, activeStates in
+/// AnimatedGroupLayer(items: selectedPhotos, groupID: "photoStack", in: namespace) { items, activeStates in
 ///     ZStack {
 ///         ForEach(items) { photo in
 ///             let isActive = activeStates[photo.id] ?? false
@@ -282,37 +320,44 @@ private struct AnimatedGroupPortalLayerHost<Layer: AnimatedGroupPortalLayer>: Vi
 public struct AnimatedGroupLayer<Item: Identifiable, Content: View>: AnimatedGroupPortalLayer {
     public let items: [Item]
     public let groupID: String
+    public let namespace: Namespace.ID
     private let contentBuilder: ([Item], [Item.ID: Bool]) -> Content
 
-    /// Creates an animated group layer with the specified items, group ID, and content builder.
+    /// Creates an animated group layer with the specified items, group ID, namespace, and content builder.
     ///
     /// - Parameters:
     ///   - items: Binding to the array of items that control the layers.
     ///   - groupID: The group identifier for coordinated animations.
+    ///   - namespace: The namespace for scoping portal lookup.
     ///   - content: A closure that receives the items and their active states, returning the animated content.
     public init(
         items: Binding<[Item]>,
         groupID: String,
+        in namespace: Namespace.ID,
         @ViewBuilder content: @escaping ([Item], [Item.ID: Bool]) -> Content
     ) {
         self.items = items.wrappedValue
         self.groupID = groupID
+        self.namespace = namespace
         self.contentBuilder = content
     }
 
-    /// Creates an animated group layer with direct item values, group ID, and content builder.
+    /// Creates an animated group layer with direct item values, group ID, namespace, and content builder.
     ///
     /// - Parameters:
     ///   - items: The array of items that control the layers.
     ///   - groupID: The group identifier for coordinated animations.
+    ///   - namespace: The namespace for scoping portal lookup.
     ///   - content: A closure that receives the items and their active states, returning the animated content.
     public init(
         items: [Item],
         groupID: String,
+        in namespace: Namespace.ID,
         @ViewBuilder content: @escaping ([Item], [Item.ID: Bool]) -> Content
     ) {
         self.items = items
         self.groupID = groupID
+        self.namespace = namespace
         self.contentBuilder = content
     }
 

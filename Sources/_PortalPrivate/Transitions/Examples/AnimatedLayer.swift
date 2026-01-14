@@ -40,12 +40,14 @@ struct AnimatedLayerConfig {
 /// these values are meant to be tuned for your specific animation design.
 struct AnimatedLayer<Content: View>: AnimatedPortalLayer {
     let portalID: AnyHashable
+    let namespace: Namespace.ID
     var scale: CGFloat = 2
     var animationConfig: AnimatedLayerConfig = .default
     @ViewBuilder let content: () -> Content
 
-    init<ID: Hashable>(portalID: ID, scale: CGFloat = 2, animationConfig: AnimatedLayerConfig = .default, @ViewBuilder content: @escaping () -> Content) {
+    init<ID: Hashable>(portalID: ID, in namespace: Namespace.ID, scale: CGFloat = 2, animationConfig: AnimatedLayerConfig = .default, @ViewBuilder content: @escaping () -> Content) {
         self.portalID = AnyHashable(portalID)
+        self.namespace = namespace
         self.scale = scale
         self.animationConfig = animationConfig
         self.content = content

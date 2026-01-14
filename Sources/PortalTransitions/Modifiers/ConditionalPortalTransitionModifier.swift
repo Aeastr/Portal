@@ -59,11 +59,16 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
     /// destination views for the transition to work correctly.
     public let id: AnyHashable
 
+    /// Namespace for scoping this portal transition.
+    /// Transitions only match portals within the same namespace.
+    public let namespace: Namespace.ID
+
     /// Animation for the portal transition.
     public let animation: Animation
 
-    /// Corner styling configuration for visual appearance.
-    public let corners: PortalCorners?
+    /// Configuration for customizing the layer view during animation.
+    /// See ``PortalConfiguration`` for the three levels of control available.
+    public let configuration: PortalConfiguration?
 
     /// Controls fade-out behavior when the portal layer is removed.
     public let transition: PortalRemoveTransition
@@ -94,31 +99,34 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
     ///
     /// - Parameters:
     ///   - id: Unique identifier for the portal transition
+    ///   - namespace: Namespace for scoping this portal transition
     ///   - isActive: Binding that controls the transition state
-    ///   - corners: Corner styling configuration (optional)
     ///   - animation: Animation for the transition
     ///   - transition: Fade-out behavior for layer removal
     ///   - completionCriteria: Criteria for detecting animation completion
-    ///   - layerView: Closure that generates the transition layer view
     ///   - completion: Handler called when the transition completes
+    ///   - layerView: Closure that generates the transition layer view
+    ///   - configuration: Optional closure to customize the layer view during animation
     public init<ID: Hashable>(
         id: ID,
+        in namespace: Namespace.ID,
         isActive: Binding<Bool>,
-        in corners: PortalCorners? = nil,
-        animation: Animation,
+        animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
-        completionCriteria: AnimationCompletionCriteria,
+        completionCriteria: AnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void,
-        @ViewBuilder layerView: @escaping () -> LayerView
+        @ViewBuilder layerView: @escaping () -> LayerView,
+        configuration: PortalConfiguration? = nil
     ) {
         self.id = AnyHashable(id)
+        self.namespace = namespace
         self._isActive = isActive
-        self.corners = corners
         self.animation = animation
         self.transition = transition
         self.completionCriteria = completionCriteria
         self.completion = completion
         self.layerView = layerView
+        self.configuration = configuration
 
         // Validate animation duration
         Self.validateAnimationDuration(animation, id: "\(id)")
@@ -174,8 +182,8 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
     /// This ensures that the portal system is ready to handle transitions even
     /// before the first state change occurs.
     private func onAppear() {
-        if !portalModel.info.contains(where: { $0.infoID == id }) {
-            portalModel.info.append(PortalInfo(id: id))
+        if !portalModel.info.contains(where: { $0.infoID == id && $0.namespace == namespace }) {
+            portalModel.info.append(PortalInfo(id: id, namespace: namespace))
         }
     }
 
@@ -199,7 +207,7 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
     ///   - oldValue: Previous value of the isActive state (unused but required by onChange)
     ///   - newValue: New value of the isActive state
     private func onChange(oldValue: Bool, newValue: Bool) {
-        guard let idx = portalModel.info.firstIndex(where: { $0.infoID == id }) else { return }
+        guard let idx = portalModel.info.firstIndex(where: { $0.infoID == id && $0.namespace == namespace }) else { return }
 
         @Bindable var portalModel = portalModel
 
@@ -207,7 +215,7 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
         portalModel.info[idx].initialized = true
         portalModel.info[idx].animation = animation
         portalModel.info[idx].completionCriteria = completionCriteria
-        portalModel.info[idx].corners = corners
+        portalModel.info[idx].configuration = configuration
         portalModel.info[idx].fade = transition
         portalModel.info[idx].completion = completion
         portalModel.info[idx].layerView = AnyView(layerView())
@@ -265,63 +273,135 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
 }
 
 public extension View {
+    // MARK: - No Configuration (Default)
+
     /// Applies a portal transition controlled by a boolean binding.
     ///
-    /// This modifier enables portal transitions based on boolean state changes,
-    /// providing direct control over when transitions occur. It's ideal for
-    /// toggle-based animations or explicit programmatic control.
-    ///
-    /// **Usage Pattern:**
-    /// ```swift
-    /// @State private var showDetail = false
-    ///
-    /// ContentView()
-    ///     .portalTransition(
-    ///         id: "detail",
-    ///         isActive: $showDetail
-    ///     ) {
-    ///         DetailLayerView()
-    ///     }
-    /// ```
-    ///
-    /// - Parameters:
-    ///   - id: Unique identifier for the portal transition
-    ///   - config: Configuration for animation and styling (optional, defaults to standard config)
-    ///   - isActive: Boolean binding that controls the transition state
-    ///   - layerView: Closure that returns the view to animate during transition
-    ///   - completion: Optional completion handler (defaults to no-op)
-    /// - Returns: A view with the portal transition modifier applied
-    /// Applies a portal transition with direct parameter configuration.
-    ///
-    /// - Parameters:
-    ///   - id: Unique identifier for the portal transition
-    ///   - isActive: Boolean binding that controls the transition state
-    ///   - in corners: Corner radius configuration for visual styling
-    ///   - animation: Animation to use for the transition (defaults to smooth animation)
-    ///   - transition: Fade-out behavior for layer removal (defaults to .fade)
-    ///   - completionCriteria: How to detect animation completion (defaults to .removed)
-    ///   - layerView: Closure that returns the view to animate during transition
-    ///   - completion: Optional completion handler (defaults to no-op)
-    /// - Returns: A view with the portal transition modifier applied
+    /// This is the simplest form - frame and offset are applied automatically.
     func portalTransition<ID: Hashable, LayerView: View>(
         id: ID,
+        in namespace: Namespace.ID,
         isActive: Binding<Bool>,
-        in corners: PortalCorners? = nil,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
         completionCriteria: AnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void = { _ in },
         @ViewBuilder layerView: @escaping () -> LayerView
     ) -> some View {
-        return self.modifier(
+        self.modifier(
             ConditionalPortalTransitionModifier(
                 id: id,
+                in: namespace,
                 isActive: isActive,
-                in: corners,
                 animation: animation,
                 transition: transition,
                 completionCriteria: completionCriteria,
                 completion: completion,
-                layerView: layerView))
+                layerView: layerView,
+                configuration: nil
+            )
+        )
+    }
+
+    // MARK: - Level 1: Styling Only
+
+    /// Applies a portal transition with styling-only configuration.
+    ///
+    /// Modify appearance (clips, shadows, etc.) without affecting positioning.
+    /// Frame and offset are applied automatically AFTER your configuration.
+    func portalTransition<ID: Hashable, LayerView: View, ConfiguredView: View>(
+        id: ID,
+        in namespace: Namespace.ID,
+        isActive: Binding<Bool>,
+        animation: Animation = PortalConstants.defaultAnimation,
+        transition: PortalRemoveTransition = .none,
+        completionCriteria: AnimationCompletionCriteria = .removed,
+        completion: @escaping (Bool) -> Void = { _ in },
+        @ViewBuilder layerView: @escaping () -> LayerView,
+        @ViewBuilder configuration: @escaping (AnyView, Bool) -> ConfiguredView
+    ) -> some View {
+        self.modifier(
+            ConditionalPortalTransitionModifier(
+                id: id,
+                in: namespace,
+                isActive: isActive,
+                animation: animation,
+                transition: transition,
+                completionCriteria: completionCriteria,
+                completion: completion,
+                layerView: layerView,
+                configuration: .styling { content, isActive in
+                    AnyView(configuration(content, isActive))
+                }
+            )
+        )
+    }
+
+    // MARK: - Level 2: Full Control (Interpolated Values)
+
+    /// Applies a portal transition with full control over layout.
+    ///
+    /// You have complete control and MUST apply frame and offset yourself.
+    /// Receives interpolated size/position based on animation state.
+    func portalTransition<ID: Hashable, LayerView: View, ConfiguredView: View>(
+        id: ID,
+        in namespace: Namespace.ID,
+        isActive: Binding<Bool>,
+        animation: Animation = PortalConstants.defaultAnimation,
+        transition: PortalRemoveTransition = .none,
+        completionCriteria: AnimationCompletionCriteria = .removed,
+        completion: @escaping (Bool) -> Void = { _ in },
+        @ViewBuilder layerView: @escaping () -> LayerView,
+        @ViewBuilder configuration: @escaping (AnyView, Bool, CGSize, CGPoint) -> ConfiguredView
+    ) -> some View {
+        self.modifier(
+            ConditionalPortalTransitionModifier(
+                id: id,
+                in: namespace,
+                isActive: isActive,
+                animation: animation,
+                transition: transition,
+                completionCriteria: completionCriteria,
+                completion: completion,
+                layerView: layerView,
+                configuration: .full { content, isActive, size, position in
+                    AnyView(configuration(content, isActive, size, position))
+                }
+            )
+        )
+    }
+
+    // MARK: - Level 3: Raw Source/Destination Values
+
+    /// Applies a portal transition with raw source and destination values.
+    ///
+    /// Access both source AND destination sizes/positions for custom interpolation.
+    /// You MUST apply frame and offset yourself.
+    func portalTransition<ID: Hashable, LayerView: View, ConfiguredView: View>(
+        id: ID,
+        in namespace: Namespace.ID,
+        isActive: Binding<Bool>,
+        animation: Animation = PortalConstants.defaultAnimation,
+        transition: PortalRemoveTransition = .none,
+        completionCriteria: AnimationCompletionCriteria = .removed,
+        completion: @escaping (Bool) -> Void = { _ in },
+        @ViewBuilder layerView: @escaping () -> LayerView,
+        @ViewBuilder configuration: @escaping (AnyView, Bool, CGSize, CGSize, CGPoint, CGPoint) -> ConfiguredView
+    ) -> some View {
+        self.modifier(
+            ConditionalPortalTransitionModifier(
+                id: id,
+                in: namespace,
+                isActive: isActive,
+                animation: animation,
+                transition: transition,
+                completionCriteria: completionCriteria,
+                completion: completion,
+                layerView: layerView,
+                configuration: .raw { content, isActive, sourceSize, destinationSize, sourcePosition, destinationPosition in
+                    AnyView(configuration(content, isActive, sourceSize, destinationSize, sourcePosition, destinationPosition))
+                }
+            )
+        )
     }
 }
