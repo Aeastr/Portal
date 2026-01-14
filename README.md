@@ -27,15 +27,6 @@ Portal provides three modules for different use cases:
 - **_PortalPrivate** — True view mirroring using Apple's private `_UIPortalView` API. The view instance is shared rather than recreated.
 
 
-## Requirements
-
-- Swift 6.2+
-- iOS 17+ (PortalTransitions)
-- iOS 18+ (PortalHeaders)
-
-> Targeting iOS 15/16? Pin to `v2.1.0` or the `legacy/ios15` branch.
-
-
 ## Installation
 
 ```swift
@@ -49,6 +40,8 @@ dependencies: [
 | `PortalTransitions` | Element transitions (iOS 17+) |
 | `PortalHeaders` | Flowing headers (iOS 18+) |
 | `_PortalPrivate` | View mirroring with private API |
+
+> Targeting iOS 15/16? Pin to `v2.1.0` or the `legacy/ios15` branch.
 
 
 ## Usage
