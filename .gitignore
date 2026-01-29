@@ -17,3 +17,6 @@ Package.resolved
 
 # Claude Code local settings
 .claude/
+
+# macOS folder icon
+Icon?
