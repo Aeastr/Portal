@@ -11,29 +11,14 @@
 import XCTest
 import UIKit
 import SwiftUI
-import Obfuscate
 @testable import _PortalPrivate
+@testable import UIPortalBridge
 
 final class PortalViewTests: XCTestCase {
-    // MARK: - Obfuscation Tests
-
-    func testObfuscationMacro() {
-        // Test that the obfuscation macro properly encodes and decodes strings
-        let obfuscatedString = #Obfuscate("_UIPortalView")
-
-        // The obfuscated string should decode to the original value
-        XCTAssertEqual(obfuscatedString, "_UIPortalView")
-
-        // Test that it works with the class lookup
-        // (This may return nil on systems where _UIPortalView isn't available)
-        let portalClass: AnyClass? = NSClassFromString(obfuscatedString)
-
-        // We don't assert the class exists since it may not be available
-        // But we verify the string was properly decoded
-        if portalClass != nil {
-            XCTAssertTrue(portalClass is UIView.Type)
-        }
+    func testPortalClassNameDecoding() {
+        XCTAssertEqual(portalViewClassName, "_UIPortalView")
     }
+
     // MARK: - PortalViewWrapper Tests
 
     @MainActor

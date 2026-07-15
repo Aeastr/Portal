@@ -1,11 +1,11 @@
-// swift-tools-version:6.2
+// swift-tools-version:5.10
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
 
 let package = Package(
     name: "Portal",
-    platforms: [.iOS(.v17)],
+    platforms: [.iOS(.v15), .macOS("15.0")],
     products: [
         .library(
             name: "PortalTransitions",
@@ -16,19 +16,27 @@ let package = Package(
         .library(
             name: "_PortalPrivate",
             targets: ["_PortalPrivate"]),
+        .library(
+            name: "PortalPrivate",
+            targets: ["_PortalPrivate"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/Aeastr/Chronicle.git", from: "3.0.1"),
-        .package(url: "https://github.com/Aeastr/UIPortalBridge.git", from: "1.0.0")
+        .package(url: "https://github.com/Aeastr/Chronicle.git", from: "3.0.1")
     ],
     targets: [
+        .target(
+            name: "UIPortalBridge",
+            dependencies: [],
+            path: "Sources/UIPortalBridge"
+        ),
         .target(
             name: "PortalTransitions",
             dependencies: [
                 .product(name: "Chronicle", package: "Chronicle"),
                 .product(name: "ChronicleConsole", package: "Chronicle")
             ],
-            path: "Sources/PortalTransitions"
+            path: "Sources/PortalTransitions",
+            exclude: ["Examples"]
         ),
         .target(
             name: "PortalHeaders",
@@ -36,15 +44,22 @@ let package = Package(
                 .product(name: "Chronicle", package: "Chronicle"),
                 .product(name: "ChronicleConsole", package: "Chronicle")
             ],
-            path: "Sources/PortalHeaders"
+            path: "Sources/PortalHeaders",
+            exclude: ["Examples"]
         ),
         .target(
             name: "_PortalPrivate",
             dependencies: [
                 "PortalTransitions",
-                .product(name: "UIPortalBridge", package: "UIPortalBridge")
+                "UIPortalBridge"
             ],
-            path: "Sources/_PortalPrivate"
+            path: "Sources/_PortalPrivate",
+            exclude: [
+                "PortalPrivateExampleApp.swift",
+                "PortalPrivateExampleNoSheetView.swift",
+                "Transitions/Examples",
+                "View/UIPortalViewExample.swift"
+            ]
         ),
         .testTarget(
             name: "PortalHeadersTests",
@@ -58,7 +73,7 @@ let package = Package(
         ),
         .testTarget(
             name: "_PortalPrivateTests",
-            dependencies: ["_PortalPrivate"],
+            dependencies: ["_PortalPrivate", "UIPortalBridge"],
             path: "Tests/_PortalPrivateTests"
         ),
     ]

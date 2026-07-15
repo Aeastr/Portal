@@ -45,7 +45,7 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
     public let transition: PortalRemoveTransition
 
     /// Completion criteria for detecting when the animation finishes.
-    public let completionCriteria: AnimationCompletionCriteria
+    public let completionCriteria: PortalAnimationCompletionCriteria
 
     /// Boolean binding that controls the portal transition state.
     @Binding public var isActive: Bool
@@ -57,7 +57,7 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
     public let completion: (Bool) -> Void
 
     /// The shared portal model that manages all portal animations.
-    @Environment(CrossModel.self) private var portalModel
+    @EnvironmentObject private var portalModel: CrossModel
 
     public init<ID: Hashable>(
         ids: [ID],
@@ -66,7 +66,7 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
         isActive: Binding<Bool>,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
-        completionCriteria: AnimationCompletionCriteria = .removed,
+        completionCriteria: PortalAnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void,
         @ViewBuilder layerView: @escaping (AnyHashable) -> LayerView,
         configuration: PortalConfiguration? = nil
@@ -120,7 +120,7 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
 
             // Start coordinated animation
             DispatchQueue.main.asyncAfter(deadline: .now() + PortalConstants.animationDelay) {
-                withAnimation(animation, completionCriteria: completionCriteria) {
+                portalWithAnimation(animation, completionCriteria: completionCriteria) {
                     for idx in groupIndices {
                         portalModel.info[idx].animateView = true
                     }
@@ -150,7 +150,7 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
                 portalModel.info[idx].showLayer = true
             }
 
-            withAnimation(animation, completionCriteria: completionCriteria) {
+            portalWithAnimation(animation, completionCriteria: completionCriteria) {
                 for idx in groupIndices {
                     portalModel.info[idx].animateView = false
                 }
@@ -178,7 +178,9 @@ public struct GroupIDPortalTransitionModifier<LayerView: View>: ViewModifier {
     public func body(content: Content) -> some View {
         content
             .onAppear(perform: onAppear)
-            .onChange(of: isActive, onChange)
+            .onChange(of: isActive) { newValue in
+                onChange(oldValue: false, newValue: newValue)
+            }
     }
 }
 
@@ -195,7 +197,7 @@ public extension View {
         isActive: Binding<Bool>,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
-        completionCriteria: AnimationCompletionCriteria = .removed,
+        completionCriteria: PortalAnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void = { _ in },
         @ViewBuilder layerView: @escaping (AnyHashable) -> LayerView
     ) -> some View {
@@ -228,7 +230,7 @@ public extension View {
         isActive: Binding<Bool>,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
-        completionCriteria: AnimationCompletionCriteria = .removed,
+        completionCriteria: PortalAnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void = { _ in },
         @ViewBuilder layerView: @escaping (AnyHashable) -> LayerView,
         @ViewBuilder configuration: @escaping (AnyView, Bool) -> ConfiguredView
@@ -263,7 +265,7 @@ public extension View {
         isActive: Binding<Bool>,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
-        completionCriteria: AnimationCompletionCriteria = .removed,
+        completionCriteria: PortalAnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void = { _ in },
         @ViewBuilder layerView: @escaping (AnyHashable) -> LayerView,
         @ViewBuilder configuration: @escaping (AnyView, Bool, CGSize, CGPoint) -> ConfiguredView
@@ -298,7 +300,7 @@ public extension View {
         isActive: Binding<Bool>,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
-        completionCriteria: AnimationCompletionCriteria = .removed,
+        completionCriteria: PortalAnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void = { _ in },
         @ViewBuilder layerView: @escaping (AnyHashable) -> LayerView,
         @ViewBuilder configuration: @escaping (AnyView, Bool, CGSize, CGSize, CGPoint, CGPoint) -> ConfiguredView

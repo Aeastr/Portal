@@ -95,7 +95,7 @@ public struct PortalPrivateSource<Content: View>: View {
     private let groupID: String?
     @ViewBuilder private let content: () -> Content
     @State private var sourceContainer: SourceViewContainer<AnyView>?
-    @Environment(CrossModel.self) private var portalModel
+    @EnvironmentObject private var portalModel: CrossModel
     @Environment(\.portalTransitionDebugSettings) private var debugSettings
 
     public init<ID: Hashable>(id: ID, in namespace: Namespace.ID, groupID: String? = nil, @ViewBuilder content: @escaping () -> Content) {
@@ -114,7 +114,7 @@ public struct PortalPrivateSource<Content: View>: View {
                 .onAppear {
                     if sourceContainer == nil {
                         // Create type-erased container that can be shared
-                        let container = SourceViewContainer(content: AnyView(content().environment(portalModel)))
+                        let container = SourceViewContainer(content: AnyView(content().environmentObject(portalModel)))
                         sourceContainer = container
 
                         // Store in private storage
@@ -141,7 +141,7 @@ public struct PortalPrivateSource<Content: View>: View {
             if let container = sourceContainer {
                 SourceViewRepresentable(
                     container: container,
-                    content: AnyView(content().environment(portalModel))
+                    content: AnyView(content().environmentObject(portalModel))
                 )
                 .opacity(portalModel.info.first { $0.infoID == id }?.destinationAnchor == nil ? 1 : 0)
                 .overlay(
@@ -250,7 +250,7 @@ public extension View {
         in namespace: Namespace.ID,
         isActive: Binding<Bool>,
         animation: Animation = .smooth(duration: 0.4),
-        completionCriteria: AnimationCompletionCriteria = .removed,
+        completionCriteria: PortalAnimationCompletionCriteria = .removed,
         hidesSource: Bool = false,
         matchesAlpha: Bool = true,
         matchesTransform: Bool = true,
@@ -278,7 +278,7 @@ public extension View {
         item: Binding<Item?>,
         in namespace: Namespace.ID,
         animation: Animation = .smooth(duration: 0.4),
-        completionCriteria: AnimationCompletionCriteria = .removed,
+        completionCriteria: PortalAnimationCompletionCriteria = .removed,
         hidesSource: Bool = false,
         matchesAlpha: Bool = true,
         matchesTransform: Bool = true,
@@ -306,7 +306,7 @@ public extension View {
         in namespace: Namespace.ID,
         isActive: Binding<Bool>,
         animation: Animation = .smooth(duration: 0.4),
-        completionCriteria: AnimationCompletionCriteria = .removed,
+        completionCriteria: PortalAnimationCompletionCriteria = .removed,
         hidesSource: Bool = false,
         matchesAlpha: Bool = true,
         matchesTransform: Bool = true,
@@ -335,7 +335,7 @@ public extension View {
         groupID: String,
         in namespace: Namespace.ID,
         animation: Animation = .smooth(duration: 0.4),
-        completionCriteria: AnimationCompletionCriteria = .removed,
+        completionCriteria: PortalAnimationCompletionCriteria = .removed,
         staggerDelay: TimeInterval = 0.0,
         hidesSource: Bool = false,
         matchesAlpha: Bool = true,
@@ -369,20 +369,20 @@ struct PortalPrivateTransitionModifier: ViewModifier {
     let namespace: Namespace.ID
     @Binding var isActive: Bool
     let animation: Animation
-    let completionCriteria: AnimationCompletionCriteria
+    let completionCriteria: PortalAnimationCompletionCriteria
     let hidesSource: Bool
     let matchesAlpha: Bool
     let matchesTransform: Bool
     let matchesPosition: Bool
     let completion: (Bool) -> Void
-    @Environment(CrossModel.self) private var portalModel
+    @EnvironmentObject private var portalModel: CrossModel
 
     init<ID: Hashable>(
         id: ID,
         in namespace: Namespace.ID,
         isActive: Binding<Bool>,
         animation: Animation,
-        completionCriteria: AnimationCompletionCriteria,
+        completionCriteria: PortalAnimationCompletionCriteria,
         hidesSource: Bool,
         matchesAlpha: Bool,
         matchesTransform: Bool,
@@ -403,7 +403,7 @@ struct PortalPrivateTransitionModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .onChange(of: isActive) { _, newValue in
+            .onChange(of: isActive) { newValue in
                 guard let idx = portalModel.info.firstIndex(where: { $0.infoID == id }) else { return }
 
                 // Initialize portal info
@@ -429,7 +429,7 @@ struct PortalPrivateTransitionModifier: ViewModifier {
                 if newValue {
                     // Forward transition
                     DispatchQueue.main.asyncAfter(deadline: .now() + PortalConstants.animationDelay) {
-                        withAnimation(animation, completionCriteria: completionCriteria) {
+                        portalWithAnimation(animation, completionCriteria: completionCriteria) {
                             portalModel.info[idx].animateView = true
                         } completion: {
                             Task { @MainActor in
@@ -442,7 +442,7 @@ struct PortalPrivateTransitionModifier: ViewModifier {
                     // Reverse transition
                     portalModel.info[idx].hideView = false
 
-                    withAnimation(animation, completionCriteria: completionCriteria) {
+                    portalWithAnimation(animation, completionCriteria: completionCriteria) {
                         portalModel.info[idx].animateView = false
                     } completion: {
                         Task { @MainActor in
@@ -463,20 +463,20 @@ struct PortalPrivateItemTransitionModifier<Item: Identifiable>: ViewModifier {
     @Binding var item: Item?
     let namespace: Namespace.ID
     let animation: Animation
-    let completionCriteria: AnimationCompletionCriteria
+    let completionCriteria: PortalAnimationCompletionCriteria
     let hidesSource: Bool
     let matchesAlpha: Bool
     let matchesTransform: Bool
     let matchesPosition: Bool
     let completion: (Bool) -> Void
-    @Environment(CrossModel.self) private var portalModel
+    @EnvironmentObject private var portalModel: CrossModel
     @State private var lastKey: AnyHashable?
 
     init(
         item: Binding<Item?>,
         in namespace: Namespace.ID,
         animation: Animation,
-        completionCriteria: AnimationCompletionCriteria,
+        completionCriteria: PortalAnimationCompletionCriteria,
         hidesSource: Bool,
         matchesAlpha: Bool,
         matchesTransform: Bool,
@@ -496,7 +496,7 @@ struct PortalPrivateItemTransitionModifier<Item: Identifiable>: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .onChange(of: item != nil) { _, hasValue in
+            .onChange(of: item != nil) { hasValue in
                 if hasValue {
                     guard let item = item else { return }
                     let key = AnyHashable(item.id)
@@ -534,7 +534,7 @@ struct PortalPrivateItemTransitionModifier<Item: Identifiable>: ViewModifier {
 
                     // Forward transition
                     DispatchQueue.main.asyncAfter(deadline: .now() + PortalConstants.animationDelay) {
-                        withAnimation(animation, completionCriteria: completionCriteria) {
+                        portalWithAnimation(animation, completionCriteria: completionCriteria) {
                             portalModel.info[idx].animateView = true
                         } completion: {
                             Task { @MainActor in
@@ -553,7 +553,7 @@ struct PortalPrivateItemTransitionModifier<Item: Identifiable>: ViewModifier {
 
                     portalModel.info[idx].hideView = false
 
-                    withAnimation(animation, completionCriteria: completionCriteria) {
+                    portalWithAnimation(animation, completionCriteria: completionCriteria) {
                         portalModel.info[idx].animateView = false
                     } completion: {
                         Task { @MainActor in
@@ -579,13 +579,13 @@ struct MultiIDPortalPrivateTransitionModifier: ViewModifier {
     let namespace: Namespace.ID
     @Binding var isActive: Bool
     let animation: Animation
-    let completionCriteria: AnimationCompletionCriteria
+    let completionCriteria: PortalAnimationCompletionCriteria
     let hidesSource: Bool
     let matchesAlpha: Bool
     let matchesTransform: Bool
     let matchesPosition: Bool
     let completion: (Bool) -> Void
-    @Environment(CrossModel.self) private var portalModel
+    @EnvironmentObject private var portalModel: CrossModel
 
     init<ID: Hashable>(
         ids: [ID],
@@ -593,7 +593,7 @@ struct MultiIDPortalPrivateTransitionModifier: ViewModifier {
         in namespace: Namespace.ID,
         isActive: Binding<Bool>,
         animation: Animation,
-        completionCriteria: AnimationCompletionCriteria,
+        completionCriteria: PortalAnimationCompletionCriteria,
         hidesSource: Bool,
         matchesAlpha: Bool,
         matchesTransform: Bool,
@@ -615,7 +615,7 @@ struct MultiIDPortalPrivateTransitionModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .onChange(of: isActive) { _, newValue in
+            .onChange(of: isActive) { newValue in
                 let groupIndices = portalModel.info.enumerated().compactMap { index, info in
                     ids.contains(info.infoID) ? index : nil
                 }
@@ -660,7 +660,7 @@ struct MultiIDPortalPrivateTransitionModifier: ViewModifier {
 
                     // Start coordinated animation
                     DispatchQueue.main.asyncAfter(deadline: .now() + PortalConstants.animationDelay) {
-                        withAnimation(animation, completionCriteria: completionCriteria) {
+                        portalWithAnimation(animation, completionCriteria: completionCriteria) {
                             for idx in groupIndices {
                                 portalModel.info[idx].animateView = true
                             }
@@ -681,7 +681,7 @@ struct MultiIDPortalPrivateTransitionModifier: ViewModifier {
                         portalModel.info[idx].hideView = false
                     }
 
-                    withAnimation(animation, completionCriteria: completionCriteria) {
+                    portalWithAnimation(animation, completionCriteria: completionCriteria) {
                         for idx in groupIndices {
                             portalModel.info[idx].animateView = false
                         }
@@ -714,14 +714,14 @@ struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifie
     let groupID: String
     let namespace: Namespace.ID
     let animation: Animation
-    let completionCriteria: AnimationCompletionCriteria
+    let completionCriteria: PortalAnimationCompletionCriteria
     let staggerDelay: TimeInterval
     let hidesSource: Bool
     let matchesAlpha: Bool
     let matchesTransform: Bool
     let matchesPosition: Bool
     let completion: (Bool) -> Void
-    @Environment(CrossModel.self) private var portalModel
+    @EnvironmentObject private var portalModel: CrossModel
     @State private var lastKeys: Set<AnyHashable> = []
 
     init(
@@ -729,7 +729,7 @@ struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifie
         groupID: String,
         in namespace: Namespace.ID,
         animation: Animation,
-        completionCriteria: AnimationCompletionCriteria,
+        completionCriteria: PortalAnimationCompletionCriteria,
         staggerDelay: TimeInterval,
         hidesSource: Bool,
         matchesAlpha: Bool,
@@ -795,7 +795,7 @@ struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifie
     private func startStaggeredAnimation(at indices: [Int]) {
         for (i, idx) in indices.enumerated() {
             DispatchQueue.main.asyncAfter(deadline: .now() + PortalConstants.animationDelay + (Double(i) * staggerDelay)) {
-                withAnimation(animation, completionCriteria: completionCriteria) {
+                portalWithAnimation(animation, completionCriteria: completionCriteria) {
                     portalModel.info[idx].animateView = true
                 } completion: {
                     Task { @MainActor in
@@ -812,7 +812,7 @@ struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifie
     /// Starts simultaneous forward animations for the given indices.
     private func startSimultaneousAnimation(at indices: [Int]) {
         DispatchQueue.main.asyncAfter(deadline: .now() + PortalConstants.animationDelay) {
-            withAnimation(animation, completionCriteria: completionCriteria) {
+            portalWithAnimation(animation, completionCriteria: completionCriteria) {
                 for idx in indices {
                     portalModel.info[idx].animateView = true
                 }
@@ -839,7 +839,7 @@ struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifie
             portalModel.info[idx].hideView = false
         }
 
-        withAnimation(animation, completionCriteria: completionCriteria) {
+        portalWithAnimation(animation, completionCriteria: completionCriteria) {
             for idx in cleanupIndices {
                 portalModel.info[idx].animateView = false
             }
@@ -863,7 +863,7 @@ struct MultiItemPortalPrivateTransitionModifier<Item: Identifiable>: ViewModifie
 
     func body(content: Content) -> some View {
         content
-            .onChange(of: !items.isEmpty) { _, hasItems in
+            .onChange(of: !items.isEmpty) { hasItems in
                 let currentKeys = keys
 
                 if hasItems && !items.isEmpty {
@@ -900,7 +900,7 @@ public struct PortalPrivateDestination: View {
     let matchesAlpha: Bool
     let matchesTransform: Bool
     let matchesPosition: Bool
-    @Environment(CrossModel.self) private var portalModel
+    @EnvironmentObject private var portalModel: CrossModel
     @Environment(\.portalTransitionDebugSettings) private var debugSettings
 
     public init<ID: Hashable>(

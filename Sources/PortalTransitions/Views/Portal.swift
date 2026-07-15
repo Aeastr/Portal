@@ -27,7 +27,7 @@ public struct Portal<Content: View>: View {
     private let namespace: Namespace.ID
     private let groupID: String?
     @ViewBuilder private let content: Content
-    @Environment(CrossModel.self) private var portalModel
+    @EnvironmentObject private var portalModel: CrossModel
     @Environment(\.portalTransitionDebugSettings) private var debugSettings
 
     /// Initializes a new Portal view.
@@ -67,7 +67,7 @@ public struct Portal<Content: View>: View {
             .opacity(opacity)
             .overlay(
                 Group {
-                    #if DEBUG
+                    #if DEBUG && canImport(UIKit)
                     let target: PortalTransitionDebugTarget = isSource ? .source : .destination
                     PortalDebugOverlay(isSource ? "Source" : "Destination", color: isSource ? .blue : .orange, showing: debugSettings.style(for: target))
                     #endif

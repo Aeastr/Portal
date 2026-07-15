@@ -27,7 +27,7 @@ import SwiftUI
 /// - Delegates individual animation rendering to `PortalLayerContentView`
 internal struct PortalLayerView: View {
     /// The shared model containing all portal animation data and state.
-    @Environment(CrossModel.self) private var portalModel
+    @EnvironmentObject private var portalModel: CrossModel
 
     var body: some View {
         GeometryReader(content: geometryReaderContent)
@@ -43,8 +43,7 @@ internal struct PortalLayerView: View {
     /// - Returns: A view containing all active portal animation layers
     @ViewBuilder
     private func geometryReaderContent(proxy: GeometryProxy) -> some View {
-        @Bindable var model = portalModel
-        ForEach($model.info) { $info in
+        ForEach($portalModel.info) { $info in
             PortalLayerContentView(proxy: proxy, info: $info)
         }
     }
@@ -159,7 +158,7 @@ private struct PortalLayerContentView: View {
             ))
             .overlay(
                 Group {
-                    #if DEBUG
+                    #if DEBUG && canImport(UIKit)
                     let layerStyle = debugSettings.style(for: .layer)
                     if !layerStyle.isEmpty {
                         PortalDebugOverlay("Portal Layer", color: .green, showing: layerStyle)

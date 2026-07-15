@@ -184,7 +184,7 @@ public struct PortalInfo: Identifiable {
     ///
     /// Determines when the animation is considered complete, such as when
     /// the view is removed or logically complete.
-    public var completionCriteria: AnimationCompletionCriteria = .removed
+    public var completionCriteria: PortalAnimationCompletionCriteria = .removed
 
     /// Configuration for customizing the layer view during animation.
     ///

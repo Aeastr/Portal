@@ -23,7 +23,7 @@ internal struct DebugOverlayIndicator: View {
 
     var body: some View {
         Group {
-            if #available(iOS 26.0, *) {
+            if #available(iOS 26.0, macOS 26.0, *) {
                 Text(text)
                     .font(.caption2)
                     .padding(.horizontal, 3)

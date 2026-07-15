@@ -31,7 +31,7 @@ public struct PortalContainerModern<Content: View>: View {
     @Environment(\.portalTransitionDebugSettings) private var debugSettings
     // The @State property will no longer have an initial value directly here.
     // Its initial value will be set in the initializer.
-    @State private var portalModel: CrossModel
+    @StateObject private var portalModel: CrossModel
 
     private let hideStatusBar: Bool
 
@@ -48,7 +48,7 @@ public struct PortalContainerModern<Content: View>: View {
         self.hideStatusBar = hideStatusBar
         // Initialize the @State property using its special initializer syntax.
         // If portalModel is nil, use a default CrossModel instance.
-        _portalModel = State(initialValue: portalModel ?? CrossModel())
+        _portalModel = StateObject(wrappedValue: portalModel ?? CrossModel())
         self.content = content()
     }
 
@@ -56,8 +56,8 @@ public struct PortalContainerModern<Content: View>: View {
         content
             .onAppear { setupWindow(scene) }
             .onDisappear { teardownWindow() }
-            .onChange(of: scene) { _, new in setupWindow(new) }
-            .environment(portalModel)
+            .onChange(of: scene) { new in setupWindow(new) }
+            .environmentObject(portalModel)
     }
 
     private func teardownWindow() {
@@ -139,10 +139,10 @@ import UIKit
 /// This allows multiple PortalContainers to coexist (e.g., in a carousel where each page
 /// has its own container). Each container registers its model, and the overlay window
 /// renders portals from all registered models.
-@MainActor @Observable
-final class PortalModelRegistry {
+@MainActor
+final class PortalModelRegistry: ObservableObject {
     /// All currently registered portal models, keyed by their object identity.
-    var models: [ObjectIdentifier: CrossModel] = [:]
+    @Published var models: [ObjectIdentifier: CrossModel] = [:]
 
     /// Registers a portal model with the registry.
     /// - Parameter model: The CrossModel to register.
@@ -407,7 +407,7 @@ internal struct PortalDebugOverlay: View {
 // MARK: - Root Views
 
 private struct PortalContainerRootView: View {
-    let registry: PortalModelRegistry
+    @ObservedObject var registry: PortalModelRegistry
     let debugSettings: PortalTransitionDebugSettings
 
     var body: some View {
@@ -415,7 +415,7 @@ private struct PortalContainerRootView: View {
             // Render portal layers for all registered models
             ForEach(Array(registry.models.values), id: \.id) { model in
                 PortalLayerView()
-                    .environment(model)
+                    .environmentObject(model)
             }
             .portalTransitionDebugOverlays(debugSettings.style(for: .layer), for: .layer)
             #if DEBUG

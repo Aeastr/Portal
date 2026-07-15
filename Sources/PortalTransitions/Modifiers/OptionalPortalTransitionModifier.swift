@@ -60,7 +60,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
     public let transition: PortalRemoveTransition
 
     /// Completion criteria for detecting when the animation finishes.
-    public let completionCriteria: AnimationCompletionCriteria
+    public let completionCriteria: PortalAnimationCompletionCriteria
 
     /// Closure that generates the layer view for the transition animation.
     ///
@@ -77,13 +77,14 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
     public let completion: (Bool) -> Void
 
     /// The shared portal model that manages all portal animations.
-    @Environment(CrossModel.self) private var portalModel
+    @EnvironmentObject private var portalModel: CrossModel
 
     /// Tracks the last generated key to handle cleanup during reverse transitions.
     ///
     /// Since the item becomes `nil` during reverse transitions, we need to remember
     /// the last key to properly clean up the portal state.
     @State private var lastKey: AnyHashable?
+    @State private var previousItemID: Item.ID?
 
     /// Initializes a new optional portal transition modifier with direct parameters.
     ///
@@ -101,7 +102,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
         in namespace: Namespace.ID,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
-        completionCriteria: AnimationCompletionCriteria = .removed,
+        completionCriteria: PortalAnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void,
         @ViewBuilder layerView: @escaping (Item) -> LayerView,
         configuration: PortalConfiguration? = nil
@@ -245,7 +246,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
 
             // Start animation after delay
             DispatchQueue.main.asyncAfter(deadline: .now() + PortalConstants.animationDelay) {
-                withAnimation(animation, completionCriteria: completionCriteria) {
+                portalWithAnimation(animation, completionCriteria: completionCriteria) {
                     portalModel.info[idx].animateView = true
                 } completion: {
                     PortalLogs.logger.log(
@@ -294,7 +295,7 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
             )
 
             // Start reverse animation
-            withAnimation(animation, completionCriteria: completionCriteria) {
+            portalWithAnimation(animation, completionCriteria: completionCriteria) {
                 portalModel.info[idx].animateView = false
             } completion: {
                 Task { @MainActor in
@@ -326,10 +327,14 @@ public struct OptionalPortalTransitionModifier<Item: Identifiable, LayerView: Vi
     /// and triggers portal transitions accordingly.
     public func body(content: Content) -> some View {
         content
-            .onChange(of: item != nil, onChange)
-            .onChange(of: item?.id) { oldID, newID in
+            .onChange(of: item != nil) { hasValue in
+                onChange(oldValue: false, hasValue: hasValue)
+            }
+            .onChange(of: item?.id) { newID in
                 // Update lastKey and layerView when the item changes to a different item (while remaining non-nil)
                 // This enables carousels where swiping between items should update the return target
+                let oldID = previousItemID
+                previousItemID = newID
                 guard let oldID, let newID, oldID != newID, let newItem = item else { return }
 
                 let newKey = AnyHashable(newID)
@@ -371,7 +376,7 @@ public extension View {
         in namespace: Namespace.ID,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
-        completionCriteria: AnimationCompletionCriteria = .removed,
+        completionCriteria: PortalAnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void = { _ in },
         @ViewBuilder layerView: @escaping (Item) -> LayerView
     ) -> some View {
@@ -410,7 +415,7 @@ public extension View {
         in namespace: Namespace.ID,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
-        completionCriteria: AnimationCompletionCriteria = .removed,
+        completionCriteria: PortalAnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void = { _ in },
         @ViewBuilder layerView: @escaping (Item) -> LayerView,
         @ViewBuilder configuration: @escaping (AnyView, Bool) -> ConfiguredView
@@ -453,7 +458,7 @@ public extension View {
         in namespace: Namespace.ID,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
-        completionCriteria: AnimationCompletionCriteria = .removed,
+        completionCriteria: PortalAnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void = { _ in },
         @ViewBuilder layerView: @escaping (Item) -> LayerView,
         @ViewBuilder configuration: @escaping (AnyView, Bool, CGSize, CGPoint) -> ConfiguredView
@@ -497,7 +502,7 @@ public extension View {
         in namespace: Namespace.ID,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
-        completionCriteria: AnimationCompletionCriteria = .removed,
+        completionCriteria: PortalAnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void = { _ in },
         @ViewBuilder layerView: @escaping (Item) -> LayerView,
         @ViewBuilder configuration: @escaping (AnyView, Bool, CGSize, CGSize, CGPoint, CGPoint) -> ConfiguredView

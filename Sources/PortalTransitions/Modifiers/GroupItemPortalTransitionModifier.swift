@@ -56,7 +56,7 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
     public let transition: PortalRemoveTransition
 
     /// Completion criteria for detecting when the animation finishes.
-    public let completionCriteria: AnimationCompletionCriteria
+    public let completionCriteria: PortalAnimationCompletionCriteria
 
     /// Closure that generates the layer view for each item in the transition.
     public let layerView: (Item) -> LayerView
@@ -71,7 +71,7 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
     public let staggerDelay: TimeInterval
 
     /// The shared portal model that manages all portal animations.
-    @Environment(CrossModel.self) private var portalModel
+    @EnvironmentObject private var portalModel: CrossModel
 
     /// Tracks the last set of keys for cleanup during reverse transitions.
     @State private var lastKeys: Set<AnyHashable> = []
@@ -82,7 +82,7 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
         in namespace: Namespace.ID,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
-        completionCriteria: AnimationCompletionCriteria = .removed,
+        completionCriteria: PortalAnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void,
         staggerDelay: TimeInterval = 0.0,
         @ViewBuilder layerView: @escaping (Item) -> LayerView,
@@ -188,7 +188,7 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
             let itemDelay = PortalConstants.animationDelay + (TimeInterval(i) * staggerDelay)
 
             DispatchQueue.main.asyncAfter(deadline: .now() + itemDelay) {
-                withAnimation(animation, completionCriteria: completionCriteria) {
+                portalWithAnimation(animation, completionCriteria: completionCriteria) {
                     portalModel.info[idx].animateView = true
                 } completion: {
                     // Show destination first, then hide layer on next frame to prevent flicker
@@ -214,7 +214,7 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
     /// Starts simultaneous forward animations for the given indices.
     private func startSimultaneousAnimation(at indices: [Int]) {
         DispatchQueue.main.asyncAfter(deadline: .now() + PortalConstants.animationDelay) {
-            withAnimation(animation, completionCriteria: completionCriteria) {
+            portalWithAnimation(animation, completionCriteria: completionCriteria) {
                 for idx in indices {
                     portalModel.info[idx].animateView = true
                 }
@@ -250,7 +250,7 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
             portalModel.info[idx].showLayer = true
         }
 
-        withAnimation(animation, completionCriteria: completionCriteria) {
+        portalWithAnimation(animation, completionCriteria: completionCriteria) {
             for idx in cleanupIndices {
                 portalModel.info[idx].animateView = false
             }
@@ -300,7 +300,7 @@ public struct GroupItemPortalTransitionModifier<Item: Identifiable, LayerView: V
     }
 
     public func body(content: Content) -> some View {
-        content.onChange(of: !items.isEmpty) {
+        content.onChange(of: !items.isEmpty) { _ in
             onChange(oldValue: items, hasItems: !items.isEmpty)
         }
     }
@@ -318,7 +318,7 @@ public extension View {
         in namespace: Namespace.ID,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
-        completionCriteria: AnimationCompletionCriteria = .removed,
+        completionCriteria: PortalAnimationCompletionCriteria = .removed,
         staggerDelay: TimeInterval = 0.0,
         completion: @escaping (Bool) -> Void = { _ in },
         @ViewBuilder layerView: @escaping (Item) -> LayerView
@@ -351,7 +351,7 @@ public extension View {
         in namespace: Namespace.ID,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
-        completionCriteria: AnimationCompletionCriteria = .removed,
+        completionCriteria: PortalAnimationCompletionCriteria = .removed,
         staggerDelay: TimeInterval = 0.0,
         completion: @escaping (Bool) -> Void = { _ in },
         @ViewBuilder layerView: @escaping (Item) -> LayerView,
@@ -386,7 +386,7 @@ public extension View {
         in namespace: Namespace.ID,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
-        completionCriteria: AnimationCompletionCriteria = .removed,
+        completionCriteria: PortalAnimationCompletionCriteria = .removed,
         staggerDelay: TimeInterval = 0.0,
         completion: @escaping (Bool) -> Void = { _ in },
         @ViewBuilder layerView: @escaping (Item) -> LayerView,
@@ -421,7 +421,7 @@ public extension View {
         in namespace: Namespace.ID,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
-        completionCriteria: AnimationCompletionCriteria = .removed,
+        completionCriteria: PortalAnimationCompletionCriteria = .removed,
         staggerDelay: TimeInterval = 0.0,
         completion: @escaping (Bool) -> Void = { _ in },
         @ViewBuilder layerView: @escaping (Item) -> LayerView,

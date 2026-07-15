@@ -3,6 +3,8 @@
 /Packages
 xcuserdata/
 DerivedData/
+/Derived/
+/Portal.xcodeproj/
 .swiftpm/configuration/registries.json
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
 .netrc

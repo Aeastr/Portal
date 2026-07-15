@@ -64,7 +64,7 @@ public extension AnimatedPortalLayer {
 }
 
 private struct AnimatedPortalLayerHost<Layer: AnimatedPortalLayer>: View {
-    @Environment(CrossModel.self) private var portalModel
+    @EnvironmentObject private var portalModel: CrossModel
     let layer: Layer
 
     var body: some View {

@@ -51,7 +51,7 @@ import SwiftUI
 /// - Automatic cleanup after reverse transitions
 public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier {
     /// The shared portal model that manages all portal animations.
-    @Environment(CrossModel.self) private var portalModel
+    @EnvironmentObject private var portalModel: CrossModel
 
     /// Unique identifier for this portal transition.
     ///
@@ -74,7 +74,7 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
     public let transition: PortalRemoveTransition
 
     /// Completion criteria for detecting when animation finishes.
-    public let completionCriteria: AnimationCompletionCriteria
+    public let completionCriteria: PortalAnimationCompletionCriteria
 
     /// Boolean binding that controls the portal transition state.
     ///
@@ -113,7 +113,7 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
         isActive: Binding<Bool>,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
-        completionCriteria: AnimationCompletionCriteria = .removed,
+        completionCriteria: PortalAnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void,
         @ViewBuilder layerView: @escaping () -> LayerView,
         configuration: PortalConfiguration? = nil
@@ -209,8 +209,6 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
     private func onChange(oldValue: Bool, newValue: Bool) {
         guard let idx = portalModel.info.firstIndex(where: { $0.infoID == id && $0.namespace == namespace }) else { return }
 
-        @Bindable var portalModel = portalModel
-
         // Configure portal info for any transition
         portalModel.info[idx].initialized = true
         portalModel.info[idx].animation = animation
@@ -225,7 +223,7 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
             portalModel.info[idx].showLayer = true
 
             DispatchQueue.main.asyncAfter(deadline: .now() + PortalConstants.animationDelay) {
-                withAnimation(animation, completionCriteria: completionCriteria) {
+                portalWithAnimation(animation, completionCriteria: completionCriteria) {
                     portalModel.info[idx].animateView = true
                 } completion: {
                     // Show destination first, then hide layer on next frame to prevent flicker
@@ -245,7 +243,7 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
             portalModel.info[idx].hideView = false
             portalModel.info[idx].showLayer = true
 
-            withAnimation(animation, completionCriteria: completionCriteria) {
+            portalWithAnimation(animation, completionCriteria: completionCriteria) {
                 portalModel.info[idx].animateView = false
             } completion: {
                 Task { @MainActor in
@@ -268,7 +266,9 @@ public struct ConditionalPortalTransitionModifier<LayerView: View>: ViewModifier
     public func body(content: Content) -> some View {
         content
             .onAppear(perform: onAppear)
-            .onChange(of: isActive, onChange)
+            .onChange(of: isActive) { newValue in
+                onChange(oldValue: false, newValue: newValue)
+            }
     }
 }
 
@@ -284,7 +284,7 @@ public extension View {
         isActive: Binding<Bool>,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
-        completionCriteria: AnimationCompletionCriteria = .removed,
+        completionCriteria: PortalAnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void = { _ in },
         @ViewBuilder layerView: @escaping () -> LayerView
     ) -> some View {
@@ -315,7 +315,7 @@ public extension View {
         isActive: Binding<Bool>,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
-        completionCriteria: AnimationCompletionCriteria = .removed,
+        completionCriteria: PortalAnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void = { _ in },
         @ViewBuilder layerView: @escaping () -> LayerView,
         @ViewBuilder configuration: @escaping (AnyView, Bool) -> ConfiguredView
@@ -349,7 +349,7 @@ public extension View {
         isActive: Binding<Bool>,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
-        completionCriteria: AnimationCompletionCriteria = .removed,
+        completionCriteria: PortalAnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void = { _ in },
         @ViewBuilder layerView: @escaping () -> LayerView,
         @ViewBuilder configuration: @escaping (AnyView, Bool, CGSize, CGPoint) -> ConfiguredView
@@ -383,7 +383,7 @@ public extension View {
         isActive: Binding<Bool>,
         animation: Animation = PortalConstants.defaultAnimation,
         transition: PortalRemoveTransition = .none,
-        completionCriteria: AnimationCompletionCriteria = .removed,
+        completionCriteria: PortalAnimationCompletionCriteria = .removed,
         completion: @escaping (Bool) -> Void = { _ in },
         @ViewBuilder layerView: @escaping () -> LayerView,
         @ViewBuilder configuration: @escaping (AnyView, Bool, CGSize, CGSize, CGPoint, CGPoint) -> ConfiguredView

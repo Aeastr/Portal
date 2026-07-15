@@ -72,7 +72,7 @@ public extension AnimatedItemPortalLayer {
 }
 
 private struct AnimatedItemPortalLayerHost<Layer: AnimatedItemPortalLayer>: View {
-    @Environment(CrossModel.self) private var portalModel
+    @EnvironmentObject private var portalModel: CrossModel
     let layer: Layer
 
     /// Tracks the last known item to maintain during reverse transitions.
@@ -96,18 +96,18 @@ private struct AnimatedItemPortalLayerHost<Layer: AnimatedItemPortalLayer>: View
         let displayItem = currentItem ?? lastItem
 
         layer.animatedContent(item: displayItem, isActive: isActive)
-            .onChange(of: currentItem?.id) { _, newID in
+            .onChange(of: currentItem?.id) { newID in
                 if newID != nil {
                     lastItem = currentItem
                     lastKey = key
                 }
             }
-            .onChange(of: isActive) { _, newActive in
+            .onChange(of: isActive) { newActive in
                 // Clear cached item after reverse transition completes to free memory
                 if !newActive && currentItem == nil {
                     Task { @MainActor in
                         // Small delay to ensure animation has fully completed
-                        try? await Task.sleep(for: .milliseconds(50))
+                        try? await Task.sleep(nanoseconds: 50_000_000)
                         lastItem = nil
                         lastKey = nil
                     }
@@ -240,7 +240,7 @@ public extension AnimatedGroupPortalLayer {
 }
 
 private struct AnimatedGroupPortalLayerHost<Layer: AnimatedGroupPortalLayer>: View {
-    @Environment(CrossModel.self) private var portalModel
+    @EnvironmentObject private var portalModel: CrossModel
     let layer: Layer
 
     /// Tracks the last known items to maintain during reverse transitions.
@@ -278,18 +278,18 @@ private struct AnimatedGroupPortalLayerHost<Layer: AnimatedGroupPortalLayer>: Vi
         let anyActive = activeStates.values.contains(true)
 
         layer.animatedContent(items: displayItems, activeStates: activeStates)
-            .onChange(of: currentItems.map { $0.id }) { _, newIDs in
+            .onChange(of: currentItems.map { $0.id }) { newIDs in
                 if !newIDs.isEmpty {
                     lastItems = currentItems
                 }
             }
-            .onChange(of: anyActive) { _, newActive in
+            .onChange(of: anyActive) { newActive in
                 if newActive {
                     wasActive = true
                 } else if wasActive && currentItems.isEmpty {
                     // Clear cached items after reverse transition completes to free memory
                     Task { @MainActor in
-                        try? await Task.sleep(for: .milliseconds(50))
+                        try? await Task.sleep(nanoseconds: 50_000_000)
                         lastItems = []
                         wasActive = false
                     }
