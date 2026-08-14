@@ -1,8 +1,9 @@
 # PortalTransitions with NavigationStack
 
-Use one optional `Identifiable` selection to coordinate portal transitions for every
-item in a programmatic `NavigationStack`. The navigation path selects the destination;
-the portal selection identifies the item currently animating.
+Use `navigationDestination(item:)` with one optional `Identifiable` selection to
+coordinate portal transitions for every item in a programmatic `NavigationStack`.
+The binding drives both navigation and the portal lifecycle, including an interactive
+back gesture.
 
 ```swift
 struct Product: Identifiable, Hashable {
@@ -12,31 +13,22 @@ struct Product: Identifiable, Hashable {
 
 struct ProductList: View {
     let products: [Product]
-    @State private var path = NavigationPath()
     @State private var portalItem: Product?
     @Namespace private var portalNamespace
 
     var body: some View {
         PortalContainer {
-            NavigationStack(path: $path) {
+            NavigationStack {
                 List(products) { product in
                     Text(product.name)
                         .portal(item: product, as: .source, in: portalNamespace)
                         .onTapGesture {
                             portalItem = product
-                            path.append(product.id)
                         }
                 }
-                .navigationDestination(for: Product.ID.self) { productID in
-                    if let product = products.first(where: { $0.id == productID }) {
-                        ProductDetail(product: product)
-                            .portal(item: product, as: .destination, in: portalNamespace)
-                            .onDisappear {
-                                if portalItem?.id == product.id {
-                                    portalItem = nil
-                                }
-                            }
-                    }
+                .navigationDestination(item: $portalItem) { product in
+                    ProductDetail(product: product)
+                        .portal(item: product, as: .destination, in: portalNamespace)
                 }
             }
             .portalTransition(item: $portalItem, in: portalNamespace) { product in
@@ -47,8 +39,11 @@ struct ProductList: View {
 }
 ```
 
-`portalItem` is separate from `path`: it starts the forward transition before the
-destination appears, and clearing it when the detail disappears starts the reverse
-transition. Because the transition is item-based, one modifier works for every product
-in the list.
+Setting `portalItem` starts both the push and forward transition. When the user pops
+the detail, `navigationDestination(item:)` clears it and starts the reverse transition.
+Because the transition is item-based, one modifier works for every product in the list.
 
+When an app must use a heterogeneous `NavigationPath`, keep its route state separate
+and update the portal item only in the explicit push and pop actions. Avoid clearing the
+portal item from a destination's `onDisappear`, because that can also run when another
+destination is pushed on top.
