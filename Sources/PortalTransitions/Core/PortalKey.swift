@@ -19,13 +19,12 @@ import SwiftUI
 /// Using `AnyHashable` for the ID allows any `Hashable` type to be used as a portal identifier,
 /// including `String`, `UUID`, `Int`, or custom types.
 public struct PortalKey: Hashable {
-    
     /// The portal identifier, type-erased to support any `Hashable` type.
     public let id: AnyHashable
 
     /// The role of this portal (source or destination).
     public let role: PortalRole
-    
+
     /// The operating namespace of this portal
     public let namespace: Namespace.ID
 

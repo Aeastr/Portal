@@ -13,6 +13,8 @@ import SwiftUI
 @testable import PortalTransitions
 
 final class PortalCoreTests: XCTestCase {
+    @Namespace private var namespace
+
     // MARK: - Animation Tests
 
     func testAnimationWithCompletionCriteria() {
@@ -29,7 +31,7 @@ final class PortalCoreTests: XCTestCase {
 
     @MainActor
     func testPortalInfoInitialization() {
-        let info = PortalInfo(id: "test-portal", groupID: "test-group")
+        let info = PortalInfo(id: "test-portal", namespace: namespace, groupID: "test-group")
 
         XCTAssertEqual(info.infoID, AnyHashable("test-portal"))
         XCTAssertEqual(info.groupID, "test-group")
@@ -39,7 +41,7 @@ final class PortalCoreTests: XCTestCase {
 
     @MainActor
     func testPortalInfoWithoutGroup() {
-        let info = PortalInfo(id: "standalone-portal")
+        let info = PortalInfo(id: "standalone-portal", namespace: namespace)
 
         XCTAssertEqual(info.infoID, AnyHashable("standalone-portal"))
         XCTAssertNil(info.groupID)
@@ -59,8 +61,8 @@ final class PortalCoreTests: XCTestCase {
     func testCrossModelInfoManagement() {
         let model = CrossModel()
 
-        let info1 = PortalInfo(id: "portal-1")
-        let info2 = PortalInfo(id: "portal-2", groupID: "group-1")
+        let info1 = PortalInfo(id: "portal-1", namespace: namespace)
+        let info2 = PortalInfo(id: "portal-2", namespace: namespace, groupID: "group-1")
 
         model.info.append(info1)
         model.info.append(info2)
@@ -75,8 +77,8 @@ final class PortalCoreTests: XCTestCase {
     func testCrossModelInfoRemoval() {
         let model = CrossModel()
 
-        let info1 = PortalInfo(id: "portal-1")
-        let info2 = PortalInfo(id: "portal-2")
+        let info1 = PortalInfo(id: "portal-1", namespace: namespace)
+        let info2 = PortalInfo(id: "portal-2", namespace: namespace)
 
         model.info.append(info1)
         model.info.append(info2)
@@ -95,7 +97,7 @@ final class PortalCoreTests: XCTestCase {
     func testPerformancePortalInfoCreation() {
         measure {
             for i in 0..<1000 {
-                _ = PortalInfo(id: "portal-\(i)", groupID: "group-\(i % 10)")
+                _ = PortalInfo(id: "portal-\(i)", namespace: namespace, groupID: "group-\(i % 10)")
             }
         }
     }
@@ -103,10 +105,10 @@ final class PortalCoreTests: XCTestCase {
     // MARK: - PortalKey Tests
 
     func testPortalKeyEquality() {
-        let key1 = PortalKey("test", role: .source)
-        let key2 = PortalKey("test", role: .source)
-        let key3 = PortalKey("test", role: .destination)
-        let key4 = PortalKey("other", role: .source)
+        let key1 = PortalKey("test", role: .source, in: namespace)
+        let key2 = PortalKey("test", role: .source, in: namespace)
+        let key3 = PortalKey("test", role: .destination, in: namespace)
+        let key4 = PortalKey("other", role: .source, in: namespace)
 
         XCTAssertEqual(key1, key2)
         XCTAssertNotEqual(key1, key3) // Same ID, different role
@@ -114,9 +116,9 @@ final class PortalCoreTests: XCTestCase {
     }
 
     func testPortalKeyHashing() {
-        let key1 = PortalKey("test", role: .source)
-        let key2 = PortalKey("test", role: .source)
-        let key3 = PortalKey("test", role: .destination)
+        let key1 = PortalKey("test", role: .source, in: namespace)
+        let key2 = PortalKey("test", role: .source, in: namespace)
+        let key3 = PortalKey("test", role: .destination, in: namespace)
 
         var set: Set<PortalKey> = []
         set.insert(key1)
@@ -127,9 +129,9 @@ final class PortalCoreTests: XCTestCase {
     }
 
     func testPortalKeyWithDifferentHashableTypes() {
-        let stringKey = PortalKey("test", role: .source)
-        let uuidKey = PortalKey(UUID(), role: .source)
-        let intKey = PortalKey(42, role: .source)
+        let stringKey = PortalKey("test", role: .source, in: namespace)
+        let uuidKey = PortalKey(UUID(), role: .source, in: namespace)
+        let intKey = PortalKey(42, role: .source, in: namespace)
 
         // All should be valid and distinct
         var set: Set<PortalKey> = [stringKey, uuidKey, intKey]
@@ -141,14 +143,14 @@ final class PortalCoreTests: XCTestCase {
     @MainActor
     func testPortalInfoWithUUID() {
         let uuid = UUID()
-        let info = PortalInfo(id: uuid)
+        let info = PortalInfo(id: uuid, namespace: namespace)
 
         XCTAssertEqual(info.infoID, AnyHashable(uuid))
     }
 
     @MainActor
     func testPortalInfoWithInt() {
-        let info = PortalInfo(id: 42)
+        let info = PortalInfo(id: 42, namespace: namespace)
 
         XCTAssertEqual(info.infoID, AnyHashable(42))
     }
@@ -160,7 +162,7 @@ final class PortalCoreTests: XCTestCase {
         }
 
         let customID = CustomID(value: "custom")
-        let info = PortalInfo(id: customID)
+        let info = PortalInfo(id: customID, namespace: namespace)
 
         XCTAssertEqual(info.infoID, AnyHashable(customID))
     }
@@ -169,7 +171,7 @@ final class PortalCoreTests: XCTestCase {
     func testPortalInfoDoubleWrappingPrevention() {
         let uuid = UUID()
         let wrappedOnce = AnyHashable(uuid)
-        let info = PortalInfo(id: wrappedOnce)
+        let info = PortalInfo(id: wrappedOnce, namespace: namespace)
 
         // Should not double-wrap - the infoID should still equal the original UUID
         XCTAssertEqual(info.infoID, AnyHashable(uuid))
@@ -194,18 +196,18 @@ final class PortalCoreTests: XCTestCase {
         let toID = UUID()
 
         // Setup source portal
-        var sourceInfo = PortalInfo(id: fromID)
+        var sourceInfo = PortalInfo(id: fromID, namespace: namespace)
         sourceInfo.initialized = true
         sourceInfo.animateView = true
         sourceInfo.hideView = true
         model.info.append(sourceInfo)
 
         // Setup destination portal
-        let destInfo = PortalInfo(id: toID)
+        let destInfo = PortalInfo(id: toID, namespace: namespace)
         model.info.append(destInfo)
 
         // Transfer
-        model.transferActivePortal(from: fromID, to: toID)
+        model.transferActivePortal(from: fromID, to: toID, in: namespace)
 
         // Verify source was reset
         let source = model.info.first { $0.infoID == AnyHashable(fromID) }
@@ -222,14 +224,14 @@ final class PortalCoreTests: XCTestCase {
     func testTransferActivePortalWithInts() {
         let model = CrossModel()
 
-        var sourceInfo = PortalInfo(id: 1)
+        var sourceInfo = PortalInfo(id: 1, namespace: namespace)
         sourceInfo.initialized = true
         model.info.append(sourceInfo)
 
-        let destInfo = PortalInfo(id: 2)
+        let destInfo = PortalInfo(id: 2, namespace: namespace)
         model.info.append(destInfo)
 
-        model.transferActivePortal(from: 1, to: 2)
+        model.transferActivePortal(from: 1, to: 2, in: namespace)
 
         let source = model.info.first { $0.infoID == AnyHashable(1) }
         XCTAssertFalse(source?.initialized ?? true)
@@ -249,15 +251,15 @@ final class PortalCoreTests: XCTestCase {
         let item1 = TestItem(name: "Item 1")
         let item2 = TestItem(name: "Item 2")
 
-        var sourceInfo = PortalInfo(id: item1.id)
+        var sourceInfo = PortalInfo(id: item1.id, namespace: namespace)
         sourceInfo.initialized = true
         model.info.append(sourceInfo)
 
-        let destInfo = PortalInfo(id: item2.id)
+        let destInfo = PortalInfo(id: item2.id, namespace: namespace)
         model.info.append(destInfo)
 
         // Use the item-based overload
-        model.transferActivePortal(fromItem: item1, toItem: item2)
+        model.transferActivePortal(fromItem: item1, toItem: item2, in: namespace)
 
         let source = model.info.first { $0.infoID == AnyHashable(item1.id) }
         XCTAssertFalse(source?.initialized ?? true)
@@ -271,12 +273,12 @@ final class PortalCoreTests: XCTestCase {
         let model = CrossModel()
         let id = UUID()
 
-        var info = PortalInfo(id: id)
+        var info = PortalInfo(id: id, namespace: namespace)
         info.initialized = true
         model.info.append(info)
 
         // Transfer to same ID should be a no-op
-        model.transferActivePortal(from: id, to: id)
+        model.transferActivePortal(from: id, to: id, in: namespace)
 
         let result = model.info.first { $0.infoID == AnyHashable(id) }
         XCTAssertTrue(result?.initialized ?? false) // Should remain unchanged
@@ -289,11 +291,11 @@ final class PortalCoreTests: XCTestCase {
         let toID = UUID()
 
         // Only add destination, no source
-        let destInfo = PortalInfo(id: toID)
+        let destInfo = PortalInfo(id: toID, namespace: namespace)
         model.info.append(destInfo)
 
         // Transfer should handle missing source gracefully
-        model.transferActivePortal(from: fromID, to: toID)
+        model.transferActivePortal(from: fromID, to: toID, in: namespace)
 
         // Destination should remain unchanged
         let dest = model.info.first { $0.infoID == AnyHashable(toID) }
