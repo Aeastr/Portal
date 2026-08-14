@@ -168,11 +168,11 @@ public struct PortalInfo: Identifiable {
     /// Set when the source view reports its position through the preference system.
     public var sourceAnchor: Anchor<CGRect>?
 
-    /// Cached source anchor used during transitions even if view is removed from hierarchy.
+    /// Last valid resolved source frame used when the source view leaves the hierarchy.
     ///
-    /// This ensures the transition layer can continue animating even if the source view
-    /// disappears mid-transition (e.g., during sheet dismissal).
-    public var cachedSourceAnchor: Anchor<CGRect>?
+    /// Anchors are lookup tokens, so they cannot safely be resolved after their view has
+    /// been removed. This concrete frame keeps the transition layer positioned correctly.
+    public var cachedSourceRect: CGRect?
 
     /// Animation for the portal transition.
     ///
@@ -211,11 +211,11 @@ public struct PortalInfo: Identifiable {
     /// Set when the destination view reports its position through the preference system.
     public var destinationAnchor: Anchor<CGRect>?
 
-    /// Cached destination anchor used during transitions even if view is removed from hierarchy.
+    /// Last valid resolved destination frame used when the destination view leaves the hierarchy.
     ///
-    /// This ensures the transition layer can continue animating even if the destination view
-    /// disappears mid-transition (e.g., during sheet dismissal).
-    public var cachedDestinationAnchor: Anchor<CGRect>?
+    /// Anchors are lookup tokens, so they cannot safely be resolved after their view has
+    /// been removed. This concrete frame keeps the transition layer positioned correctly.
+    public var cachedDestinationRect: CGRect?
 
     /// Completion callback executed when the portal animation finishes.
     ///
