@@ -90,23 +90,34 @@ private struct PortalLayerContentView: View {
     /// - Uses `info.animateView` flag to determine current target values
     ///
     /// **Coordinate System:**
-    /// - Uses `proxy[anchor]` to convert anchor bounds to global coordinates
+    /// - Uses `proxy[anchor]` to convert live anchor bounds to concrete coordinates
     /// - Positions layer using `.offset()` for precise placement
     /// - Uses `.frame()` for size animation
     var body: some View {
-        // Use cached anchors if live ones are nil (views removed from hierarchy during transition)
-        let sourceToUse = info.sourceAnchor ?? info.cachedSourceAnchor
-        let destinationToUse = info.destinationAnchor ?? info.cachedDestinationAnchor
+        let liveSourceRect = resolvedFrame(for: info.sourceAnchor)
+        let liveDestinationRect = resolvedFrame(for: info.destinationAnchor)
+        let sourceRect = liveSourceRect ?? info.cachedSourceRect
+        let destinationRect = liveDestinationRect ?? info.cachedDestinationRect
 
-        if let source = sourceToUse,
-           let destination = destinationToUse,
+        return Group {
+            Color.clear
+                .allowsHitTesting(false)
+                .onAppear {
+                    cacheLiveFrames(source: liveSourceRect, destination: liveDestinationRect)
+                }
+                .onChange(of: liveSourceRect) { _, source in
+                    cacheLiveFrames(source: source, destination: nil)
+                }
+                .onChange(of: liveDestinationRect) { _, destination in
+                    cacheLiveFrames(source: nil, destination: destination)
+                }
+
+            if let sRect = sourceRect,
+               let dRect = destinationRect,
            let layer = info.layerView,
            info.showLayer {
-            let usingCachedSrc = info.sourceAnchor == nil
-            let usingCachedDst = info.destinationAnchor == nil
-            // Convert anchor bounds to concrete rectangles in global coordinate space
-            let sRect = proxy[source]
-            let dRect = proxy[destination]
+            let usingCachedSrc = liveSourceRect == nil
+            let usingCachedDst = liveDestinationRect == nil
             let animate = info.animateView
 
             // Interpolate size between source and destination based on animation state
@@ -181,7 +192,7 @@ private struct PortalLayerContentView: View {
                     ]
                 )
             }
-        } else {
+            } else {
             let hasSource = info.sourceAnchor != nil
             let hasDest = info.destinationAnchor != nil
             let hasLayer = info.layerView != nil
@@ -201,6 +212,22 @@ private struct PortalLayerContentView: View {
                         ]
                     )
                 }
+            }
         }
+    }
+
+    private func cacheLiveFrames(source: CGRect?, destination: CGRect?) {
+        if let source {
+            info.cachedSourceRect = source
+        }
+        if let destination {
+            info.cachedDestinationRect = destination
+        }
+    }
+
+    private func resolvedFrame(for anchor: Anchor<CGRect>?) -> CGRect? {
+        guard let anchor else { return nil }
+        let frame = proxy[anchor]
+        return frame.isEmpty ? nil : frame
     }
 }

@@ -93,16 +93,8 @@ public struct Portal<Content: View>: View {
                 // Keep anchors aligned with live layout so animated layer follows scrolling/dragging
                 if isSource {
                     model.info[idx].sourceAnchor = anchor
-                    // Cache anchor for use during transitions if view is removed
-                    if model.info[idx].initialized {
-                        model.info[idx].cachedSourceAnchor = anchor
-                    }
                 } else {
                     model.info[idx].destinationAnchor = anchor
-                    // Cache anchor for use during transitions if view is removed
-                    if model.info[idx].initialized {
-                        model.info[idx].cachedDestinationAnchor = anchor
-                    }
                 }
             }
     }
