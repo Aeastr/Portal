@@ -57,6 +57,7 @@ import _PortalPrivate     // View mirroring (private API)
 - [How Portal Transitions Work](PortalTransitions/HowItWorks.md)
 - [Animation Options](PortalTransitions/AnimationOptions.md)
 - [Group Animations](PortalTransitions/GroupAnimations.md)
+- [NavigationStack](PortalTransitions/NavigationStack.md)
 - [Header Snapping Behavior](PortalHeaders/SnappingBehavior.md)
 
 ## Contents
@@ -75,6 +76,7 @@ import _PortalPrivate     // View mirroring (private API)
 #### Advanced
 - [Transferring Portals](PortalTransitions/TransferringPortals.md)
 - [Group Animations](PortalTransitions/GroupAnimations.md)
+- [NavigationStack](PortalTransitions/NavigationStack.md)
 
 #### Development
 - [Debug Overlays](PortalTransitions/DebugOverlays.md)

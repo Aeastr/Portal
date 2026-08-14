@@ -59,6 +59,51 @@ Use `.portalTransition()` to animate between source and destination.
 }
 ```
 
+## Remote Images with `AsyncImage`
+
+`AsyncImage` is supported. Apply `.portal` to a stable, sized container outside the
+`AsyncImage` phase closure so loading, failure, and success states all report the same
+anchor. Use the same container for the source, destination, and portal layer.
+
+```swift
+struct RemoteImageTransition: View {
+    let imageURL: URL
+    @State private var isShowingDetail = false
+    @Namespace private var portalNamespace
+
+    var body: some View {
+        PortalContainer {
+            remoteImage
+                .portal(id: "remote-image", as: .source, in: portalNamespace)
+                .onTapGesture { isShowingDetail = true }
+                .sheet(isPresented: $isShowingDetail) {
+                    remoteImage
+                        .portal(id: "remote-image", as: .destination, in: portalNamespace)
+                }
+                .portalTransition(
+                    id: "remote-image",
+                    in: portalNamespace,
+                    isActive: $isShowingDetail
+                ) {
+                    remoteImage
+                }
+        }
+    }
+
+    private var remoteImage: some View {
+        AsyncImage(url: imageURL) { phase in
+            if let image = phase.image {
+                image.resizable().scaledToFill()
+            } else {
+                Color.gray.opacity(0.2)
+            }
+        }
+        .frame(width: 160, height: 160)
+        .clipShape(.rect(cornerRadius: 16, style: .continuous))
+    }
+}
+```
+
 ## Examples
 
 See the included examples for complete implementations:
