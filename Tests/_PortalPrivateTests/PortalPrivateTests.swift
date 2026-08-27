@@ -8,6 +8,7 @@
 //  Licensed under the MIT License.
 //
 
+#if canImport(UIKit)
 import XCTest
 import SwiftUI
 @testable import PortalTransitions
@@ -196,3 +197,4 @@ final class PortalPrivateTests: XCTestCase {
         XCTAssertNil(wrapper.sourceView)
     }
 }
+#endif

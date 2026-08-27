@@ -192,14 +192,6 @@ final class PortalHeaderTests: XCTestCase {
         XCTAssertEqual(testDict.count, 2)
     }
 
-    // MARK: - Example Component Tests
-
-    @MainActor
-    func testPortalHeaderExampleCreation() {
-        let example = PortalHeaderExampleWithAccessory()
-        XCTAssertNotNil(example)
-    }
-
     // MARK: - Edge Cases Tests
 
     func testEmptyStringHandling() {

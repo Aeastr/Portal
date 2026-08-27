@@ -8,6 +8,7 @@
 //  Licensed under the MIT License.
 //
 
+#if canImport(UIKit)
 import XCTest
 import UIKit
 import SwiftUI
@@ -203,3 +204,4 @@ final class PortalViewTests: XCTestCase {
         }
     }
 }
+#endif
