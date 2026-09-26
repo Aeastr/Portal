@@ -1,4 +1,4 @@
-# PortalTransitions - Transferring Portals
+# Transferring Portals
 
 When presenting a detail view that allows paging between items—like a photo carousel or a horizontally scrolling gallery—the dismiss animation should return to whichever item is currently displayed, not the original item that was tapped.
 

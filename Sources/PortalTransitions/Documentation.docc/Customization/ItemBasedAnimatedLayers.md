@@ -1,8 +1,8 @@
-# PortalTransitions - Item-Based Animated Layers
+# Item-Based Animated Layers
 
 Add custom animations to layer views when using item-based portal transitions (`.portal(item:)` and `.portalTransition(item:)`).
 
-> **Tip:** For simple styling (clips, shadows, corner radii), consider using the `configuration` closure on `.portalTransition()` instead — see [Animation Options](AnimationOptions.md). Use these protocols when you need custom timing logic or reusable animated components.
+> **Tip:** For simple styling (clips, shadows, corner radii), consider using the `configuration` closure on `.portalTransition()` instead — see <doc:AnimationOptions>. Use these protocols when you need custom timing logic or reusable animated components.
 
 ## What It Does
 

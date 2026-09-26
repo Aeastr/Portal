@@ -1,4 +1,4 @@
-# PortalTransitions with NavigationStack
+# NavigationStack Transitions
 
 Use `navigationDestination(item:)` with one optional `Identifiable` selection to
 coordinate portal transitions for every item in a programmatic `NavigationStack`.

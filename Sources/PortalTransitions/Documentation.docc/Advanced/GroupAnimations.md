@@ -1,4 +1,4 @@
-# PortalTransitions - Group Animations
+# Group Animations
 
 Animate multiple portals simultaneously as a coordinated group. Useful when several elements should transition together to the same destination.
 
