@@ -24,7 +24,7 @@ git config core.hooksPath .githooks
 echo -e "${GREEN}✅ Git hooks configured successfully${NC}"
 echo ""
 echo "The following hooks are now active:"
-echo "  • pre-commit: Runs SwiftLint on staged Swift files"
+echo "  • pre-commit: Runs the project SwiftLint check when Swift changes are staged"
 echo ""
 echo -e "${YELLOW}Note: Make sure SwiftLint is installed:${NC}"
 echo "  brew install swiftlint"

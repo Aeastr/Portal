@@ -86,7 +86,7 @@ If you have an idea for a new feature or enhancement:
 1. Clone & open `Portal.xcodeproj` or use the Swift Package in your own project
 2. Set up Git hooks for automatic code checking:
    ```bash
-   ./Scripts/setup-hooks.sh
+   ./.scripts/setup-hooks.sh
    ```
 
 ## Coding Guidelines
@@ -109,27 +109,16 @@ swiftlint lint --config .swiftlint.yml
 swiftlint autocorrect --config .swiftlint.yml
 
 # Or use the provided script
-./Scripts/run-swiftlint.sh
+./.scripts/run-swiftlint.sh
 ```
 
 SwiftLint runs automatically:
-- **Pre-commit**: Checks staged Swift files
-- **CI/CD**: On all pushes and pull requests
+- **Pre-commit**: Runs the same read-only project check when Swift changes are staged
+- **CI/CD**: On pull requests to `main` and `dev`
 - **Xcode**: Can be integrated as a build phase
 
-### Constants & Best Practices
-
-- Use `PortalConstants` for all timing and configuration values
-- Don't hardcode delays or durations
-- All files must end with a newline
-- Example:
-  ```swift
-  // ✅ Good
-  DispatchQueue.main.asyncAfter(deadline: .now() + PortalConstants.animationDelay)
-
-  // ❌ Bad
-  DispatchQueue.main.asyncAfter(deadline: .now() + 0.1)
-  ```
+Auto-correction is never run by the hook or CI. Run it explicitly when wanted,
+review the resulting changes, and then stage them yourself.
 
 ## Running Tests
 
@@ -326,8 +315,8 @@ Common issues and solutions:
 ### SwiftLint Issues
 
 - **SwiftLint not found**: Install with `brew install swiftlint`
-- **Hooks not running**: Run `./Scripts/setup-hooks.sh` to configure Git hooks
-- **CI failing**: Run `./Scripts/run-swiftlint.sh` locally first to catch issues
+- **Hooks not running**: Run `./.scripts/setup-hooks.sh` to configure Git hooks
+- **CI failing**: Run `./.scripts/run-swiftlint.sh` locally first to catch issues
 - **Auto-fix not working**: Run `swiftlint --fix --config .swiftlint.yml` manually
 - **Too many violations**: Focus on errors first (red), warnings (yellow) can be addressed later
 
@@ -339,7 +328,7 @@ Common issues and solutions:
 
 ### Git Hook Issues
 
-- **Permission denied**: Run `chmod +x .githooks/*` and `chmod +x Scripts/*.sh`
+- **Permission denied**: Run `chmod +x .githooks/*` and `chmod +x .scripts/*.sh`
 - **Hooks not executing**: Check that `git config core.hooksPath` points to `.githooks`
 - **Commit blocked by linting**: Use `git commit --no-verify` to bypass (use sparingly!)
 
