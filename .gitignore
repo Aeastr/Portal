@@ -20,3 +20,6 @@ Package.resolved
 
 # macOS folder icon
 Icon?
+
+# Local Xcode build output
+/build/

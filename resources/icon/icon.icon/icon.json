@@ -1,10 +1,13 @@
 {
+  "features" : [
+    "refractivity"
+  ],
   "fill" : {
     "automatic-gradient" : "display-p3:0.15215,0.59406,0.90862,1.00000"
   },
   "groups" : [
     {
-      "blur-material" : 0.15,
+      "blur-material" : 0.08,
       "layers" : [
         {
           "glass" : true,
@@ -32,9 +35,14 @@
           }
         }
       ],
+      "refractivity" : {
+        "depth" : 0.31,
+        "enabled" : true,
+        "strength" : 0.05
+      },
       "shadow" : {
-        "kind" : "layer-color",
-        "opacity" : 0.5
+        "kind" : "neutral",
+        "opacity" : 0.48
       },
       "specular" : true,
       "translucency" : {
@@ -50,6 +58,7 @@
           "fill" : {
             "solid" : "extended-gray:1.00000,1.00000"
           },
+          "glass" : false,
           "hidden" : false,
           "image-name" : "Grid.png",
           "name" : "Grid",
@@ -63,6 +72,7 @@
           }
         }
       ],
+      "lighting" : "individual",
       "shadow" : {
         "kind" : "none",
         "opacity" : 0.5
