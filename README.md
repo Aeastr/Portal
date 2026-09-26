@@ -1,17 +1,8 @@
-<div align="center">
-  <img width="128" height="128" src="/resources/icon/icon.png" alt="Portal Icon">
-  <h1><b>Portal</b></h1>
-  <p>
-    Element transitions across navigation contexts, scroll-based flowing headers, and view mirroring for SwiftUI.
-  </p>
+<div>
+  <h1>Portal <img src="resources/icon/icon.png" alt="Portal icon" width="96" height="96" align="right"></h1>
+  <p>Animate elements between screens, flow scrolling headers into navigation bars, and mirror views in SwiftUI.</p>
+  <p><a href="https://developer.apple.com"><img src="https://img.shields.io/badge/iOS%20%2F%20iPadOS-17%2B-000000?logo=apple" alt="iOS / iPadOS 17+"></a> <a href="https://swift.org"><img src="https://img.shields.io/badge/Swift-6.2%2B-F05138?logo=swift&amp;logoColor=white" alt="Swift 6.2+"></a> <a href="https://github.com/Aeastr/Portal/actions/workflows/build.yml"><img src="https://github.com/Aeastr/Portal/actions/workflows/build.yml/badge.svg" alt="Build"></a> <a href="https://github.com/Aeastr/Portal/actions/workflows/tests.yml"><img src="https://github.com/Aeastr/Portal/actions/workflows/tests.yml/badge.svg" alt="Tests"></a></p>
 </div>
-
-<p align="center">
-  <a href="https://swift.org"><img src="https://img.shields.io/badge/Swift-6.2+-F05138?logo=swift&logoColor=white" alt="Swift 6.2+"></a>
-  <a href="https://developer.apple.com"><img src="https://img.shields.io/badge/iOS-17+-000000?logo=apple" alt="iOS 17+"></a>
-  <a href="https://github.com/Aeastr/Portal/actions/workflows/build.yml"><img src="https://github.com/Aeastr/Portal/actions/workflows/build.yml/badge.svg" alt="Build"></a>
-  <a href="https://github.com/Aeastr/Portal/actions/workflows/tests.yml"><img src="https://github.com/Aeastr/Portal/actions/workflows/tests.yml/badge.svg" alt="Tests"></a>
-</p>
 
 <div align="center">
   <img width="600" src="/resources/examples/example1.gif" alt="Preview">

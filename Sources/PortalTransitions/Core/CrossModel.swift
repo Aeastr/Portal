@@ -124,8 +124,8 @@ public class CrossModel: Hashable {
         info[fromIndex].layerView = nil
         info[fromIndex].sourceAnchor = nil
         info[fromIndex].destinationAnchor = nil
-        info[fromIndex].cachedSourceAnchor = nil
-        info[fromIndex].cachedDestinationAnchor = nil
+        info[fromIndex].cachedSourceRect = nil
+        info[fromIndex].cachedDestinationRect = nil
 
         PortalLogs.logger.log(
             "Transferred active portal",

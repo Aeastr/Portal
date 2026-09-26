@@ -15,6 +15,7 @@ Install a ``PortalContainer`` around the relevant hierarchy, mark views with mat
 ### Create a Transition
 
 - <doc:BasicUsage>
+- <doc:NavigationStack>
 - <doc:HowItWorks>
 - ``PortalContainer``
 - ``Portal``
