@@ -1,4 +1,4 @@
-# PortalTransitions - How It Works
+# How Portal Transitions Work
 
 PortalTransitions animates a view between two positions by rendering it on a transparent overlay window above your app's UI.
 

@@ -1,8 +1,8 @@
-# PortalTransitions - Animated Layers
+# Animated Layers
 
 Add custom animations to the layer view during portal transitions using the `AnimatedPortalLayer` protocol.
 
-> **Tip:** For simple styling (clips, shadows, corner radii), consider using the `configuration` closure on `.portalTransition()` instead — see [Animation Options](AnimationOptions.md). Use this protocol when you need custom timing logic or reusable animated components.
+> **Tip:** For simple styling (clips, shadows, corner radii), consider using the `configuration` closure on `.portalTransition()` instead — see <doc:AnimationOptions>. Use this protocol when you need custom timing logic or reusable animated components.
 
 ## What It Does
 
@@ -73,7 +73,7 @@ ScalingLayer(portalID: "hero") {
 }
 ```
 
-> **Note:** For item-based portals using `Identifiable` items, see [Item-Based Animated Layers](ItemBasedAnimatedLayers.md).
+> **Note:** For item-based portals using `Identifiable` items, see <doc:ItemBasedAnimatedLayers>.
 
 ## Bounce Effect Example
 

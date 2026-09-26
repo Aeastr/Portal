@@ -1,4 +1,4 @@
-# PortalTransitions - Debug Overlays
+# Debug Overlays
 
 Debug overlays visualize portal sources, destinations, and animated layers during development, making it easier to verify your portal setup.
 

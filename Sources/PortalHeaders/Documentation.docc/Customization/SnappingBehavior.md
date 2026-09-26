@@ -1,4 +1,4 @@
-# PortalHeaders - Snapping Behavior
+# Snapping Behavior
 
 When scrolling stops while the header is mid-transition, PortalHeaders can snap to a final position for a polished feel.
 

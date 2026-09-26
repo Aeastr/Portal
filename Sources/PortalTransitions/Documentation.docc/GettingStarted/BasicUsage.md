@@ -1,4 +1,4 @@
-# PortalTransitions - Basic Usage
+# Basic Usage
 
 PortalTransitions creates seamless hero transitions between views by connecting a source and destination with matching identifiers.
 

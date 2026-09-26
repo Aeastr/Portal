@@ -1,4 +1,4 @@
-# PortalHeaders - Debug Overlays
+# Debug Overlays
 
 Debug overlays help visualize header sources, destinations, and accessories during development.
 

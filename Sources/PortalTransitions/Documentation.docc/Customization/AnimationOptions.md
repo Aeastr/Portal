@@ -1,4 +1,4 @@
-# PortalTransitions - Animation Options
+# Animation Options
 
 Customize how portal transitions animate with custom animations, layer configuration, and layer removal behavior.
 

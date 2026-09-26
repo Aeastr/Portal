@@ -1,4 +1,4 @@
-# PortalHeaders - Basic Usage
+# Basic Usage
 
 PortalHeaders creates scroll-based header transitions that smoothly flow into the navigation bar, similar to native iOS apps like Music and Photos.
 

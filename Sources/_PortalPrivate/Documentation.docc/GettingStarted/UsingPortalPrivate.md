@@ -1,4 +1,4 @@
-# _PortalPrivate
+# Using _PortalPrivate
 
 > **WARNING: Private API — Use at Your Own Risk**
 >
